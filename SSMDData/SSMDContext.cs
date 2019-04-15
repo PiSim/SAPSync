@@ -16,16 +16,16 @@ namespace SSMD
 
         #region Properties
 
-        public DbSet<Order> Orders { get; set; }
         public DbSet<Component> Components { get; set; }
         public DbSet<InspectionCharacteristic> InspectionCharacteristics { get; set; }
         public DbSet<InspectionLot> InspectionLots { get; set; }
-        public DbSet<InspectionOperation> InspectionOperations { get; set; }
         public DbSet<InspectionPoint> InspectionPoints { get; set; }
+        public DbSet<InspectionSpecification> InspectionSpecifications { get; set; }
         public DbSet<MaterialFamily> MaterialFamilies { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<OrderComponent> OrderComponents { get; set; }
         public DbSet<OrderConfirmation> OrderConfirmations { get; set; }
+        public DbSet<Order> Orders { get; set; }
         public DbSet<ScrapCause> ScrapCauses { get; set; }
 
         #endregion Properties
@@ -43,32 +43,20 @@ namespace SSMD
                 .HasKey(comp => comp.ID);
 
             modelBuilder.Entity<InspectionCharacteristic>()
-                .HasKey(insc => insc.ID);
-            
-            modelBuilder.Entity<InspectionLot>()
-                .HasKey(ispl => ispl.LotNumber);
-
-            modelBuilder.Entity<InspectionOperation>()
-                .HasKey(inspop => inspop.Number);
-
-            modelBuilder.Entity<InspectionOperation>()
-                .HasOne(inspop => inspop.InspectionLot)
-                .WithMany(insplo => insplo.InspectionOperations)
-                .HasForeignKey(inspop => inspop.InspectionLotNumber);
-
-            modelBuilder.Entity<InspectionOperation>()
-                .HasOne(inspop => inspop.InspectionCharacteristic)
-                .WithMany(inspchar => inspchar.InspectionOperations)
-                .HasForeignKey(inspop => inspop.InspectionCharacteristicID);
+                .HasIndex(insc => insc.Name)
+                .IsUnique();
 
             modelBuilder.Entity<InspectionPoint>()
-                .HasKey(inspp => inspp.Number);
+                .HasKey(insp => new Tuple<long, int, int, int>(insp.InspectionLotNumber, insp.NodeNumber, insp.CharNumber, insp.SampleNumber));
 
             modelBuilder.Entity<InspectionPoint>()
-                .HasOne(inspp => inspp.InspectionOperation)
-                .WithMany(inspop => inspop.InspectionPoints)
-                .HasForeignKey(inspp => inspp.InspectionOperationNumber);
-            
+                .HasOne(inspp => inspp.InspectionSpecification)
+                .WithMany(inspp => inspp.InspectionPoints)
+                .HasForeignKey(inspp => new Tuple<long, int, int>(inspp.InspectionLotNumber, inspp.NodeNumber, inspp.CharNumber));
+
+            modelBuilder.Entity<InspectionSpecification>()
+                .HasKey(inspsp => new Tuple<long, int, int>(inspsp.InspectionLotNumber, inspsp.NodeNumber, inspsp.CharacteristicNumber));
+
             modelBuilder.Entity<Material>()
                 .HasKey(mat => mat.ID);
 
@@ -84,6 +72,9 @@ namespace SSMD
                 .HasKey(ord => ord.Number);
 
             modelBuilder.Entity<Order>()
+                .HasIndex(ord => ord.OrderType);
+
+            modelBuilder.Entity<Order>()
                 .HasOne(ord => ord.Material)
                 .WithMany(mat => mat.Orders)
                 .HasForeignKey(ord => ord.MaterialID);
@@ -92,7 +83,6 @@ namespace SSMD
                 .HasMany(btc => btc.InspectionLots)
                 .WithOne(ispl => ispl.Order)
                 .HasForeignKey(ispl => ispl.OrderNumber);
-            
 
             modelBuilder.Entity<OrderComponent>()
                 .HasKey(orco => orco.ID);

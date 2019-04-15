@@ -2,12 +2,12 @@
 
 namespace SAPSync.Functions
 {
-    public class BAPIFunctionBase : IBAPIFunction
+    public class BAPIStructFunctionBase : IBAPIStructFunction
     {
         #region Fields
 
         internal string _functionName,
-                _tableName;
+                _structName;
 
         internal IRfcFunction _rfcFunction;
 
@@ -15,7 +15,7 @@ namespace SAPSync.Functions
 
         #region Constructors
 
-        public BAPIFunctionBase()
+        public BAPIStructFunctionBase()
         {
         }
 
@@ -23,11 +23,11 @@ namespace SAPSync.Functions
 
         #region Methods
 
-        public IRfcTable Invoke(RfcDestination rfcDestination)
+        public IRfcStructure Invoke(RfcDestination rfcDestination)
         {
             InitializeFunction(rfcDestination);
             _rfcFunction.Invoke(rfcDestination);
-            IRfcTable output = _rfcFunction.GetTable(_tableName);
+            IRfcStructure output = _rfcFunction.GetStructure(_structName);
             return output;
         }
 

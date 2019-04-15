@@ -2,7 +2,7 @@
 
 namespace SSMD
 {
-    public class Component
+    public partial class Component
     {
         #region Constructors
 

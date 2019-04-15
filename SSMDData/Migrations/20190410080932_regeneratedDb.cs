@@ -1,11 +1,46 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace SSMD.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class regeneratedDb : Migration
     {
+        #region Methods
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "InspectionPoints");
+
+            migrationBuilder.DropTable(
+                name: "OrderComponents");
+
+            migrationBuilder.DropTable(
+                name: "OrderConfirmations");
+
+            migrationBuilder.DropTable(
+                name: "ScrapCauses");
+
+            migrationBuilder.DropTable(
+                name: "InspectionCharacteristics");
+
+            migrationBuilder.DropTable(
+                name: "InspectionLots");
+
+            migrationBuilder.DropTable(
+                name: "Components");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Materials");
+
+            migrationBuilder.DropTable(
+                name: "MaterialFamilies");
+        }
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -28,7 +63,11 @@ namespace SSMD.Migrations
                     ID = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true)
+                    Description = table.Column<string>(nullable: true),
+                    UpperSpecificationLimit = table.Column<double>(nullable: false),
+                    LowerSpecificationLimit = table.Column<double>(nullable: false),
+                    TargetValue = table.Column<double>(nullable: false),
+                    UM = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,7 +80,13 @@ namespace SSMD.Migrations
                 {
                     ID = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Code = table.Column<string>(nullable: true)
+                    Code = table.Column<string>(nullable: true),
+                    L1 = table.Column<string>(nullable: true),
+                    L1Description = table.Column<string>(nullable: true),
+                    L2 = table.Column<string>(nullable: true),
+                    L2Description = table.Column<string>(nullable: true),
+                    L3 = table.Column<string>(nullable: true),
+                    L3Description = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -88,10 +133,11 @@ namespace SSMD.Migrations
                 {
                     Number = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    InspectionLotNumber = table.Column<int>(nullable: true),
+                    ID = table.Column<int>(nullable: false),
                     TotalQuantity = table.Column<double>(nullable: false),
                     TotalScrap = table.Column<double>(nullable: false),
-                    MaterialID = table.Column<int>(nullable: false)
+                    MaterialID = table.Column<int>(nullable: false),
+                    OrderType = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -108,13 +154,13 @@ namespace SSMD.Migrations
                 name: "InspectionLots",
                 columns: table => new
                 {
-                    LotNumber = table.Column<int>(nullable: false)
+                    Number = table.Column<long>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OrderNumber = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InspectionLots", x => x.LotNumber);
+                    table.PrimaryKey("PK_InspectionLots", x => x.Number);
                     table.ForeignKey(
                         name: "FK_InspectionLots_Orders_OrderNumber",
                         column: x => x.OrderNumber,
@@ -155,9 +201,18 @@ namespace SSMD.Migrations
                 {
                     ConfirmationCounter = table.Column<int>(nullable: false),
                     ConfirmationNumber = table.Column<int>(nullable: false),
+                    DeletionFlag = table.Column<bool>(nullable: false),
                     OrderNumber = table.Column<int>(nullable: false),
-                    EntryDate = table.Column<DateTime>(nullable: false),
-                    InspectionCharacteristicNumber = table.Column<int>(nullable: false)
+                    EntryDate = table.Column<DateTime>(nullable: true),
+                    Yield = table.Column<double>(nullable: false),
+                    Scrap = table.Column<double>(nullable: false),
+                    UM = table.Column<string>(nullable: true),
+                    ScrapCause = table.Column<string>(nullable: true),
+                    WIPIn = table.Column<string>(nullable: true),
+                    WIPOut = table.Column<string>(nullable: true),
+                    WorkCenterID = table.Column<int>(nullable: false),
+                    StartTime = table.Column<DateTime>(nullable: false),
+                    EndTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,51 +226,41 @@ namespace SSMD.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InspectionOperations",
-                columns: table => new
-                {
-                    Number = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    InspectionCharacteristicID = table.Column<int>(nullable: false),
-                    InspectionLotNumber = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InspectionOperations", x => x.Number);
-                    table.ForeignKey(
-                        name: "FK_InspectionOperations_InspectionCharacteristics_InspectionCha~",
-                        column: x => x.InspectionCharacteristicID,
-                        principalTable: "InspectionCharacteristics",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_InspectionOperations_InspectionLots_InspectionLotNumber",
-                        column: x => x.InspectionLotNumber,
-                        principalTable: "InspectionLots",
-                        principalColumn: "LotNumber",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "InspectionPoints",
                 columns: table => new
                 {
-                    Number = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    InspectionLotNumber = table.Column<long>(nullable: false),
+                    NodeNumber = table.Column<int>(nullable: false),
+                    CharNumber = table.Column<int>(nullable: false),
+                    SampleNumber = table.Column<int>(nullable: false),
                     InspectionDate = table.Column<DateTime>(nullable: false),
-                    InspectionOperationNumber = table.Column<int>(nullable: false),
-                    UM = table.Column<string>(nullable: true)
+                    MaxValue = table.Column<double>(nullable: false),
+                    MinValue = table.Column<double>(nullable: false),
+                    AvgValue = table.Column<double>(nullable: false),
+                    InspectionCharacteristicID = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InspectionPoints", x => x.Number);
+                    table.PrimaryKey("PK_InspectionPoints", x => new { x.InspectionLotNumber, x.NodeNumber, x.CharNumber, x.SampleNumber });
                     table.ForeignKey(
-                        name: "FK_InspectionPoints_InspectionOperations_InspectionOperationNum~",
-                        column: x => x.InspectionOperationNumber,
-                        principalTable: "InspectionOperations",
+                        name: "FK_InspectionPoints_InspectionCharacteristics_InspectionCharact~",
+                        column: x => x.InspectionCharacteristicID,
+                        principalTable: "InspectionCharacteristics",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InspectionPoints_InspectionLots_InspectionLotNumber",
+                        column: x => x.InspectionLotNumber,
+                        principalTable: "InspectionLots",
                         principalColumn: "Number",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InspectionCharacteristics_Name",
+                table: "InspectionCharacteristics",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_InspectionLots_OrderNumber",
@@ -223,19 +268,9 @@ namespace SSMD.Migrations
                 column: "OrderNumber");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InspectionOperations_InspectionCharacteristicID",
-                table: "InspectionOperations",
-                column: "InspectionCharacteristicID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InspectionOperations_InspectionLotNumber",
-                table: "InspectionOperations",
-                column: "InspectionLotNumber");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InspectionPoints_InspectionOperationNumber",
+                name: "IX_InspectionPoints_InspectionCharacteristicID",
                 table: "InspectionPoints",
-                column: "InspectionOperationNumber");
+                column: "InspectionCharacteristicID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Materials_Code",
@@ -266,42 +301,13 @@ namespace SSMD.Migrations
                 name: "IX_Orders_MaterialID",
                 table: "Orders",
                 column: "MaterialID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_OrderType",
+                table: "Orders",
+                column: "OrderType");
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "InspectionPoints");
-
-            migrationBuilder.DropTable(
-                name: "OrderComponents");
-
-            migrationBuilder.DropTable(
-                name: "OrderConfirmations");
-
-            migrationBuilder.DropTable(
-                name: "ScrapCauses");
-
-            migrationBuilder.DropTable(
-                name: "InspectionOperations");
-
-            migrationBuilder.DropTable(
-                name: "Components");
-
-            migrationBuilder.DropTable(
-                name: "InspectionCharacteristics");
-
-            migrationBuilder.DropTable(
-                name: "InspectionLots");
-
-            migrationBuilder.DropTable(
-                name: "Orders");
-
-            migrationBuilder.DropTable(
-                name: "Materials");
-
-            migrationBuilder.DropTable(
-                name: "MaterialFamilies");
-        }
+        #endregion Methods
     }
 }

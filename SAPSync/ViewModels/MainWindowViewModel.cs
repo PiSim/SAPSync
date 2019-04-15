@@ -1,8 +1,8 @@
 ﻿using Prism.Commands;
 using Prism.Mvvm;
-using System;
+using SAPSync.SyncElements;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace SAPSync.ViewModels
 {
@@ -10,7 +10,7 @@ namespace SAPSync.ViewModels
     {
         #region Fields
 
-        private SAPReader _reader;
+        private SyncManager _syncManager;
 
         #endregion Fields
 
@@ -18,9 +18,9 @@ namespace SAPSync.ViewModels
 
         public MainWindowViewModel()
         {
-            _reader = new SAPReader();
-            InitializeSyncElements();
+            _syncManager = new SyncManager();
             StartSyncCommand = new DelegateCommand(() => StartSync());
+            GetSyncElements();
         }
 
         #endregion Constructors
@@ -29,35 +29,33 @@ namespace SAPSync.ViewModels
 
         public DelegateCommand StartSyncCommand { get; set; }
 
-        public ICollection<SyncElement> SyncElements { get; set; }
+        public List<SyncElementViewModel> SyncElements { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        private void InitializeSyncElements()
+        public void GetSyncElements()
         {
-            try
+            SyncElements = new List<SyncElementViewModel>();
+
+            foreach (ISyncElement syncElement in _syncManager.SyncElements)
             {
-                SyncElements = _reader.GetSyncElements();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Inizializzazione elementi di sincronizzazione fallita: " + e.Message);
+                SyncElementViewModel newVM = new SyncElementViewModel()
+                {
+                    SyncElement = syncElement
+                };
+                syncElement.ProgressChanged += newVM.OnPhaseProgressChanged;
+                syncElement.StatusChanged += newVM.OnStatusChanged;
+
+                SyncElements.Add(newVM);
             }
         }
 
-        private void StartSync()
+        private async void StartSync()
         {
-            try
-            {
-                foreach (SyncElement syncElement in SyncElements.Where(syel => syel.RequiresSync))
-                    _reader.RunSynchronization(syncElement);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Sincronizzazione Fallita:" + e.Message);
-            }
+            await Task.Run(() => _syncManager.StartSync());
+            return;
         }
 
         #endregion Methods

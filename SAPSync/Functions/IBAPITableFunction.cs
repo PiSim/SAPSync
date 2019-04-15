@@ -2,7 +2,7 @@
 
 namespace SAPSync.Functions
 {
-    public interface IBAPIFunction
+    public interface IBAPITableFunction
     {
         #region Methods
 

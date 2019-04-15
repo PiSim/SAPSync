@@ -1,8 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSMD
 {
-    public class InspectionPoint
+    public partial class InspectionPoint
     {
         #region Constructors
 
@@ -14,11 +15,22 @@ namespace SSMD
 
         #region Properties
 
+        public double AvgValue { get; set; }
+        public int CharNumber { get; set; }
         public DateTime InspectionDate { get; set; }
-        public InspectionOperation InspectionOperation { get; set; }
-        public int InspectionOperationNumber { get; set; }
-        public int Number { get; set; }
-        public string UM { get; set; }
+
+        public InspectionLot InspectionLot { get; set; }
+
+        [ForeignKey("InspectionLot")]
+        public long InspectionLotNumber { get; set; }
+
+        public InspectionSpecification InspectionSpecification { get; set; }
+        public double MaxValue { get; set; }
+        public double MinValue { get; set; }
+        public int NodeNumber { get; set; }
+        public int SampleNumber { get; set; }
+
+        public Tuple<long, int, int, int> GetPrimaryKey() => new Tuple<long, int, int, int>(InspectionLotNumber, NodeNumber, CharNumber, SampleNumber);
 
         #endregion Properties
     }

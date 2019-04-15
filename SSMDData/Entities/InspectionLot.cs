@@ -1,25 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SSMD
 {
-    public class InspectionLot
+    public partial class InspectionLot
     {
         #region Constructors
 
         public InspectionLot()
         {
-            InspectionOperations = new HashSet<InspectionOperation>();
+            InspectionPoints = new HashSet<InspectionPoint>();
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public int LotNumber { get; set; }
+        public ICollection<InspectionPoint> InspectionPoints { get; set; }
+
+        [Key]
+        public long Number { get; set; }
+
         public Order Order { get; set; }
         public int OrderNumber { get; set; }
-
-        public ICollection<InspectionOperation> InspectionOperations { get; set; }
 
         #endregion Properties
     }

@@ -2,7 +2,7 @@
 
 namespace SSMD
 {
-    public class Material
+    public partial class Material
     {
         #region Constructors
 

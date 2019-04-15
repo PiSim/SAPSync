@@ -6,7 +6,7 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="SapSync" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -23,14 +23,30 @@
         <DataGrid AutoGenerateColumns="false"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
+                  CanUserResizeColumns="False"
                   CanUserSortColumns="False"
                   Grid.Row="1"
+                  HorizontalGridLinesBrush="Transparent"
                   ItemsSource="{Binding SyncElements}"
-                  Margin="5">
+                  Margin="5"
+                  RowHeight="30"
+                  VerticalGridLinesBrush="Transparent">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding RequiresSync}" />
+                <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
+                <DataGridTextColumn Header="Stato"
+                                    Binding="{Binding Status, Mode=OneWay}" />
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ProgressBar Margin="2"
+                                         Cursor="Wait"
+                                         Value="{Binding PhaseProgress, Mode=OneWay}"
+                                         Width="150" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

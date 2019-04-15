@@ -1,40 +1,37 @@
 ﻿using SAP.Middleware.Connector;
 using SSMD;
 using System;
+using System.ComponentModel;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
-    public abstract class SyncElement
+    public interface ISyncElement
     {
         #region Events
 
-        private event EventHandler StatusChanged;
+        event ProgressChangedEventHandler ProgressChanged;
+
+        event EventHandler StatusChanged;
 
         #endregion Events
 
         #region Properties
 
-        public string Name { get; protected set; }
-        public bool RequiresSync { get; set; } = true;
-        public string Status { get; protected set; }
+        string Name { get; }
+
+        int PhaseProgress { get; }
+
+        bool RequiresSync { get; set; }
+
+        string SyncStatus { get; }
 
         #endregion Properties
 
         #region Methods
 
-        public abstract void StartSync(RfcDestination rfcDestination, SSMDData sSMDData);
+        void SetOnQueue();
 
-        protected virtual void OnStatusChanged(EventArgs e)
-        {
-            EventHandler handler = StatusChanged;
-            handler?.Invoke(this, e);
-        }
-
-        private void ChangeStatus(string newStatus)
-        {
-            Status = newStatus;
-            OnStatusChanged(new EventArgs());
-        }
+        void StartSync(RfcDestination rfcDestination, SSMDData sSMDData);
 
         #endregion Methods
     }

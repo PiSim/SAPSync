@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SSMD
 {
-    public class MaterialFamily
+    public partial class MaterialFamily
     {
         #region Constructors
 
@@ -16,7 +17,16 @@ namespace SSMD
         #region Properties
 
         public string Code { get; set; }
+
+        [Key]
         public int ID { get; set; }
+
+        public string L1 { get; set; }
+        public string L1Description { get; set; }
+        public string L2 { get; set; }
+        public string L2Description { get; set; }
+        public string L3 { get; set; }
+        public string L3Description { get; set; }
 
         public ICollection<Material> Materials { get; set; }
 

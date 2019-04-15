@@ -9,8 +9,8 @@ using SSMD;
 namespace SSMD.Migrations
 {
     [DbContext(typeof(SSMDContext))]
-    [Migration("20190402145623_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20190410080932_regeneratedDb")]
+    partial class regeneratedDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,59 +38,61 @@ namespace SSMD.Migrations
 
                     b.Property<string>("Description");
 
+                    b.Property<double>("LowerSpecificationLimit");
+
                     b.Property<string>("Name");
 
+                    b.Property<double>("TargetValue");
+
+                    b.Property<string>("UM");
+
+                    b.Property<double>("UpperSpecificationLimit");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("InspectionCharacteristics");
                 });
 
             modelBuilder.Entity("SSMD.InspectionLot", b =>
                 {
-                    b.Property<int>("LotNumber")
+                    b.Property<long>("Number")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("OrderNumber");
 
-                    b.HasKey("LotNumber");
+                    b.HasKey("Number");
 
                     b.HasIndex("OrderNumber");
 
                     b.ToTable("InspectionLots");
                 });
 
-            modelBuilder.Entity("SSMD.InspectionOperation", b =>
-                {
-                    b.Property<int>("Number")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("InspectionCharacteristicID");
-
-                    b.Property<int>("InspectionLotNumber");
-
-                    b.HasKey("Number");
-
-                    b.HasIndex("InspectionCharacteristicID");
-
-                    b.HasIndex("InspectionLotNumber");
-
-                    b.ToTable("InspectionOperations");
-                });
-
             modelBuilder.Entity("SSMD.InspectionPoint", b =>
                 {
-                    b.Property<int>("Number")
-                        .ValueGeneratedOnAdd();
+                    b.Property<long>("InspectionLotNumber");
+
+                    b.Property<int>("NodeNumber");
+
+                    b.Property<int>("CharNumber");
+
+                    b.Property<int>("SampleNumber");
+
+                    b.Property<double>("AvgValue");
+
+                    b.Property<int?>("InspectionCharacteristicID");
 
                     b.Property<DateTime>("InspectionDate");
 
-                    b.Property<int>("InspectionOperationNumber");
+                    b.Property<double>("MaxValue");
 
-                    b.Property<string>("UM");
+                    b.Property<double>("MinValue");
 
-                    b.HasKey("Number");
+                    b.HasKey("InspectionLotNumber", "NodeNumber", "CharNumber", "SampleNumber");
 
-                    b.HasIndex("InspectionOperationNumber");
+                    b.HasIndex("InspectionCharacteristicID");
 
                     b.ToTable("InspectionPoints");
                 });
@@ -120,6 +122,18 @@ namespace SSMD.Migrations
 
                     b.Property<string>("Code");
 
+                    b.Property<string>("L1");
+
+                    b.Property<string>("L1Description");
+
+                    b.Property<string>("L2");
+
+                    b.Property<string>("L2Description");
+
+                    b.Property<string>("L3");
+
+                    b.Property<string>("L3Description");
+
                     b.HasKey("ID");
 
                     b.ToTable("MaterialFamilies");
@@ -130,9 +144,11 @@ namespace SSMD.Migrations
                     b.Property<int>("Number")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("InspectionLotNumber");
+                    b.Property<int>("ID");
 
                     b.Property<int>("MaterialID");
+
+                    b.Property<string>("OrderType");
 
                     b.Property<double>("TotalQuantity");
 
@@ -141,6 +157,8 @@ namespace SSMD.Migrations
                     b.HasKey("Number");
 
                     b.HasIndex("MaterialID");
+
+                    b.HasIndex("OrderType");
 
                     b.ToTable("Orders");
                 });
@@ -169,11 +187,29 @@ namespace SSMD.Migrations
 
                     b.Property<int>("ConfirmationCounter");
 
-                    b.Property<DateTime>("EntryDate");
+                    b.Property<bool>("DeletionFlag");
 
-                    b.Property<int>("InspectionCharacteristicNumber");
+                    b.Property<DateTime>("EndTime");
+
+                    b.Property<DateTime?>("EntryDate");
 
                     b.Property<int>("OrderNumber");
+
+                    b.Property<double>("Scrap");
+
+                    b.Property<string>("ScrapCause");
+
+                    b.Property<DateTime>("StartTime");
+
+                    b.Property<string>("UM");
+
+                    b.Property<string>("WIPIn");
+
+                    b.Property<string>("WIPOut");
+
+                    b.Property<int>("WorkCenterID");
+
+                    b.Property<double>("Yield");
 
                     b.HasKey("ConfirmationNumber", "ConfirmationCounter");
 
@@ -204,24 +240,15 @@ namespace SSMD.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("SSMD.InspectionOperation", b =>
-                {
-                    b.HasOne("SSMD.InspectionCharacteristic", "InspectionCharacteristic")
-                        .WithMany("InspectionOperations")
-                        .HasForeignKey("InspectionCharacteristicID")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("SSMD.InspectionLot", "InspectionLot")
-                        .WithMany("InspectionOperations")
-                        .HasForeignKey("InspectionLotNumber")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("SSMD.InspectionPoint", b =>
                 {
-                    b.HasOne("SSMD.InspectionOperation", "InspectionOperation")
+                    b.HasOne("SSMD.InspectionCharacteristic")
                         .WithMany("InspectionPoints")
-                        .HasForeignKey("InspectionOperationNumber")
+                        .HasForeignKey("InspectionCharacteristicID");
+
+                    b.HasOne("SSMD.InspectionLot", "InspectionLot")
+                        .WithMany("InspectionPoints")
+                        .HasForeignKey("InspectionLotNumber")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

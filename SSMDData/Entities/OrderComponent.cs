@@ -1,6 +1,6 @@
 ﻿namespace SSMD
 {
-    public class OrderComponent
+    public partial class OrderComponent
     {
         #region Constructors
 
@@ -12,9 +12,9 @@
 
         #region Properties
 
-        public int ID { get; set; }
         public Component Component { get; set; }
         public int ComponentID { get; set; }
+        public int ID { get; set; }
         public Order Order { get; set; }
         public int OrderNumber { get; set; }
 

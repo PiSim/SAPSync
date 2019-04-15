@@ -1,6 +1,6 @@
 ﻿namespace SAPSync.Functions
 {
-    public class InspLotGetList : BAPIFunctionBase
+    public class InspLotGetList : BAPITableFunctionBase
     {
         #region Constructors
 

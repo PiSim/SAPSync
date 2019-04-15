@@ -2,7 +2,7 @@
 
 namespace SAPSync.Functions
 {
-    public class MaterialsGetList : BAPIFunctionBase
+    public class MaterialsGetList : BAPITableFunctionBase
     {
         #region Constructors
 

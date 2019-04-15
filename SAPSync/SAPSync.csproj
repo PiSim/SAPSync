@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -41,8 +42,9 @@
     <Reference Include="CommonServiceLocator, Version=2.0.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.4\lib\net46\CommonServiceLocator.dll</HintPath>
     </Reference>
-    <Reference Include="DataAccessCore">
-      <HintPath>..\..\DataAccessCore\DataAccessCore\bin\Debug\DataAccessCore.dll</HintPath>
+    <Reference Include="DataAccessCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DataAccessCore\DataAccessCore\bin\Release\DataAccessCore.dll</HintPath>
     </Reference>
     <Reference Include="Google.Protobuf, Version=3.7.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.7.0\lib\net45\Google.Protobuf.dll</HintPath>
@@ -101,6 +103,9 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NSAPConnector, Version=1.0.2.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\NSapConnector.3.0.0\lib\NSAPConnector.dll</HintPath>
+    </Reference>
     <Reference Include="Pomelo.EntityFrameworkCore.MySql, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Pomelo.EntityFrameworkCore.MySql.2.2.0\lib\netstandard2.0\Pomelo.EntityFrameworkCore.MySql.dll</HintPath>
     </Reference>
@@ -116,14 +121,11 @@
     <Reference Include="Remotion.Linq, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.2.2.0\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="SAPExtractorDotNET, Version=1.0.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SAPExtractorDotNET.1.0.5.1\lib\net40\SAPExtractorDotNET.dll</HintPath>
+    <Reference Include="sapnco, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=AMD64">
+      <HintPath>..\packages\NSapConnector.3.0.0\lib\sapnco.dll</HintPath>
     </Reference>
-    <Reference Include="sapnco, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=x86">
-      <HintPath>..\packages\SAPDotNetConnector3.0.3.0\lib\sapnco.dll</HintPath>
-    </Reference>
-    <Reference Include="sapnco_utils, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=x86">
-      <HintPath>..\packages\SAPDotNetConnector3.0.3.0\lib\sapnco_utils.dll</HintPath>
+    <Reference Include="sapnco_utils, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=AMD64">
+      <HintPath>..\packages\NSapConnector.3.0.0\lib\sapnco_utils.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -185,22 +187,30 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Functions\BAPIFunctionBase.cs" />
+    <Compile Include="Functions\BAPIStructFunctionBase.cs" />
+    <Compile Include="Functions\BAPITableFunctionBase.cs" />
+    <Compile Include="Functions\ConfirmationGetDetail.cs" />
     <Compile Include="Functions\ConfirmationsGetList.cs" />
-    <Compile Include="Functions\IBAPIFunction.cs" />
-    <Compile Include="Functions\InspectionOperationsGetList.cs" />
+    <Compile Include="Functions\IBAPIStructFunction.cs" />
+    <Compile Include="Functions\IBAPITableFunction.cs" />
     <Compile Include="Functions\InspectionPointsGetList.cs" />
     <Compile Include="Functions\MaterialsGetList.cs" />
     <Compile Include="Functions\InspLotGetList.cs" />
     <Compile Include="Functions\OrdersGetList.cs" />
+    <Compile Include="Functions\ReadInspectionCharacteristics.cs" />
+    <Compile Include="Functions\ReadInspectionPoints.cs" />
+    <Compile Include="Functions\ReadConfirmations.cs" />
+    <Compile Include="Functions\ReadInspectionSpecifications.cs" />
+    <Compile Include="Functions\ReadTableBase.cs" />
     <Compile Include="SAPDestinationConfig.cs" />
     <Compile Include="SAPReader.cs" />
-    <Compile Include="SyncElements\INeedsInspectionLots.cs" />
     <Compile Include="SyncElements\ISyncElement.cs" />
+    <Compile Include="SyncElements\SyncElement.cs" />
     <Compile Include="SyncElements\SyncConfirmations.cs" />
+    <Compile Include="SyncElements\SyncInspectionCharacteristics.cs" />
+    <Compile Include="SyncElements\SyncInspectionSpecifications.cs" />
     <Compile Include="SyncElements\SyncOrders.cs" />
     <Compile Include="SyncElements\SyncInspectionPoints.cs" />
-    <Compile Include="SyncElements\SyncInspectionOperations.cs" />
     <Compile Include="SyncElements\SyncInspectionLots.cs" />
     <Compile Include="SyncElements\SyncMaterials.cs" />
     <Page Include="Views\MainWindow.xaml">
@@ -211,7 +221,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SyncManager.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\SyncElementViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -247,10 +259,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\libicudecnumber.dll" />
-    <Content Include="bin\Release\libicudecnumber.dll" />
-  </ItemGroup>
-  <ItemGroup>
+    <Folder Include="bin\Debug\" />
     <Folder Include="Commands\" />
     <Folder Include="Queries\" />
   </ItemGroup>
@@ -259,6 +268,9 @@
       <Project>{44f00013-ea6b-464d-be1f-fcf5c30cfb55}</Project>
       <Name>SSMD</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

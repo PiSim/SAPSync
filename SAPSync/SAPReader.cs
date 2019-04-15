@@ -1,7 +1,5 @@
 ﻿using SAP.Middleware.Connector;
-using SSMD;
 using System;
-using System.Collections.Generic;
 
 namespace SAPSync
 {
@@ -10,9 +8,6 @@ namespace SAPSync
         #region Fields
 
         private string _destinationName = "PRD";
-        private List<int> _inspectionLots;
-        private RfcDestination _rfcDestination;
-        private SSMDData _sSMDData;
 
         #endregion Fields
 
@@ -20,47 +15,28 @@ namespace SAPSync
 
         public SAPReader()
         {
-            TestConnection(_destinationName);
-            _sSMDData = new SSMDData(new SSMDContextFactory());
         }
 
         #endregion Constructors
 
         #region Methods
 
-        public ICollection<SyncElement> GetSyncElements()
+        public RfcDestination GetRfcDestination()
         {
-            List<SyncElement> elementList = new List<SyncElement>();
-
-            elementList.Add(new SyncMaterials());
-            elementList.Add(new SyncOrders());
-            elementList.Add(new SyncConfirmations());
-            elementList.Add(new SyncInspectionLots());
-            elementList.Add(new SyncInspectionOperations());
-            elementList.Add(new SyncInspectionPoints());
-
-            return elementList;
+            RfcDestination rfcDestination = RfcDestinationManager.GetDestination(_destinationName);
+            TestConnection(rfcDestination);
+            return rfcDestination;
         }
 
-        public void RunSynchronization(SyncElement element)
-        {
-            if (element is INeedsInspectionLots)
-                (element as INeedsInspectionLots).InspectionLots = _inspectionLots;
-
-            element.StartSync(_rfcDestination ?? RfcDestinationManager.GetDestination(_destinationName),
-                _sSMDData);
-        }
-
-        public bool TestConnection(string _destinationName)
+        public bool TestConnection(RfcDestination destination)
         {
             bool result = false;
 
             try
             {
-                _rfcDestination = RfcDestinationManager.GetDestination(_destinationName);
-                if (_rfcDestination != null)
+                if (destination != null)
                 {
-                    _rfcDestination.Ping();
+                    destination.Ping();
                     result = true;
                 }
             }

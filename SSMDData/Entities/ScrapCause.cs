@@ -1,6 +1,6 @@
 ﻿namespace SSMD
 {
-    public class ScrapCause
+    public partial class ScrapCause
     {
         #region Constructors
 

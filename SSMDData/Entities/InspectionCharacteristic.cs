@@ -1,21 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSMD
 {
-    public class InspectionCharacteristic
+    public partial class InspectionCharacteristic
     {
+        #region Constructors
+
         public InspectionCharacteristic()
         {
-            InspectionOperations = new HashSet<InspectionOperation>();
+            InspectionPoints = new HashSet<InspectionPoint>();
         }
 
-        public int ID { get; set; }
-        public string Name { get; set; }
+        #endregion Constructors
+
+        #region Properties
+
         public string Description { get; set; }
-        public ICollection<InspectionOperation> InspectionOperations { get; set; }
+
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
+
+        public ICollection<InspectionPoint> InspectionPoints { get; set; }
+        public double LowerSpecificationLimit { get; set; }
+        public string Name { get; set; }
+        public double TargetValue { get; set; }
+        public string UM { get; set; }
+        public double UpperSpecificationLimit { get; set; }
+
+        #endregion Properties
     }
 }

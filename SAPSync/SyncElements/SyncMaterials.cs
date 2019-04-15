@@ -1,14 +1,21 @@
 ﻿using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
-using DataAccessCore.Commands;
+using SSMD.Queries;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
-    public class SyncMaterials : SyncElement
+    public class SyncMaterials : SyncElement<Material>
     {
+        #region Fields
+
+        private IDictionary<string, Material> _materialDictionary;
+
+        #endregion Fields
+
         #region Constructors
 
         public SyncMaterials()
@@ -20,39 +27,47 @@ namespace SAPSync
 
         #region Methods
 
-        public override void StartSync(RfcDestination destination, SSMDData sSMDData)
+        protected override void Initialize()
         {
-            IRfcTable materialTable = RetrieveMaterials(destination);
-            List<Material> convertedMaterials = ConvertMaterialTable(materialTable);
-            PushMaterials(convertedMaterials, sSMDData);
+            base.Initialize();
+            _materialDictionary = _sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
+
+            if (_materialDictionary == null)
+                throw new InvalidOperationException("Errore nel recupero del dizionario Materiali");
         }
 
-        private void PushMaterials(List<Material> materials, SSMDData sSMDData)
+        protected override void RetrieveSAPRecords()
         {
-            sSMDData.Execute(new BulkInsertEntitiesCommand<SSMDContext>(materials));
+            base.RetrieveSAPRecords();
+
+            IRfcTable materialTable = RetrieveMaterials();
+            ConvertMaterialTable(materialTable);
         }
 
-        private List<Material> ConvertMaterialTable(IRfcTable materialTable)
+        private void ConvertMaterialTable(IRfcTable materialTable)
         {
-            List<Material> output = new List<Material>();
+            _recordsToInsert = new List<Material>();
 
             foreach (IRfcStructure row in materialTable)
             {
-                Material newMaterial = new Material();
-                newMaterial.Code = row.GetString("MATERIAL");
-                output.Add(newMaterial);
-            }
+                string currentMaterialCode = row.GetString("MATERIAL");
 
-            return output;
+                if (_materialDictionary.ContainsKey(currentMaterialCode))
+                    continue;
+
+                Material newMaterial = new Material();
+                newMaterial.Code = currentMaterialCode;
+                _recordsToInsert.Add(newMaterial);
+            }
         }
 
-        private IRfcTable RetrieveMaterials(RfcDestination destination)
+        private IRfcTable RetrieveMaterials()
         {
             IRfcTable output;
 
             try
             {
-                output = new MaterialsGetList().Invoke(destination);
+                output = new MaterialsGetList().Invoke(_rfcDestination);
             }
             catch (Exception e)
             {
