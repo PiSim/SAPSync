@@ -31,34 +31,35 @@ namespace SAPSync.SyncElements
         {
             base.Initialize();
             _materialDictionary = _sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
+        }
 
+        protected override void EnsureInitialized()
+        {
             if (_materialDictionary == null)
-                throw new InvalidOperationException("Errore nel recupero del dizionario Materiali");
-        }
+                throw new InvalidOperationException("Errore nel recupero del dizionario Materiali");        }
 
-        protected override void RetrieveSAPRecords()
+        protected override IList<Material> ReadRecordTable()
         {
-            base.RetrieveSAPRecords();
-
             IRfcTable materialTable = RetrieveMaterials();
-            ConvertMaterialTable(materialTable);
+            return ConvertMaterialTable(materialTable);
         }
 
-        private void ConvertMaterialTable(IRfcTable materialTable)
+        protected override bool MustIgnoreRecord(Material record) => _materialDictionary.ContainsKey(record.Code);
+
+        private List<Material> ConvertMaterialTable(IRfcTable materialTable)
         {
-            _recordsToInsert = new List<Material>();
+            List<Material> output = new List<Material>();
 
             foreach (IRfcStructure row in materialTable)
             {
                 string currentMaterialCode = row.GetString("MATERIAL");
 
-                if (_materialDictionary.ContainsKey(currentMaterialCode))
-                    continue;
 
                 Material newMaterial = new Material();
                 newMaterial.Code = currentMaterialCode;
-                _recordsToInsert.Add(newMaterial);
+                output.Add(newMaterial);
             }
+            return output;
         }
 
         private IRfcTable RetrieveMaterials()

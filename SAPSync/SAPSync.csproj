@@ -198,6 +198,7 @@
     <Compile Include="Functions\InspLotGetList.cs" />
     <Compile Include="Functions\OrdersGetList.cs" />
     <Compile Include="Functions\ReadInspectionCharacteristics.cs" />
+    <Compile Include="Functions\ReadWorkCenters.cs" />
     <Compile Include="Functions\ReadInspectionPoints.cs" />
     <Compile Include="Functions\ReadConfirmations.cs" />
     <Compile Include="Functions\ReadInspectionSpecifications.cs" />
@@ -208,6 +209,7 @@
     <Compile Include="SyncElements\SyncElement.cs" />
     <Compile Include="SyncElements\SyncConfirmations.cs" />
     <Compile Include="SyncElements\SyncInspectionCharacteristics.cs" />
+    <Compile Include="SyncElements\SyncWorkCenter.cs" />
     <Compile Include="SyncElements\SyncInspectionSpecifications.cs" />
     <Compile Include="SyncElements\SyncOrders.cs" />
     <Compile Include="SyncElements\SyncInspectionPoints.cs" />

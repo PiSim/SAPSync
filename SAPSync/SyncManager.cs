@@ -59,7 +59,7 @@ namespace SAPSync
             }
             catch (Exception e)
             {
-                throw new Exception("Sincronizzazione Fallita:" + e.Message);
+                throw new Exception("Sincronizzazione Fallita:" + e.Message, e);
             }
         }
 
@@ -68,6 +68,7 @@ namespace SAPSync
             try
             {
                 _syncElements = new List<ISyncElement>();
+                _syncElements.Add(new SyncWorkCenters());
                 _syncElements.Add(new SyncMaterials());
                 _syncElements.Add(new SyncOrders());
                 _syncElements.Add(new SyncConfirmations());

@@ -1,4 +1,5 @@
-﻿using SAPSync.Functions;
+﻿using DataAccessCore;
+using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
 using System;
@@ -13,6 +14,7 @@ namespace SAPSync
 
         private IDictionary<Tuple<int, int>, OrderConfirmation> _confirmationDictionary;
         private IDictionary<int, Order> _orderDictionary;
+        private IDictionary<int, WorkCenter> _workCenterDictionary;
 
         #endregion Fields
 
@@ -33,67 +35,37 @@ namespace SAPSync
         {
             base.Initialize();
             _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
-
-            if (_orderDictionary == null)
-                throw new ArgumentNullException("OrderDictionary");
-
-            if (_orderDictionary.Keys.Count == 0)
-                return;
-
             _confirmationDictionary = _sSMDData.RunQuery(new ConfirmationsQuery()).ToDictionary(oc => new Tuple<int, int>(oc.ConfirmationNumber, oc.ConfirmationCounter), oc => oc);
+            _workCenterDictionary = _sSMDData.RunQuery(new Query<WorkCenter, SSMDContext>()).ToDictionary(wc => wc.ID);
+        }
+
+        protected override void EnsureInitialized()
+        {
+            base.EnsureInitialized();
 
             if (_confirmationDictionary == null)
                 throw new Exception("Impossibile recuperare dizionario conferme");
+
+            if (_workCenterDictionary == null)
+                throw new Exception("Impossibile recuperare dizionario Centri di Lavoro");
+
+            if (_orderDictionary == null)
+                throw new ArgumentNullException("Impossibile recuperare dizionario Ordini");
+
+            if (_orderDictionary.Keys.Count == 0)
+                Abort("La lista ordini non contiene elementi");
         }
 
-        protected override void RetrieveSAPRecords()
+        protected override bool MustIgnoreRecord(OrderConfirmation record) => !_orderDictionary.ContainsKey(record.OrderNumber)
+            || !_workCenterDictionary.ContainsKey(record.WorkCenterID);
+
+        protected override bool IsNewRecord(OrderConfirmation record)
         {
-            base.RetrieveSAPRecords();
+            Tuple<int, int> currentKey = new Tuple<int, int>(record.ConfirmationNumber, record.ConfirmationCounter);
+            return !_confirmationDictionary.ContainsKey(currentKey);
+        }        
 
-            IList<OrderConfirmation> confirmationsTable = RetrieveConfirmations();
-
-            IEnumerable<OrderConfirmation> validConfirmations = GetValidatedConfirmations(confirmationsTable);
-            foreach (OrderConfirmation oc in validConfirmations)
-            {
-                Tuple<int, int> currentKey = new Tuple<int, int>(oc.ConfirmationNumber, oc.ConfirmationCounter);
-
-                if (_confirmationDictionary.ContainsKey(currentKey))
-                    _recordsToUpdate.Add(oc);
-                else
-                    _recordsToInsert.Add(oc);
-            }
-        }
-
-        private IEnumerable<OrderConfirmation> GetValidatedConfirmations(IEnumerable<OrderConfirmation> confirmations)
-        {
-            InvalidConfirmations = new List<OrderConfirmation>();
-            List<OrderConfirmation> output = new List<OrderConfirmation>();
-
-            foreach (OrderConfirmation newConfirmation in confirmations)
-            {
-                if (_orderDictionary.ContainsKey(newConfirmation.OrderNumber))
-                    output.Add(newConfirmation);
-                else
-                    InvalidConfirmations.Add(newConfirmation);
-            }
-            return output;
-        }
-
-        private IList<OrderConfirmation> RetrieveConfirmations()
-        {
-            IList<OrderConfirmation> output;
-
-            try
-            {
-                output = new ReadConfirmations().Invoke(_rfcDestination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("RetrieveConfirmations error: " + e.Message);
-            }
-
-            return output;
-        }
+        protected override IList<OrderConfirmation> ReadRecordTable() =>  new ReadConfirmations().Invoke(_rfcDestination);
 
         #endregion Methods
     }

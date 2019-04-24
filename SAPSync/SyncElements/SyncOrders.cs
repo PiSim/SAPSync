@@ -36,21 +36,27 @@ namespace SAPSync.SyncElements
             base.Initialize();
             _materialDictionary = _sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
 
-            if (_materialDictionary == null)
-                throw new ArgumentNullException("MaterialDictionary");
 
             _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(ord => ord.Number, ord => ord);
 
+        }
+
+        protected override void EnsureInitialized()
+        {
+            base.EnsureInitialized();
+            if (_materialDictionary == null)
+                throw new ArgumentNullException("MaterialDictionary");
             if (_orderDictionary == null)
                 throw new ArgumentNullException("Order Dictionary");
         }
 
-        protected override void RetrieveSAPRecords()
+        protected override IList<Order> ReadRecordTable()
         {
-            base.RetrieveSAPRecords();
             IRfcTable recordTable = RetrieveOrders(_rfcDestination);
-            _recordsToInsert = ConvertOrdersTable(recordTable);
+            return ConvertOrdersTable(recordTable);
         }
+
+        protected override bool MustIgnoreRecord(Order record) => _orderDictionary.ContainsKey(record.Number); 
 
         private IList<Order> ConvertOrdersTable(IRfcTable ordersTable)
         {
@@ -63,8 +69,6 @@ namespace SAPSync.SyncElements
 
                 if (int.TryParse(orderstring, out currentOrderNumber))
                 {
-                    if (_orderDictionary.ContainsKey(currentOrderNumber))
-                        continue;
 
                     string materialCode = row.GetString("material");
                     int materialID;

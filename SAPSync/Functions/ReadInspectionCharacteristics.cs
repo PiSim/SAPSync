@@ -13,7 +13,9 @@ namespace SAPSync.Functions
             _fields = new string[]
             {
                 "MKMNR",
-                "MASSEINHSW"
+                "MASSEINHSW",
+                "VERSION",
+                "ZAEHLER"
             };
         }
 

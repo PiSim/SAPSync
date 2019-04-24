@@ -27,56 +27,38 @@ namespace SAPSync
 
         protected override void Initialize()
         {
+            base.Initialize();
             _inspectionLotDictionary = _sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
 
-            if (_inspectionLotDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Lotti");
 
             _inspectionCharacteristicDictionary = _sSMDData.RunQuery(new InspectionCharacteristicsQuery()).ToDictionary(insc => insc.Name, insc => insc);
 
-            if (_inspectionCharacteristicDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Caratteristiche");
 
             _inspectionPointDictionary = _sSMDData.RunQuery(new InspectionPointsQuery()).ToDictionary(insp => insp.GetPrimaryKey(), insp => insp);
 
+        }
+
+        protected override void EnsureInitialized()
+        {
+            base.EnsureInitialized();
+            if (_inspectionLotDictionary == null)
+                throw new InvalidOperationException("Impossibile recuperare il dizionario Lotti");
+            if (_inspectionCharacteristicDictionary == null)
+                throw new InvalidOperationException("Impossibile recuperare il dizionario Caratteristiche");
             if (_inspectionPointDictionary == null)
                 throw new InvalidOperationException("Impossibile recuperare il dizionario Punti");
         }
 
-        protected override void RetrieveSAPRecords()
+        protected override bool MustIgnoreRecord(InspectionPoint record) => !_inspectionLotDictionary.ContainsKey(record.InspectionLotNumber);
+
+        protected override bool IsNewRecord(InspectionPoint record)
         {
-            base.RetrieveSAPRecords();
+            Tuple<long, int, int, int> currentKey = record.GetPrimaryKey();
 
-            IList<InspectionPoint> inspectionPoints = RetrieveInspectionPoints(_rfcDestination);
-
-            _recordsToInsert = new List<InspectionPoint>();
-            _recordsToUpdate = new List<InspectionPoint>();
-
-            foreach (InspectionPoint inspectionPoint in inspectionPoints)
-            {
-                if (!_inspectionLotDictionary.ContainsKey(inspectionPoint.InspectionLotNumber))
-                    continue;
-
-                Tuple<long, int, int, int> currentKey = inspectionPoint.GetPrimaryKey();
-
-                if (_inspectionPointDictionary.ContainsKey(currentKey))
-                    _recordsToUpdate.Add(inspectionPoint);
-                else
-                    _recordsToInsert.Add(inspectionPoint);
-            }
+            return !_inspectionPointDictionary.ContainsKey(currentKey);
         }
 
-        private IList<InspectionPoint> RetrieveInspectionPoints(RfcDestination destination)
-        {
-            try
-            {
-                return new ReadInspectionPoints().Invoke(destination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("RetrieveInspectionPoints error: " + e.Message);
-            }
-        }
+        protected override IList<InspectionPoint> ReadRecordTable() => new ReadInspectionPoints().Invoke(_rfcDestination);
 
         #endregion Methods
     }

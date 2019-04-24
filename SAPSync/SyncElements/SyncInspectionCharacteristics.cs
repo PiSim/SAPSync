@@ -33,47 +33,23 @@ namespace SAPSync
 
             _inspectionCharacteristicDictionary = _sSMDData.RunQuery(new InspectionCharacteristicsQuery()).ToDictionary(insc => insc.Name, insc => insc);
 
+        }
+
+        protected override void EnsureInitialized()
+        {
+            base.EnsureInitialized();
             if (_inspectionCharacteristicDictionary == null)
                 throw new InvalidOperationException("Impossibile recuperare il dizionario Caratteristiche");
         }
+        
+        protected override IList<InspectionCharacteristic> ReadRecordTable() => new ReadInspectionCharacteristics().Invoke(_rfcDestination);
 
-        protected override void RetrieveSAPRecords()
+        protected override bool MustIgnoreRecord(InspectionCharacteristic record) => _inspectionCharacteristicDictionary.ContainsKey(record.Name);
+
+        protected override void AddRecordToInserts(InspectionCharacteristic record)
         {
-            base.RetrieveSAPRecords();
-            IList<InspectionCharacteristic> charTable = RetrieveInspectionCharacteristics(_rfcDestination);
-            _recordsToInsert = GetValidatedCharacteristics(charTable);
-        }
-
-        private IList<InspectionCharacteristic> GetValidatedCharacteristics(IEnumerable<InspectionCharacteristic> inspectionCharacteristics)
-        {
-            IList<InspectionCharacteristic> output = new List<InspectionCharacteristic>();
-
-            foreach (InspectionCharacteristic currentCharacteristic in inspectionCharacteristics)
-            {
-                if (_inspectionCharacteristicDictionary.ContainsKey(currentCharacteristic.Name))
-                    continue;
-
-                output.Add(currentCharacteristic);
-                _inspectionCharacteristicDictionary.Add(currentCharacteristic.Name, currentCharacteristic);
-            }
-
-            return output;
-        }
-
-        private IList<InspectionCharacteristic> RetrieveInspectionCharacteristics(RfcDestination rfcDestination)
-        {
-            IList<InspectionCharacteristic> output;
-
-            try
-            {
-                output = new ReadInspectionCharacteristics().Invoke(rfcDestination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("RetrieveInspectionCharacteristics error: " + e.Message);
-            }
-
-            return output;
+            base.AddRecordToInserts(record);
+            _inspectionCharacteristicDictionary.Add(record.Name, record);
         }
 
         #endregion Methods

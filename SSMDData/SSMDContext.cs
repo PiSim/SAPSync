@@ -27,6 +27,7 @@ namespace SSMD
         public DbSet<OrderConfirmation> OrderConfirmations { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<ScrapCause> ScrapCauses { get; set; }
+        public DbSet<WorkCenter> WorkCenters { get; set; }
 
         #endregion Properties
 
@@ -107,6 +108,9 @@ namespace SSMD
 
             modelBuilder.Entity<ScrapCause>()
                 .HasKey(scc => scc.ID);
+
+            modelBuilder.Entity<WorkCenter>()
+                .HasIndex(wc => wc.ShortName);
         }
 
         #endregion Methods

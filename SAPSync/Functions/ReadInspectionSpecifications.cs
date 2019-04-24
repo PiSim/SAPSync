@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace SAPSync.Functions
 {
-    public class ReadInspectionSpecifications : ReadTableBase<Tuple<string, InspectionSpecification>>
+    public class ReadInspectionSpecifications : ReadTableBase<InspectionSpecification>
     {
         #region Constructors
 
@@ -30,7 +30,7 @@ namespace SAPSync.Functions
 
         #region Methods
 
-        internal override Tuple<string, InspectionSpecification> ConvertRow(IRfcStructure row)
+        internal override InspectionSpecification ConvertRow(IRfcStructure row)
         {
             InspectionSpecification output;
 
@@ -55,7 +55,12 @@ namespace SAPSync.Functions
                 UM = data[6]
             };
 
-            return new Tuple<string, InspectionSpecification>(data[7], output);
+            output.InspectionCharacteristic = new InspectionCharacteristic()
+            {
+                Name = data[7]
+            };
+
+            return output;
         }
 
         #endregion Methods

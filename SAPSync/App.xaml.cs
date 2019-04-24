@@ -13,6 +13,7 @@ namespace SAPSync
         #region Fields
 
         private SSMDData _ssData;
+        bool destinationIsInitialized = false;
 
         #endregion Fields
 
@@ -35,7 +36,6 @@ namespace SAPSync
         {
             string destinationConfigName = "PRD";
             IDestinationConfiguration destinationConfig = null;
-            bool destinationIsInitialized = false;
             if (!destinationIsInitialized)
             {
                 destinationConfig = new SAPDestinationConfig();
@@ -68,7 +68,7 @@ namespace SAPSync
             }
             catch (Exception e)
             {
-                throw new Exception("Inizializzazione Database Fallita");
+                throw new Exception("Inizializzazione Database Fallita: " + e.Message, e);
             }
         }
 

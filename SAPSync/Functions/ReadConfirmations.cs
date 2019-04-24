@@ -63,6 +63,7 @@ namespace SAPSync.Functions
             string wipIn = data[14];
             string wipOut = data[15];
 
+
             OrderConfirmation converted = new OrderConfirmation()
             {
                 ConfirmationNumber = confirmationNumber,

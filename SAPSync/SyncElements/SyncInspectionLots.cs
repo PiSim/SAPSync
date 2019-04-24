@@ -33,24 +33,28 @@ namespace SAPSync
             base.Initialize();
             _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
 
-            if (_orderDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Ordini");
 
             _inspectionLotDictionary = _sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
 
+        }
+
+        protected override void EnsureInitialized()
+        {
+            base.EnsureInitialized();
             if (_inspectionLotDictionary == null)
                 throw new InvalidOperationException("Impossibile recuperare il dizionario Lotti");
+            if (_orderDictionary == null)
+                throw new InvalidOperationException("Impossibile recuperare il dizionario Ordini");
         }
 
-        protected override void RetrieveSAPRecords()
+        protected override IList<InspectionLot> ReadRecordTable()
         {
-            base.RetrieveSAPRecords();
             IRfcTable lotsTable = RetrieveInspectionLots(_rfcDestination);
 
-            IList<InspectionLot> inspectionLots = ConvertInspectionLotTable(lotsTable);
-
-            _recordsToInsert = GetValidatedLots(inspectionLots);
+             return ConvertInspectionLotTable(lotsTable);
         }
+
+
 
         private List<InspectionLot> ConvertInspectionLotTable(IRfcTable materialTable)
         {
@@ -84,21 +88,9 @@ namespace SAPSync
             return output;
         }
 
-        private IList<InspectionLot> GetValidatedLots(IEnumerable<InspectionLot> inspectionLots)
-        {
-            IList<InspectionLot> output = new List<InspectionLot>();
+        protected override bool MustIgnoreRecord(InspectionLot record) => !_orderDictionary.ContainsKey(record.OrderNumber) ||
+                    _inspectionLotDictionary.ContainsKey(record.Number);
 
-            foreach (InspectionLot currentLot in inspectionLots)
-            {
-                if (!_orderDictionary.ContainsKey(currentLot.OrderNumber) ||
-                    _inspectionLotDictionary.ContainsKey(currentLot.Number))
-                    continue;
-
-                output.Add(currentLot);
-            }
-
-            return output;
-        }
 
         private IRfcTable RetrieveInspectionLots(RfcDestination rfcDestination)
         {

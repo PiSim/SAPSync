@@ -33,8 +33,13 @@ namespace SSMD
         public string UM { get; set; }
         public string WIPIn { get; set; }
         public string WIPOut { get; set; }
+
+        [ForeignKey("WorkCenter")]
         public int WorkCenterID { get; set; }
+
         public double Yield { get; set; }
+
+        public WorkCenter WorkCenter { get; set; }
 
         #endregion Properties
     }
