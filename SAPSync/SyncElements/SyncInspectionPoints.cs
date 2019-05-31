@@ -1,20 +1,48 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
+    public class InspectionPointEvaluator : RecordEvaluator<InspectionPoint, Tuple<long, int, int, int>>
+    {
+        #region Methods
+
+        protected override Tuple<long, int, int, int> GetIndexKey(InspectionPoint record) => record.GetPrimaryKey();
+
+        #endregion Methods
+    }
+
+    public class InspectionPointValidator : IRecordValidator<InspectionPoint>
+    {
+        #region Fields
+
+        private Dictionary<long, InspectionLot> _inspectionLotDictionary;
+
+        #endregion Fields
+
+        #region Methods
+
+        public bool CheckIndexesInitialized() => _inspectionLotDictionary != null;
+
+        public InspectionPoint GetInsertableRecord(InspectionPoint record) => record;
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _inspectionLotDictionary = sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
+        }
+
+        public bool IsValid(InspectionPoint record) => _inspectionLotDictionary.ContainsKey(record.InspectionLotNumber);
+
+        #endregion Methods
+    }
+
     public class SyncInspectionPoints : SyncElement<InspectionPoint>
     {
         #region Constructors
-
-        private Dictionary<string, InspectionCharacteristic> _inspectionCharacteristicDictionary;
-        private Dictionary<long, InspectionLot> _inspectionLotDictionary;
-        private Dictionary<Tuple<long, int, int, int>, InspectionPoint> _inspectionPointDictionary;
 
         public SyncInspectionPoints()
         {
@@ -25,37 +53,14 @@ namespace SAPSync
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-            _inspectionLotDictionary = _sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
-
-
-            _inspectionCharacteristicDictionary = _sSMDData.RunQuery(new InspectionCharacteristicsQuery()).ToDictionary(insc => insc.Name, insc => insc);
-
-
-            _inspectionPointDictionary = _sSMDData.RunQuery(new InspectionPointsQuery()).ToDictionary(insp => insp.GetPrimaryKey(), insp => insp);
-
+            RecordEvaluator = new InspectionPointEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_inspectionLotDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Lotti");
-            if (_inspectionCharacteristicDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Caratteristiche");
-            if (_inspectionPointDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Punti");
-        }
-
-        protected override bool MustIgnoreRecord(InspectionPoint record) => !_inspectionLotDictionary.ContainsKey(record.InspectionLotNumber);
-
-        protected override bool IsNewRecord(InspectionPoint record)
-        {
-            Tuple<long, int, int, int> currentKey = record.GetPrimaryKey();
-
-            return !_inspectionPointDictionary.ContainsKey(currentKey);
+            RecordValidator = new InspectionPointValidator();
         }
 
         protected override IList<InspectionPoint> ReadRecordTable() => new ReadInspectionPoints().Invoke(_rfcDestination);

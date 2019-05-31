@@ -1,21 +1,25 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
-using SSMD.Queries;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
+    public class InspectionCharacteristicEvaluator : RecordEvaluator<InspectionCharacteristic, string>
+    {
+        #region Methods
+
+        protected override string GetIndexKey(InspectionCharacteristic record) => record.Name;
+        public override InspectionCharacteristic SetPrimaryKeyForExistingRecord(InspectionCharacteristic record)
+        {
+            record.ID = RecordIndex[GetIndexKey(record)].ID;
+            return base.SetPrimaryKeyForExistingRecord(record);
+        }
+        #endregion Methods
+
+    }
+
     public class SyncInspectionCharacteristics : SyncElement<InspectionCharacteristic>
     {
-        #region Fields
-
-        private IDictionary<string, InspectionCharacteristic> _inspectionCharacteristicDictionary;
-
-        #endregion Fields
-
         #region Constructors
 
         public SyncInspectionCharacteristics()
@@ -27,30 +31,19 @@ namespace SAPSync
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void AddRecordToUpdates(InspectionCharacteristic record) => base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
+
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-
-            _inspectionCharacteristicDictionary = _sSMDData.RunQuery(new InspectionCharacteristicsQuery()).ToDictionary(insc => insc.Name, insc => insc);
-
+            RecordEvaluator = new InspectionCharacteristicEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_inspectionCharacteristicDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Caratteristiche");
+            RecordValidator = new RecordValidator<InspectionCharacteristic>();
         }
-        
+
         protected override IList<InspectionCharacteristic> ReadRecordTable() => new ReadInspectionCharacteristics().Invoke(_rfcDestination);
-
-        protected override bool MustIgnoreRecord(InspectionCharacteristic record) => _inspectionCharacteristicDictionary.ContainsKey(record.Name);
-
-        protected override void AddRecordToInserts(InspectionCharacteristic record)
-        {
-            base.AddRecordToInserts(record);
-            _inspectionCharacteristicDictionary.Add(record.Name, record);
-        }
 
         #endregion Methods
     }

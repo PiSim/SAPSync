@@ -22,7 +22,7 @@ namespace SAPSync.Functions
                 "ISDZ",
                 "IEDD",
                 "IEDZ",
-                "STOKZ",
+                "STZHL",
                 "LMNGA",
                 "XMNGA",
                 "GRUND",
@@ -30,7 +30,8 @@ namespace SAPSync.Functions
                 "AUFNR",
                 "ARBID",
                 "ZWIP_IN",
-                "ZWIP_OUT"
+                "ZWIP_OUT",
+                "STOKZ"
             };
         }
 
@@ -49,7 +50,7 @@ namespace SAPSync.Functions
             DateTime startTime = DateStringToDate(data[3], data[4]);
             DateTime endTime = DateStringToDate(data[5], data[6]);
 
-            bool deletionFlag = data[7] == "X";
+            bool deletionFlag = (data[7] != "00000000" || data[16] == "X");
             double yield = double.Parse(data[8], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." });
             double scrap = double.Parse(data[9], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." });
             string scrapCause = data[10];
@@ -62,7 +63,6 @@ namespace SAPSync.Functions
             int wcID = int.Parse(data[13]);
             string wipIn = data[14];
             string wipOut = data[15];
-
 
             OrderConfirmation converted = new OrderConfirmation()
             {
@@ -83,6 +83,18 @@ namespace SAPSync.Functions
             };
 
             return converted;
+        }
+
+        protected override void ConfigureBatchingOptions()
+        {
+            BatchingOptions = new ReadTableBatchingOptions()
+            {
+                BatchSize = 50000,
+                Field = "AUFNR",
+                MinValue = 1000000,
+                MaxValue = 1999999
+            };
+            base.ConfigureBatchingOptions();
         }
 
         #endregion Methods

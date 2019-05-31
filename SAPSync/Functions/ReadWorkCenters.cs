@@ -1,7 +1,5 @@
 ﻿using SAP.Middleware.Connector;
 using SSMD;
-using System;
-using System.Globalization;
 
 namespace SAPSync.Functions
 {

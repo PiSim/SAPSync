@@ -1,19 +1,12 @@
-﻿using DataAccessCore;
-using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
-using SSMD.Queries;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
     public class SyncWorkCenters : SyncElement<WorkCenter>
     {
         #region Constructors
-
-        private Dictionary<int, WorkCenter> _workCenterDictionary;
 
         public SyncWorkCenters()
         {
@@ -24,23 +17,26 @@ namespace SAPSync
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-            _workCenterDictionary = _sSMDData.RunQuery(new Query<WorkCenter,SSMDContext>()).ToDictionary(insp => insp.ID);
-
+            RecordEvaluator = new WorkCenterEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_workCenterDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Centri");
+            RecordValidator = new RecordValidator<WorkCenter>();
         }
-
-        protected override bool MustIgnoreRecord(WorkCenter record) => _workCenterDictionary.ContainsKey(record.ID);
 
         protected override IList<WorkCenter> ReadRecordTable() => new ReadWorkCenters().Invoke(_rfcDestination);
+
+        #endregion Methods
+    }
+
+    public class WorkCenterEvaluator : RecordEvaluator<WorkCenter, int>
+    {
+        #region Methods
+
+        protected override int GetIndexKey(WorkCenter record) => record.ID;
 
         #endregion Methods
     }

@@ -33,6 +33,8 @@ namespace SAPSync.SyncElements
 
         void StartSync(RfcDestination rfcDestination, SSMDData sSMDData);
 
+        void ResetProgress();
+
         #endregion Methods
     }
 }

@@ -8,46 +8,65 @@ using System.Linq;
 
 namespace SAPSync.SyncElements
 {
-    public class SyncOrders : SyncElement<Order>
+    public class OrderEvaluator : RecordEvaluator<Order, int>
+    {
+        #region Methods
+
+        protected override int GetIndexKey(Order record) => record.Number;
+
+        #endregion Methods
+    }
+
+    public class OrderValidator : IRecordValidator<Order>
     {
         #region Fields
 
         private IDictionary<string, Material> _materialDictionary;
-        private IDictionary<int, Order> _orderDictionary;
 
         #endregion Fields
 
+        #region Methods
+
+        public bool CheckIndexesInitialized() => _materialDictionary != null;
+
+        public Order GetInsertableRecord(Order record)
+        {
+            record.MaterialID = _materialDictionary[record.Material.Code].ID;
+            record.Material = null;
+            return record;
+        }
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _materialDictionary = sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
+        }
+
+        public bool IsValid(Order record) => _materialDictionary.ContainsKey(record.Material.Code);
+
+        #endregion Methods
+    }
+
+    public class SyncOrders : SyncElement<Order>
+    {
         #region Constructors
 
         public SyncOrders()
         {
             Name = "Ordini";
-            _missingMaterials = new List<string>();
         }
 
         #endregion Constructors
 
         #region Methods
 
-        private readonly List<string> _missingMaterials;
-
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-            _materialDictionary = _sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
-
-
-            _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(ord => ord.Number, ord => ord);
-
+            RecordEvaluator = new OrderEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_materialDictionary == null)
-                throw new ArgumentNullException("MaterialDictionary");
-            if (_orderDictionary == null)
-                throw new ArgumentNullException("Order Dictionary");
+            RecordValidator = new OrderValidator();
         }
 
         protected override IList<Order> ReadRecordTable()
@@ -55,8 +74,6 @@ namespace SAPSync.SyncElements
             IRfcTable recordTable = RetrieveOrders(_rfcDestination);
             return ConvertOrdersTable(recordTable);
         }
-
-        protected override bool MustIgnoreRecord(Order record) => _orderDictionary.ContainsKey(record.Number); 
 
         private IList<Order> ConvertOrdersTable(IRfcTable ordersTable)
         {
@@ -69,22 +86,12 @@ namespace SAPSync.SyncElements
 
                 if (int.TryParse(orderstring, out currentOrderNumber))
                 {
-
                     string materialCode = row.GetString("material");
-                    int materialID;
-
-                    if (_materialDictionary.ContainsKey(materialCode))
-                        materialID = _materialDictionary[materialCode].ID;
-                    else
-                    {
-                        _missingMaterials.Add(row.GetString("material"));
-                        continue;
-                    }
 
                     Order newOrder = new Order()
                     {
                         Number = currentOrderNumber,
-                        MaterialID = materialID,
+                        Material = new Material() { Code = materialCode },
                         OrderType = row.GetString("order_type")
                     };
 

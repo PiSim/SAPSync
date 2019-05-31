@@ -30,8 +30,12 @@ namespace SSMD
         public int NodeNumber { get; set; }
         public int SampleNumber { get; set; }
 
+        #endregion Properties
+
+        #region Methods
+
         public Tuple<long, int, int, int> GetPrimaryKey() => new Tuple<long, int, int, int>(InspectionLotNumber, NodeNumber, CharNumber, SampleNumber);
 
-        #endregion Properties
+        #endregion Methods
     }
 }

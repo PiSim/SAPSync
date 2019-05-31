@@ -6,17 +6,43 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
-    public class SyncInspectionLots : SyncElement<InspectionLot>
+    public class InspectionLotEvaluator : RecordEvaluator<InspectionLot, long>
+    {
+        #region Methods
+
+        protected override long GetIndexKey(InspectionLot record) => record.Number;
+
+        #endregion Methods
+    }
+
+    public class InspectionLotValidator : IRecordValidator<InspectionLot>
     {
         #region Fields
 
-        private IDictionary<long, InspectionLot> _inspectionLotDictionary;
         private IDictionary<int, Order> _orderDictionary;
 
         #endregion Fields
 
+        #region Methods
+
+        public bool CheckIndexesInitialized() => _orderDictionary != null;
+
+        public InspectionLot GetInsertableRecord(InspectionLot record) => record;
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _orderDictionary = sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
+        }
+
+        public bool IsValid(InspectionLot record) => _orderDictionary.ContainsKey(record.OrderNumber);
+
+        #endregion Methods
+    }
+
+    public class SyncInspectionLots : SyncElement<InspectionLot>
+    {
         #region Constructors
 
         public SyncInspectionLots()
@@ -28,33 +54,22 @@ namespace SAPSync
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-            _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
-
-
-            _inspectionLotDictionary = _sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
-
+            RecordEvaluator = new InspectionLotEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_inspectionLotDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Lotti");
-            if (_orderDictionary == null)
-                throw new InvalidOperationException("Impossibile recuperare il dizionario Ordini");
+            RecordValidator = new InspectionLotValidator();
         }
 
         protected override IList<InspectionLot> ReadRecordTable()
         {
             IRfcTable lotsTable = RetrieveInspectionLots(_rfcDestination);
 
-             return ConvertInspectionLotTable(lotsTable);
+            return ConvertInspectionLotTable(lotsTable);
         }
-
-
 
         private List<InspectionLot> ConvertInspectionLotTable(IRfcTable materialTable)
         {
@@ -66,9 +81,6 @@ namespace SAPSync
                 string lotNumberString = row.GetString("insplot");
 
                 if (!long.TryParse(lotNumberString, out currentLotNumber))
-                    continue;
-
-                if (_inspectionLotDictionary.ContainsKey(currentLotNumber))
                     continue;
 
                 InspectionLot newInspectionLot = new InspectionLot();
@@ -87,10 +99,6 @@ namespace SAPSync
 
             return output;
         }
-
-        protected override bool MustIgnoreRecord(InspectionLot record) => !_orderDictionary.ContainsKey(record.OrderNumber) ||
-                    _inspectionLotDictionary.ContainsKey(record.Number);
-
 
         private IRfcTable RetrieveInspectionLots(RfcDestination rfcDestination)
         {

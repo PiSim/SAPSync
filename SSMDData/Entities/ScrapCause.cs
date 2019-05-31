@@ -1,4 +1,6 @@
-﻿namespace SSMD
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SSMD
 {
     public partial class ScrapCause
     {
@@ -14,6 +16,8 @@
 
         public string Code { get; set; }
         public string Description { get; set; }
+
+        [Key]
         public int ID { get; set; }
 
         #endregion Properties

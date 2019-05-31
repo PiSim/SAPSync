@@ -13,7 +13,7 @@ namespace SAPSync
         #region Fields
 
         private SSMDData _ssData;
-        bool destinationIsInitialized = false;
+        private bool destinationIsInitialized = false;
 
         #endregion Fields
 

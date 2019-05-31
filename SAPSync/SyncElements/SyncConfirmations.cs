@@ -6,18 +6,45 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
-    public class SyncConfirmations : SyncElement<OrderConfirmation>
+    public class ConfirmationEvaluator : RecordEvaluator<OrderConfirmation, Tuple<int, int>>
+    {
+        #region Methods
+
+        protected override Tuple<int, int> GetIndexKey(OrderConfirmation record) => new Tuple<int, int>(record.ConfirmationNumber, record.ConfirmationCounter);
+
+        #endregion Methods
+    }
+
+    public class ConfirmationValidator : IRecordValidator<OrderConfirmation>
     {
         #region Fields
 
-        private IDictionary<Tuple<int, int>, OrderConfirmation> _confirmationDictionary;
         private IDictionary<int, Order> _orderDictionary;
         private IDictionary<int, WorkCenter> _workCenterDictionary;
 
         #endregion Fields
 
+        #region Methods
+
+        public bool CheckIndexesInitialized() => (_orderDictionary == null || _workCenterDictionary == null);
+
+        public OrderConfirmation GetInsertableRecord(OrderConfirmation record) => record;
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _orderDictionary = sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
+            _workCenterDictionary = sSMDData.RunQuery(new Query<WorkCenter, SSMDContext>()).ToDictionary(wc => wc.ID);
+        }
+
+        public bool IsValid(OrderConfirmation record) => _orderDictionary.ContainsKey(record.OrderNumber) && _workCenterDictionary.ContainsKey(record.WorkCenterID);
+
+        #endregion Methods
+    }
+
+    public class SyncConfirmations : SyncElement<OrderConfirmation>
+    {
         #region Constructors
 
         public SyncConfirmations()
@@ -29,43 +56,17 @@ namespace SAPSync
 
         #region Methods
 
-        public IList<OrderConfirmation> InvalidConfirmations { get; set; }
-
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-            _orderDictionary = _sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
-            _confirmationDictionary = _sSMDData.RunQuery(new ConfirmationsQuery()).ToDictionary(oc => new Tuple<int, int>(oc.ConfirmationNumber, oc.ConfirmationCounter), oc => oc);
-            _workCenterDictionary = _sSMDData.RunQuery(new Query<WorkCenter, SSMDContext>()).ToDictionary(wc => wc.ID);
+            RecordEvaluator = new ConfirmationEvaluator();
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-
-            if (_confirmationDictionary == null)
-                throw new Exception("Impossibile recuperare dizionario conferme");
-
-            if (_workCenterDictionary == null)
-                throw new Exception("Impossibile recuperare dizionario Centri di Lavoro");
-
-            if (_orderDictionary == null)
-                throw new ArgumentNullException("Impossibile recuperare dizionario Ordini");
-
-            if (_orderDictionary.Keys.Count == 0)
-                Abort("La lista ordini non contiene elementi");
+            RecordValidator = new ConfirmationValidator();
         }
 
-        protected override bool MustIgnoreRecord(OrderConfirmation record) => !_orderDictionary.ContainsKey(record.OrderNumber)
-            || !_workCenterDictionary.ContainsKey(record.WorkCenterID);
-
-        protected override bool IsNewRecord(OrderConfirmation record)
-        {
-            Tuple<int, int> currentKey = new Tuple<int, int>(record.ConfirmationNumber, record.ConfirmationCounter);
-            return !_confirmationDictionary.ContainsKey(currentKey);
-        }        
-
-        protected override IList<OrderConfirmation> ReadRecordTable() =>  new ReadConfirmations().Invoke(_rfcDestination);
+        protected override IList<OrderConfirmation> ReadRecordTable() => new ReadConfirmations().Invoke(_rfcDestination);
 
         #endregion Methods
     }

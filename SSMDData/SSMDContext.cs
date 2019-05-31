@@ -22,10 +22,12 @@ namespace SSMD
         public DbSet<InspectionPoint> InspectionPoints { get; set; }
         public DbSet<InspectionSpecification> InspectionSpecifications { get; set; }
         public DbSet<MaterialFamily> MaterialFamilies { get; set; }
+        public DbSet<MaterialFamilyLevel> MaterialFamilyLevels { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<OrderComponent> OrderComponents { get; set; }
         public DbSet<OrderConfirmation> OrderConfirmations { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<RoutingOperation> RoutingOperations {get;set;}
         public DbSet<ScrapCause> ScrapCauses { get; set; }
         public DbSet<WorkCenter> WorkCenters { get; set; }
 
@@ -42,6 +44,9 @@ namespace SSMD
         {
             modelBuilder.Entity<Component>()
                 .HasKey(comp => comp.ID);
+
+            modelBuilder.Entity<Component>()
+                .HasIndex(comp => comp.Name);
 
             modelBuilder.Entity<InspectionCharacteristic>()
                 .HasIndex(insc => insc.Name)
@@ -62,12 +67,32 @@ namespace SSMD
                 .HasKey(mat => mat.ID);
 
             modelBuilder.Entity<Material>()
-                .HasIndex(mat => mat.Code);
+                .HasIndex(mat => mat.Code)
+                .IsUnique();
 
             modelBuilder.Entity<Material>()
                 .HasOne(mat => mat.MaterialFamily)
                 .WithMany(mfa => mfa.Materials)
                 .HasForeignKey(mat => mat.MaterialFamilyID);
+
+            modelBuilder.Entity<MaterialFamily>()
+                .HasOne(matf => matf.L1)
+                .WithMany()
+                .HasForeignKey(matf => matf.L1ID);
+
+            modelBuilder.Entity<MaterialFamily>()
+                .HasOne(matf => matf.L2)
+                .WithMany()
+                .HasForeignKey(matf => matf.L2ID);
+
+            modelBuilder.Entity<MaterialFamily>()
+                .HasOne(matf => matf.L2)
+                .WithMany()
+                .HasForeignKey(matf => matf.L2ID);
+
+            modelBuilder.Entity<MaterialFamilyLevel>()
+                .HasIndex(matfl => new Tuple<int, string>(matfl.Level, matfl.Code))
+                .IsUnique();
 
             modelBuilder.Entity<Order>()
                 .HasKey(ord => ord.Number);
@@ -102,13 +127,19 @@ namespace SSMD
                 .HasKey(ordc => new { ordc.ConfirmationNumber, ordc.ConfirmationCounter });
 
             modelBuilder.Entity<OrderConfirmation>()
+                .HasIndex(ordc => ordc.DeletionFlag);
+
+            modelBuilder.Entity<OrderConfirmation>()
+                .HasIndex(ordc => ordc.StartTime);
+
+            modelBuilder.Entity<OrderConfirmation>()
                 .HasOne(ordc => ordc.Order)
                 .WithMany(ord => ord.OrderConfirmations)
                 .HasForeignKey(ordc => ordc.OrderNumber);
 
-            modelBuilder.Entity<ScrapCause>()
-                .HasKey(scc => scc.ID);
-
+            modelBuilder.Entity<RoutingOperation>()
+                .HasKey(rop => new Tuple<long, int>(rop.RoutingNumber, rop.RoutingCounter));
+            
             modelBuilder.Entity<WorkCenter>()
                 .HasIndex(wc => wc.ShortName);
         }

@@ -160,9 +160,11 @@
     <Compile Include="Entities\InspectionSpecification.cs" />
     <Compile Include="Entities\Material.cs" />
     <Compile Include="Entities\MaterialFamily.cs" />
+    <Compile Include="Entities\MaterialFamilyLevel.cs" />
     <Compile Include="Entities\Order.cs" />
     <Compile Include="Entities\OrderComponent.cs" />
     <Compile Include="Entities\OrderConfirmation.cs" />
+    <Compile Include="Entities\RoutingOperation.cs" />
     <Compile Include="Entities\ScrapCause.cs" />
     <Compile Include="Entities\WorkCenter.cs" />
     <Compile Include="Migrations\20190410080932_regeneratedDb.cs" />
@@ -177,12 +179,34 @@
     <Compile Include="Migrations\20190424074539_workcenter.designer.cs">
       <DependentUpon>20190424074539_workcenter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\20190429131752_materialfamiliesimplementation.cs" />
+    <Compile Include="Migrations\20190429131752_materialfamiliesimplementation.designer.cs">
+      <DependentUpon>20190429131752_materialfamiliesimplementation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190430100118_uniquematcode.cs" />
+    <Compile Include="Migrations\20190430100118_uniquematcode.designer.cs">
+      <DependentUpon>20190430100118_uniquematcode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190514093411_confIndex.cs" />
+    <Compile Include="Migrations\20190514093411_confIndex.designer.cs">
+      <DependentUpon>20190514093411_confIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190529114710_rework.cs" />
+    <Compile Include="Migrations\20190529114710_rework.designer.cs">
+      <DependentUpon>20190529114710_rework.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190531150802_routing.cs" />
+    <Compile Include="Migrations\20190531150802_routing.designer.cs">
+      <DependentUpon>20190531150802_routing.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\SSMDContextModelSnapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\ConfirmationsQuery.cs" />
     <Compile Include="Queries\InspectionPointsQuery.cs" />
     <Compile Include="Queries\InspectionCharacteristicsQuery.cs" />
     <Compile Include="Queries\InspectionLotsQuery.cs" />
+    <Compile Include="Queries\MaterialFamiliesQuery.cs" />
+    <Compile Include="Queries\OrderComponentsQuery.cs" />
     <Compile Include="Queries\OrdersQuery.cs" />
     <Compile Include="Queries\MaterialsQuery.cs" />
     <Compile Include="SSMDContext.cs" />

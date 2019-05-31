@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSMD;
 
 namespace SSMD.Migrations
 {
     [DbContext(typeof(SSMDContext))]
-    partial class SSMDContextModelSnapshot : ModelSnapshot
+    [Migration("20190429131752_materialfamiliesimplementation")]
+    partial class materialfamiliesimplementation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,13 +24,9 @@ namespace SSMD.Migrations
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Description");
-
                     b.Property<string>("Name");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("Name");
 
                     b.ToTable("Components");
                 });
@@ -42,8 +40,7 @@ namespace SSMD.Migrations
 
                     b.Property<double>("LowerSpecificationLimit");
 
-                    b.Property<string>("Name")
-                        .IsRequired();
+                    b.Property<string>("Name");
 
                     b.Property<double>("TargetValue");
 
@@ -136,8 +133,7 @@ namespace SSMD.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
+                    b.HasIndex("Code");
 
                     b.HasIndex("MaterialFamilyID");
 
@@ -171,8 +167,7 @@ namespace SSMD.Migrations
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Code")
-                        .IsRequired();
+                    b.Property<string>("Code");
 
                     b.Property<string>("Description");
 
@@ -191,17 +186,11 @@ namespace SSMD.Migrations
                     b.Property<int>("Number")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("ControlPlanNumber");
-
                     b.Property<int>("ID");
 
                     b.Property<int>("MaterialID");
 
                     b.Property<string>("OrderType");
-
-                    b.Property<double>("PlannedQuantity");
-
-                    b.Property<long>("RoutingNumber");
 
                     b.Property<double>("TotalQuantity");
 
@@ -246,13 +235,7 @@ namespace SSMD.Migrations
 
                     b.Property<DateTime?>("EntryDate");
 
-                    b.Property<bool>("IsRework");
-
                     b.Property<int>("OrderNumber");
-
-                    b.Property<double>("ReworkAmount");
-
-                    b.Property<double>("ReworkScrap");
 
                     b.Property<double>("Scrap");
 
@@ -272,30 +255,11 @@ namespace SSMD.Migrations
 
                     b.HasKey("ConfirmationNumber", "ConfirmationCounter");
 
-                    b.HasIndex("DeletionFlag");
-
                     b.HasIndex("OrderNumber");
-
-                    b.HasIndex("StartTime");
 
                     b.HasIndex("WorkCenterID");
 
                     b.ToTable("OrderConfirmations");
-                });
-
-            modelBuilder.Entity("SSMD.RoutingOperation", b =>
-                {
-                    b.Property<long>("RoutingNumber");
-
-                    b.Property<int>("RoutingCounter");
-
-                    b.Property<int>("WorkCenterID");
-
-                    b.HasKey("RoutingNumber", "RoutingCounter");
-
-                    b.HasIndex("WorkCenterID");
-
-                    b.ToTable("RoutingOperations");
                 });
 
             modelBuilder.Entity("SSMD.ScrapCause", b =>
@@ -417,14 +381,6 @@ namespace SSMD.Migrations
                         .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("SSMD.WorkCenter", "WorkCenter")
-                        .WithMany()
-                        .HasForeignKey("WorkCenterID")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("SSMD.RoutingOperation", b =>
-                {
                     b.HasOne("SSMD.WorkCenter", "WorkCenter")
                         .WithMany()
                         .HasForeignKey("WorkCenterID")

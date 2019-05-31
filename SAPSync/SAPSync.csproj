@@ -197,7 +197,14 @@
     <Compile Include="Functions\MaterialsGetList.cs" />
     <Compile Include="Functions\InspLotGetList.cs" />
     <Compile Include="Functions\OrdersGetList.cs" />
+    <Compile Include="Functions\ReadComponents.cs" />
     <Compile Include="Functions\ReadInspectionCharacteristics.cs" />
+    <Compile Include="Functions\ReadMaterials.cs" />
+    <Compile Include="Functions\ReadMaterialFamilies.cs" />
+    <Compile Include="Functions\ReadMaterialFamilyLevels.cs" />
+    <Compile Include="Functions\ReadOrderComponents.cs" />
+    <Compile Include="Functions\ReadRoutingOperations.cs" />
+    <Compile Include="Functions\ReadOrders.cs" />
     <Compile Include="Functions\ReadWorkCenters.cs" />
     <Compile Include="Functions\ReadInspectionPoints.cs" />
     <Compile Include="Functions\ReadConfirmations.cs" />
@@ -206,9 +213,16 @@
     <Compile Include="SAPDestinationConfig.cs" />
     <Compile Include="SAPReader.cs" />
     <Compile Include="SyncElements\ISyncElement.cs" />
+    <Compile Include="SyncElements\RecordValidator.cs" />
+    <Compile Include="SyncElements\SyncComponents.cs" />
     <Compile Include="SyncElements\SyncElement.cs" />
     <Compile Include="SyncElements\SyncConfirmations.cs" />
     <Compile Include="SyncElements\SyncInspectionCharacteristics.cs" />
+    <Compile Include="SyncElements\RecordEvaluator.cs" />
+    <Compile Include="SyncElements\SyncMaterialFamilies.cs" />
+    <Compile Include="SyncElements\SyncMaterialFamilyLevels.cs" />
+    <Compile Include="SyncElements\SyncOrderComponents.cs" />
+    <Compile Include="SyncElements\SyncRoutingOperations.cs" />
     <Compile Include="SyncElements\SyncWorkCenter.cs" />
     <Compile Include="SyncElements\SyncInspectionSpecifications.cs" />
     <Compile Include="SyncElements\SyncOrders.cs" />
@@ -262,7 +276,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Debug\" />
-    <Folder Include="Commands\" />
     <Folder Include="Queries\" />
   </ItemGroup>
   <ItemGroup>

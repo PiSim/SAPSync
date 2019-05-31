@@ -11,25 +11,37 @@ namespace SAPSync.Functions
 
         internal string[] _fields;
         internal int _rowCount = 0;
+        internal List<string> _selectionOptions = new List<string>();
         internal char[] _separator = new char[] { '|' };
         internal string _tableName;
         private readonly string _functionName = "RFC_READ_TABLE";
-        private IRfcFunction _rfcFunction;
 
         #endregion Fields
+
+        #region Properties
+
+        public ReadTableBatchingOptions BatchingOptions { get; set; }
+
+        #endregion Properties
 
         #region Methods
 
         public IList<T> Invoke(RfcDestination rfcDestination)
         {
+            ConfigureBatchingOptions();
+
             if (_fields == null)
                 throw new ArgumentNullException("Fields");
 
-            InitializeFunction(rfcDestination);
-            InitializeParameters();
-            _rfcFunction.Invoke(rfcDestination);
-            IRfcTable output = _rfcFunction.GetTable("DATA");
-            IList<T> results = ConvertRfcTable(output);
+            IEnumerable<IRfcFunction> executionStack = GetExecutionStack(rfcDestination);
+            List<T> results = new List<T>();
+
+            foreach (IRfcFunction rfcFunction in executionStack)
+            {
+                rfcFunction.Invoke(rfcDestination);
+                IRfcTable output = rfcFunction.GetTable("DATA");
+                results.AddRange(ConvertRfcTable(output));
+            }
 
             return results;
         }
@@ -39,7 +51,13 @@ namespace SAPSync.Functions
             return await Task.Run(() => Invoke(rfcDestination));
         }
 
-        internal abstract T ConvertRow(IRfcStructure row);
+        internal virtual T ConvertDataArray(string[] data) => default(T);
+
+        internal virtual T ConvertRow(IRfcStructure row)
+        {
+            string[] data = row.GetString("WA").Split(_separator);
+            return ConvertDataArray(data);
+        }
 
         internal DateTime DateStringToDate(string date, string time = "")
         {
@@ -93,6 +111,10 @@ namespace SAPSync.Functions
             return output;
         }
 
+        protected virtual void ConfigureBatchingOptions()
+        {
+        }
+
         private IList<T> ConvertRfcTable(IRfcTable rfcTable)
         {
             IList<T> results = new List<T>();
@@ -106,27 +128,86 @@ namespace SAPSync.Functions
             return results;
         }
 
-        private void InitializeFunction(RfcDestination rfcDestination)
+        private IEnumerable<IRfcFunction> GetExecutionStack(RfcDestination rfcDestination)
         {
-            RfcRepository rfcRepository = rfcDestination.Repository;
-            _rfcFunction = rfcRepository.CreateFunction(_functionName);
+            List<IRfcFunction> executionStack = new List<IRfcFunction>();
+
+            if (BatchingOptions == null)
+                executionStack.Add(GetInitializedFunction(rfcDestination, _selectionOptions));
+            else
+            {
+                long currentValue = BatchingOptions.MinValue;
+                long currentMax = (currentValue + BatchingOptions.BatchSize) - 1;
+
+                while (currentValue <= BatchingOptions.MaxValue)
+                {
+                    if (currentMax > BatchingOptions.MaxValue)
+                        currentMax = BatchingOptions.MaxValue;
+
+                    string batchParameters = string.Format("{0} GE '{1}' AND {0} LE '{2}'", new object[] { BatchingOptions.Field, currentValue.ToString("000000000000"), currentMax.ToString("000000000000") });
+
+                    List<string> batchSelection = new List<string>(_selectionOptions);
+                    batchSelection.Add(batchParameters);
+                    IRfcFunction currentFunction = GetInitializedFunction(rfcDestination, batchSelection);
+                    currentValue += BatchingOptions.BatchSize;
+                    currentMax += BatchingOptions.BatchSize;
+                    executionStack.Add(currentFunction);
+                }
+            }
+
+            return executionStack;
         }
 
-        private void InitializeParameters()
+        private IRfcFunction GetFunction(RfcDestination rfcDestination)
         {
-            _rfcFunction.SetValue("query_table", _tableName);
-            _rfcFunction.SetValue("delimiter", _separator[0]);
-            _rfcFunction.SetValue("rowcount", _rowCount);
+            IRfcFunction rfcFunction;
 
-            IRfcTable rfcFields = _rfcFunction.GetTable("fields");
+            RfcRepository rfcRepository = rfcDestination.Repository;
+            rfcFunction = rfcRepository.CreateFunction(_functionName);
+
+            return rfcFunction;
+        }
+
+        private IRfcFunction GetInitializedFunction(RfcDestination rfcDestination, IEnumerable<string> selectionOptions = null)
+        {
+            IRfcFunction rfcFunction = GetFunction(rfcDestination);
+
+            rfcFunction.SetValue("query_table", _tableName);
+            rfcFunction.SetValue("delimiter", _separator[0]);
+            rfcFunction.SetValue("rowcount", _rowCount);
+
+            IRfcTable rfcOptions = rfcFunction.GetTable("Options");
+
+            if (selectionOptions != null)
+                foreach (string option in selectionOptions)
+                {
+                    rfcOptions.Append();
+                    rfcOptions.SetValue("TEXT", option);
+                }
+
+            IRfcTable rfcFields = rfcFunction.GetTable("fields");
 
             foreach (string column in _fields)
             {
                 rfcFields.Append();
                 rfcFields.SetValue("fieldname", column);
             }
+
+            return rfcFunction;
         }
 
         #endregion Methods
+    }
+
+    public class ReadTableBatchingOptions
+    {
+        #region Properties
+
+        public long BatchSize { get; set; } = 10000;
+        public string Field { get; set; } = "";
+        public long MaxValue { get; set; } = 999999;
+        public long MinValue { get; set; } = 0;
+
+        #endregion Properties
     }
 }

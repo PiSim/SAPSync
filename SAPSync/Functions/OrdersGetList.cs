@@ -24,7 +24,7 @@ namespace SAPSync.Functions
             orderSelection.SetValue("SIGN", "I");
             orderSelection.SetValue("OPTION", "CP");
             orderSelection.SetValue("LOW", "1000000");
-            orderSelection.SetValue("HIGH", "1999999");
+            orderSelection.SetValue("HIGH", "2999999");
 
             IRfcTable matSelection = _rfcFunction.GetTable("material_range");
 

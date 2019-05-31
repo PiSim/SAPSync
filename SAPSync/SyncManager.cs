@@ -26,8 +26,6 @@ namespace SAPSync
 
         #endregion Constructors
 
-
-
         #region Properties
 
         public ICollection<ISyncElement> SyncElements
@@ -49,6 +47,7 @@ namespace SAPSync
         {
             try
             {
+                ResetAllProgress();
                 IEnumerable<ISyncElement> toSync = SyncElements.Where(syel => syel.RequiresSync);
 
                 foreach (ISyncElement syncElement in toSync)
@@ -56,11 +55,18 @@ namespace SAPSync
 
                 foreach (ISyncElement syncElement in toSync)
                     syncElement.StartSync(_reader.GetRfcDestination(), _sSMDData);
+
             }
             catch (Exception e)
             {
                 throw new Exception("Sincronizzazione Fallita:" + e.Message, e);
             }
+        }
+
+        private void ResetAllProgress()
+        {
+            foreach (ISyncElement syncElement in SyncElements)
+                syncElement.ResetProgress();
         }
 
         private void InitializeSyncElements()
@@ -69,8 +75,13 @@ namespace SAPSync
             {
                 _syncElements = new List<ISyncElement>();
                 _syncElements.Add(new SyncWorkCenters());
+                _syncElements.Add(new SyncMaterialFamilylevels());
+                _syncElements.Add(new SyncMaterialFamilies());
                 _syncElements.Add(new SyncMaterials());
                 _syncElements.Add(new SyncOrders());
+                _syncElements.Add(new SyncRoutingOperations());
+                _syncElements.Add(new SyncComponents());
+                _syncElements.Add(new SyncOrderComponents());
                 _syncElements.Add(new SyncConfirmations());
                 _syncElements.Add(new SyncInspectionCharacteristics());
                 _syncElements.Add(new SyncInspectionLots());

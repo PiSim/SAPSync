@@ -24,6 +24,8 @@ namespace SSMD
 
         public ICollection<InspectionPoint> InspectionPoints { get; set; }
         public double LowerSpecificationLimit { get; set; }
+
+        [Required]
         public string Name { get; set; }
         public double TargetValue { get; set; }
         public string UM { get; set; }

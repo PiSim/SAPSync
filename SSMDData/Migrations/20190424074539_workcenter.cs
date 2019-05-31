@@ -5,6 +5,22 @@ namespace SSMD.Migrations
 {
     public partial class workcenter : Migration
     {
+        #region Methods
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "FK_OrderConfirmations_WorkCenters_WorkCenterID",
+                table: "OrderConfirmations");
+
+            migrationBuilder.DropTable(
+                name: "WorkCenters");
+
+            migrationBuilder.DropIndex(
+                name: "IX_OrderConfirmations_WorkCenterID",
+                table: "OrderConfirmations");
+        }
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -39,18 +55,6 @@ namespace SSMD.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_OrderConfirmations_WorkCenters_WorkCenterID",
-                table: "OrderConfirmations");
-
-            migrationBuilder.DropTable(
-                name: "WorkCenters");
-
-            migrationBuilder.DropIndex(
-                name: "IX_OrderConfirmations_WorkCenterID",
-                table: "OrderConfirmations");
-        }
+        #endregion Methods
     }
 }

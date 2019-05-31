@@ -8,16 +8,53 @@ using System.Linq;
 
 namespace SAPSync.SyncElements
 {
-    public class SyncInspectionSpecifications : SyncElement<InspectionSpecification>
+    public class InspectionSpecificationEvaluator : RecordEvaluator<InspectionSpecification, Tuple<long, int, int>>
+    {
+        #region Methods
+
+        protected override Tuple<long, int, int> GetIndexKey(InspectionSpecification record) => record.GetPrimaryKey();
+
+        #endregion Methods
+    }
+
+    public class InspectionSpecificationValidator : IRecordValidator<InspectionSpecification>
     {
         #region Fields
 
         private IDictionary<string, InspectionCharacteristic> _characteristicDictionary;
         private IDictionary<long, InspectionLot> _lotDictionary;
-        private IDictionary<Tuple<long, int, int>, InspectionSpecification> _specificationDictionary;
 
         #endregion Fields
 
+        #region Methods
+
+        public bool CheckIndexesInitialized()
+        {
+            throw new NotImplementedException();
+        }
+
+        public InspectionSpecification GetInsertableRecord(InspectionSpecification record)
+        {
+            record.InspectionCharacteristicID = _characteristicDictionary[record.InspectionCharacteristic.Name].ID;
+            record.InspectionCharacteristic = null;
+            return record;
+        }
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _lotDictionary = sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(inspl => inspl.Number, inspl => inspl);
+
+            _characteristicDictionary = sSMDData.RunQuery(new Query<InspectionCharacteristic, SSMDContext>()).ToDictionary(inspc => inspc.Name, inspc => inspc);
+        }
+
+        public bool IsValid(InspectionSpecification record) => _characteristicDictionary.ContainsKey(record.InspectionCharacteristic?.Name)
+                    && _lotDictionary.ContainsKey(record.InspectionLotNumber);
+
+        #endregion Methods
+    }
+
+    public class SyncInspectionSpecifications : SyncElement<InspectionSpecification>
+    {
         #region Constructors
 
         public SyncInspectionSpecifications() : base()
@@ -29,50 +66,17 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void ConfigureRecordEvaluator()
         {
-            base.Initialize();
-
-            _lotDictionary = _sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(inspl => inspl.Number, inspl => inspl);
-
-            _specificationDictionary = _sSMDData.RunQuery(new Query<InspectionSpecification, SSMDContext>()).ToDictionary(insps => insps.GetPrimaryKey(), insps => insps);
-
-            _characteristicDictionary = _sSMDData.RunQuery(new Query<InspectionCharacteristic, SSMDContext>()).ToDictionary(inspc => inspc.Name, inspc => inspc);
-
+            RecordEvaluator = new InspectionSpecificationEvaluator();
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordValidator()
         {
-            base.EnsureInitialized();
-            if (_lotDictionary == null)
-                throw new Exception("Impossibile recuperare il dizionario Lotti");
-            if (_lotDictionary == null)
-                throw new Exception("Impossibile recuperare il dizionario Specifiche");
-            if (_characteristicDictionary == null)
-                throw new Exception("Impossibile recuperare il dizionario caratteristiche");
+            RecordValidator = new InspectionSpecificationValidator();
         }
-
-        protected override void AddRecordToInserts(InspectionSpecification record)
-        {
-            record.InspectionCharacteristicID = _characteristicDictionary[record.InspectionCharacteristic.Name].ID;
-            record.InspectionCharacteristic = null;
-            base.AddRecordToInserts(record);
-        }
-
-        protected override void AddRecordToUpdates(InspectionSpecification record)
-        {
-            record.InspectionCharacteristicID = _characteristicDictionary[record.InspectionCharacteristic.Name].ID;
-            record.InspectionCharacteristic = null;
-            base.AddRecordToUpdates(record);
-        }
-
-        protected override bool MustIgnoreRecord(InspectionSpecification record) => !_characteristicDictionary.ContainsKey(record.InspectionCharacteristic?.Name) 
-            || !_lotDictionary.ContainsKey(record.InspectionLotNumber);
-
-        protected override bool IsNewRecord(InspectionSpecification record) => !_specificationDictionary.ContainsKey(record.GetPrimaryKey());
 
         protected override IList<InspectionSpecification> ReadRecordTable() => new ReadInspectionSpecifications().Invoke(_rfcDestination);
-
 
         #endregion Methods
     }

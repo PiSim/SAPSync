@@ -1,21 +1,63 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SAPSync.SyncElements
 {
-    public class SyncMaterials : SyncElement<Material>
+    public class MaterialEvaluator : RecordEvaluator<Material, string>
+    {
+        #region Methods
+
+        public override Material SetPrimaryKeyForExistingRecord(Material record)
+        {
+            record.ID = RecordIndex[GetIndexKey(record)].ID;
+            return record;
+        }
+
+        protected override string GetIndexKey(Material record) => record.Code;
+
+        #endregion Methods
+    }
+
+    public class MaterialValidator : IRecordValidator<Material>
     {
         #region Fields
 
-        private IDictionary<string, Material> _materialDictionary;
+        private IDictionary<string, MaterialFamily> _familyDictionary;
 
         #endregion Fields
 
+        #region Methods
+
+        public bool CheckIndexesInitialized() => _familyDictionary != null;
+
+        public Material GetInsertableRecord(Material record)
+        {
+            if (record.MaterialFamily != null)
+            {
+                if (_familyDictionary.ContainsKey(record.MaterialFamily.FullCode))
+                    record.MaterialFamilyID = _familyDictionary[record.MaterialFamily.FullCode].ID;
+
+                record.MaterialFamily = null;
+            }
+
+            return record;
+        }
+
+        public void InitializeIndexes(SSMDData sSMDData)
+        {
+            _familyDictionary = sSMDData.RunQuery(new MaterialFamiliesQuery() { EagerLoadingEnabled = true }).ToDictionary(fam => fam.FullCode);
+        }
+
+        public bool IsValid(Material record) => record.Code[0] == '1' || record.Code[0] == '2' || record.Code[0] == '3';
+
+        #endregion Methods
+    }
+
+    public class SyncMaterials : SyncElement<Material>
+    {
         #region Constructors
 
         public SyncMaterials()
@@ -27,56 +69,22 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void Initialize()
+        protected override void AddRecordToUpdates(Material record)
         {
-            base.Initialize();
-            _materialDictionary = _sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
+            base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
         }
 
-        protected override void EnsureInitialized()
+        protected override void ConfigureRecordEvaluator()
         {
-            if (_materialDictionary == null)
-                throw new InvalidOperationException("Errore nel recupero del dizionario Materiali");        }
-
-        protected override IList<Material> ReadRecordTable()
-        {
-            IRfcTable materialTable = RetrieveMaterials();
-            return ConvertMaterialTable(materialTable);
+            RecordEvaluator = new MaterialEvaluator();
         }
 
-        protected override bool MustIgnoreRecord(Material record) => _materialDictionary.ContainsKey(record.Code);
-
-        private List<Material> ConvertMaterialTable(IRfcTable materialTable)
+        protected override void ConfigureRecordValidator()
         {
-            List<Material> output = new List<Material>();
-
-            foreach (IRfcStructure row in materialTable)
-            {
-                string currentMaterialCode = row.GetString("MATERIAL");
-
-
-                Material newMaterial = new Material();
-                newMaterial.Code = currentMaterialCode;
-                output.Add(newMaterial);
-            }
-            return output;
+            RecordValidator = new MaterialValidator();
         }
 
-        private IRfcTable RetrieveMaterials()
-        {
-            IRfcTable output;
-
-            try
-            {
-                output = new MaterialsGetList().Invoke(_rfcDestination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("RetrieveMaterials error: " + e.Message);
-            }
-
-            return output;
-        }
+        protected override IList<Material> ReadRecordTable() => new ReadMaterials().Invoke(_rfcDestination);
 
         #endregion Methods
     }
