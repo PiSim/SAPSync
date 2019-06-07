@@ -1,26 +1,16 @@
-﻿using DataAccessCore.Commands;
-using SAP.Middleware.Connector;
-using SAPSync.SyncElements;
+﻿using DataAccessCore;
+using DataAccessCore.Commands;
 using SSMD;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
-namespace SAPSync
+namespace SAPSync.SyncElements
 {
     public abstract class SyncElement<T> : ISyncElement where T : class
     {
         #region Fields
-
-        protected IList<T> _recordList;
-
-        protected IList<T> _recordsToDelete;
-
-        protected IList<T> _recordsToInsert;
-
-        protected IList<T> _recordsToUpdate;
-
-        protected RfcDestination _rfcDestination;
 
         protected SSMDData _sSMDData;
 
@@ -28,9 +18,10 @@ namespace SAPSync
 
         #region Constructors
 
-        public SyncElement()
+        public SyncElement(SSMDData sSMDData)
         {
             SyncStatus = "";
+            _sSMDData = sSMDData;
         }
 
         #endregion Constructors
@@ -43,63 +34,61 @@ namespace SAPSync
 
         public event EventHandler SyncAborted;
 
+        public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
+
+        public event EventHandler SyncFailed;
+
         #endregion Events
 
         #region Properties
 
         public AbortToken AbortStatus { get; set; }
-
+        public DateTime LastUpdate { get; set; }
         public string Name { get; protected set; }
-
+        public DateTime NextScheduledUpdate { get; set; }
         public int PhaseProgress { get; set; }
-
-        public bool RequiresSync { get; set; } = true;
-
+        public bool RequiresSync { get; set; } = false;
         public string SyncStatus { get; protected set; }
-
+        protected bool IsFailed { get; set; } = false;
         protected IRecordEvaluator<T> RecordEvaluator { get; set; }
-
-        protected IRecordValidator<T> RecordValidator { get; set; }
+        private bool ContinueExportingOnImportFail { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public void SetOnQueue()
-        {
-            RaiseStatusChanged("In Coda");
-        }
-
         public virtual void Clear()
         {
             RecordEvaluator = null;
-            RecordValidator = null;
-            _recordsToDelete = null;
-            _recordsToInsert = null;
-            _recordsToUpdate = null;
-            _recordList = null;
-            _sSMDData = null;
-            _rfcDestination = null;
         }
 
-        public virtual void StartSync(RfcDestination rfcDestination, SSMDData sSMDData)
+        public virtual void ResetProgress()
         {
-            _sSMDData = sSMDData;
-            _rfcDestination = rfcDestination;
+            ChangeStatus("");
+            RaisePhaseProgressChanged(0);
+        }
 
+        public void SetOnQueue()
+        {
+            ChangeStatus("In Coda");
+        }
+
+        public virtual void StartSync()
+        {
             Initialize();
             EnsureInitialized();
             if (AbortStatus == null)
             {
-                RetrieveSAPRecords();
-                EvaluateRecords();
-
-                InsertNewRecords();
-                UpdateExistingRecords();
-                OnUpdateCompleted();
-                DeleteOldRecords();
+                try
+                {
+                    RunSyncronizationSequence();
+                }
+                catch (Exception e)
+                {
+                    RaiseSyncError(e.Message);
+                    SyncFailure();
+                }
             }
-
             FinalizeSync();
         }
 
@@ -109,131 +98,105 @@ namespace SAPSync
             RaiseSyncAborted();
         }
 
-        protected virtual void AddRecordToDeletes(T record)
-        {
-            _recordsToDelete.Add(record);
-        }
-
-        protected virtual void AddRecordToInserts(T record) => _recordsToInsert.Add(RecordValidator.GetInsertableRecord(record));
-
-        protected virtual void AddRecordToUpdates(T record) => _recordsToUpdate.Add(RecordValidator.GetInsertableRecord(record));
-
         protected void ChangeProgress(object sender, ProgressChangedEventArgs e)
         {
             RaisePhaseProgressChanged(e.ProgressPercentage);
         }
 
-        protected virtual void DeleteOldRecords()
+        protected virtual void ChangeStatus(string newStatus)
         {
-            RaiseStatusChanged("Cancellazione vecchi record");
-            _sSMDData.Execute(new DeleteEntitiesCommand<SSMDContext>(_recordsToDelete));
+            SyncStatus = newStatus;
+            RaiseStatusChanged();
+        }
+
+        protected abstract void ConfigureRecordEvaluator();
+
+        protected virtual void DeleteRecords(IEnumerable<T> records)
+        {
+            ChangeStatus("Cancellazione vecchi record");
+            _sSMDData.Execute(new DeleteEntitiesCommand<SSMDContext>(records));
         }
 
         protected virtual void EnsureInitialized()
         {
-            if (_recordsToDelete == null
-                || _recordsToInsert == null
-                || _recordsToUpdate == null)
-                throw new InvalidOperationException("Liste Record non inizializzate");
-
-            if (RecordEvaluator == null)
+            if (RecordEvaluator == null || !RecordEvaluator.CheckInitialized())
                 throw new InvalidOperationException("RecordEvaluator non inizializzato");
-
-            if (!RecordEvaluator.CheckIndexInitialized())
-                throw new InvalidOperationException("Indice Record non inizializzato");
-
-            if (_rfcDestination == null)
-                throw new ArgumentNullException("RfcDestination");
 
             if (_sSMDData == null)
                 throw new ArgumentNullException("SSMDData");
         }
 
-        public virtual void ResetProgress()
+        protected virtual void EvaluateRecords(IEnumerable<T> records)
         {
-            RaiseStatusChanged("");
-            RaisePhaseProgressChanged(0);
-        }
-
-        protected virtual void EvaluateRecords()
-        {
-            if (_recordList == null)
+            if (records == null)
                 throw new ArgumentNullException("RecordList");
 
-            RaiseStatusChanged("Controllo dei Record letti");
-
-            IEnumerable<SyncItem<T>> evaluatedRecords = RecordEvaluator.EvaluateRecords(_recordList);
-
-            foreach (SyncItem<T> record in evaluatedRecords)
-            {
-                if (!RecordValidator.IsValid(record.Item))
-                    record.Action = SyncAction.Ignore;
-                else
-                {
-                    if (record.Action == SyncAction.Insert)
-                        AddRecordToInserts(record.Item);
-                    else if (record.Action == SyncAction.Update)
-                        AddRecordToUpdates(record.Item);
-                    else if (record.Action == SyncAction.Delete)
-                        AddRecordToDeletes(record.Item);
-                }
-            }
+            ChangeStatus("Controllo dei Record letti");
         }
 
+        protected virtual void ExecutePostImportActions()
+        {
+        }
+
+        protected virtual void ExportData()
+        {
+            ICollection<T> exportRecords = GetRecordsToExport();
+            ExecuteExport(exportRecords);
+        }
+
+        protected virtual void ExecuteExport(IEnumerable<T> records)
+        {
+
+        }
+            
+
+        protected virtual ICollection<T> GetRecordsToExport() => GetExportingRecordsQuery().ToList();
+
+        protected virtual IQueryable<T> GetExportingRecordsQuery() => _sSMDData.RunQuery(new Query<T, SSMDContext>());
+        
         protected virtual void FinalizeSync()
         {
             RaisePhaseProgressChanged(100);
 
-            RaiseStatusChanged("Pulizia della memoria");
+            ChangeStatus("Pulizia della memoria");
             Clear();
 
-            if (AbortStatus == null)
-                RaiseStatusChanged("Completato");
+            if (AbortStatus != null)
+                ChangeStatus("Annullato: " + AbortStatus.AbortReason);
+            else if (IsFailed)
+                ChangeStatus("Fallito");
             else
-                RaiseStatusChanged("Annullato: " + AbortStatus.AbortReason);
+                ChangeStatus("Completato");
+        }
+
+        protected virtual void ImportData()
+        {
+            var records = ReadRecords();
+            var updatePackage = RecordEvaluator.GetUpdatePackage(records);
+            UpdateDatabase(updatePackage);
         }
 
         protected virtual void Initialize()
         {
-            RaiseStatusChanged("Inizializzazione");
+            ChangeStatus("Inizializzazione");
             RaisePhaseProgressChanged(0);
 
-            _recordsToDelete = new List<T>();
-            _recordsToInsert = new List<T>();
-            _recordsToUpdate = new List<T>();
-
             ConfigureRecordEvaluator();
-            ConfigureRecordValidator();
-
             InitializeRecordEvaluator();
-            InitializeRecordValidator();
         }
-
-        protected abstract void ConfigureRecordEvaluator();
-
-        protected abstract void ConfigureRecordValidator();
 
         protected virtual void InitializeRecordEvaluator()
         {
-            RecordEvaluator.InitializeIndex(_sSMDData);
+            RecordEvaluator.Initialize(_sSMDData);
         }
 
-        protected virtual void InitializeRecordValidator()
+        protected virtual void InsertNewRecords(IEnumerable<T> records)
         {
-            RecordValidator.InitializeIndexes(_sSMDData);
-        }
-
-        protected virtual void InsertNewRecords()
-        {
-            RaiseStatusChanged("Inserimento Nuovi record");
+            ChangeStatus("Inserimento Nuovi record");
             RaisePhaseProgressChanged(0);
-            BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(_recordsToInsert);
+            BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(records);
             insertCommand.ProgressChanged += ChangeProgress;
             _sSMDData.Execute(insertCommand);
-        }
-
-        protected virtual void OnUpdateCompleted()
-        {
         }
 
         protected void RaisePhaseProgressChanged(int newProgress)
@@ -243,9 +206,8 @@ namespace SAPSync
             ProgressChanged?.Invoke(this, e);
         }
 
-        protected void RaiseStatusChanged(string newStatus)
+        protected void RaiseStatusChanged()
         {
-            SyncStatus = newStatus;
             EventArgs e = new EventArgs();
             StatusChanged?.Invoke(this, e);
         }
@@ -255,31 +217,87 @@ namespace SAPSync
             SyncAborted?.Invoke(this, new EventArgs());
         }
 
-        protected virtual IList<T> ReadRecordTable()
+        protected virtual void RaiseSyncError(string errorMessage)
         {
-            return null;
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                ErrorMessage = errorMessage
+            };
+
+            SyncErrorRaised?.Invoke(this, args);
         }
 
-        protected virtual void RetrieveSAPRecords()
+        protected virtual void RaiseSyncFailed()
         {
-            RaiseStatusChanged("Recupero Record da SAP");
-            RaisePhaseProgressChanged(0);
+            EventArgs args = new EventArgs();
+            SyncFailed?.Invoke(this, args);
+        }
 
+        protected abstract IEnumerable<T> ReadRecords();
+
+        protected virtual void RunSyncronizationSequence()
+        {
             try
             {
-                _recordList = ReadRecordTable();
+                if (PerformImport)
+                    ImportData();
             }
             catch (Exception e)
             {
-                throw new Exception("RetrieveConfirmations error: " + e.Message, e);
+                string errorMessage = "Importazione record fallita: " + e.Message;
+                RaiseSyncError(e.Message);
+                if (!ContinueExportingOnImportFail)
+                    throw new InvalidOperationException(errorMessage, e);
+            }
+
+            try
+            {
+
+                ExecutePostImportActions();
+            }
+            catch (Exception e)
+            {
+                string errorMessage = "Errore nell'elaborazione post-importazione: " + e.Message;
+                RaiseSyncError(e.Message);
+                if (!ContinueExportingOnImportFail)
+                    throw new InvalidOperationException(errorMessage, e);
+            }
+
+            try
+            {
+                if (PerformExport)
+                    ExportData();
+            }
+            catch (Exception e)
+            {
+                string errorMessage = "Esportazione record fallita: " + e.Message;
+                RaiseSyncError(e.Message);
+                throw new InvalidOperationException(errorMessage, e);
             }
         }
 
-        protected virtual void UpdateExistingRecords()
+        public bool PerformImport { get; set; } = true;
+        public bool PerformExport { get; set; } = false;
+
+
+        protected virtual void SyncFailure()
         {
-            RaiseStatusChanged("Aggiornamento record esistenti");
+            IsFailed = true;
+            RaiseSyncFailed();
+        }
+
+        protected virtual void UpdateDatabase(UpdatePackage<T> updatePackage)
+        {
+            InsertNewRecords(updatePackage.RecordsToInsert);
+            UpdateExistingRecords(updatePackage.RecordsToUpdate);
+            DeleteRecords(updatePackage.RecordsToDelete);
+        }
+
+        protected virtual void UpdateExistingRecords(IEnumerable<T> records)
+        {
+            ChangeStatus("Aggiornamento record esistenti");
             RaisePhaseProgressChanged(0);
-            BatchUpdateEntitiesCommand<SSMDContext> updateCommand = new BatchUpdateEntitiesCommand<SSMDContext>(_recordsToUpdate);
+            BatchUpdateEntitiesCommand<SSMDContext> updateCommand = new BatchUpdateEntitiesCommand<SSMDContext>(records);
             updateCommand.ProgressChanged += ChangeProgress;
             _sSMDData.Execute(updateCommand);
         }

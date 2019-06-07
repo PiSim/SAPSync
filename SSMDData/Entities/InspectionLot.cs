@@ -16,7 +16,7 @@ namespace SSMD
 
         #region Properties
 
-        public ICollection<InspectionPoint> InspectionPoints { get; set; }
+        public virtual ICollection<InspectionPoint> InspectionPoints { get; set; }
 
         [Key]
         public long Number { get; set; }

@@ -1,27 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSMD
 {
     public class RoutingOperation
     {
+        #region Constructors
+
         public RoutingOperation()
         {
-
         }
 
-        [Required]
-        public long RoutingNumber { get; set; }
+        #endregion Constructors
+
+        #region Properties
+
+        public OrderData OrderData { get; set; }
 
         [Required]
         public int RoutingCounter { get; set; }
 
+        [Required]
+        public long RoutingNumber { get; set; }
+
+        public WorkCenter WorkCenter { get; set; }
+
         [ForeignKey("WorkCenter")]
         public int WorkCenterID { get; set; }
 
-        public WorkCenter WorkCenter { get; set; }
+        #endregion Properties
     }
 }

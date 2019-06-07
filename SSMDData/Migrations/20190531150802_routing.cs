@@ -4,6 +4,53 @@ namespace SSMD.Migrations
 {
     public partial class routing : Migration
     {
+        #region Methods
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "RoutingOperations");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Components_Name",
+                table: "Components");
+
+            migrationBuilder.DropColumn(
+                name: "ControlPlanNumber",
+                table: "Orders");
+
+            migrationBuilder.DropColumn(
+                name: "PlannedQuantity",
+                table: "Orders");
+
+            migrationBuilder.DropColumn(
+                name: "RoutingNumber",
+                table: "Orders");
+
+            migrationBuilder.DropColumn(
+                name: "Description",
+                table: "Components");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Code",
+                table: "MaterialFamilyLevels",
+                nullable: true,
+                oldClrType: typeof(string));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "InspectionCharacteristics",
+                nullable: true,
+                oldClrType: typeof(string));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "Components",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldNullable: true);
+        }
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -80,49 +127,6 @@ namespace SSMD.Migrations
                 column: "WorkCenterID");
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "RoutingOperations");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Components_Name",
-                table: "Components");
-
-            migrationBuilder.DropColumn(
-                name: "ControlPlanNumber",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "PlannedQuantity",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "RoutingNumber",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "Description",
-                table: "Components");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Code",
-                table: "MaterialFamilyLevels",
-                nullable: true,
-                oldClrType: typeof(string));
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "InspectionCharacteristics",
-                nullable: true,
-                oldClrType: typeof(string));
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Components",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldNullable: true);
-        }
+        #endregion Methods
     }
 }

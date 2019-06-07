@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSMD;
 
 namespace SSMD.Migrations
 {
     [DbContext(typeof(SSMDContext))]
-    partial class SSMDContextModelSnapshot : ModelSnapshot
+    [Migration("20190607095631_orderdatamatcolor")]
+    partial class orderdatamatcolor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -609,11 +611,11 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
                     b.HasOne("SSMD.Project", "Down")
-                        .WithMany("WBSUpRelations")
+                        .WithMany()
                         .HasForeignKey("DownID");
 
                     b.HasOne("SSMD.Project", "Left")
-                        .WithMany("WBSRightRelations")
+                        .WithMany()
                         .HasForeignKey("LeftID");
 
                     b.HasOne("SSMD.Project", "Project")
@@ -622,11 +624,11 @@ namespace SSMD.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("SSMD.Project", "Right")
-                        .WithMany("WBSLeftRelations")
+                        .WithMany()
                         .HasForeignKey("RightID");
 
                     b.HasOne("SSMD.Project", "Up")
-                        .WithMany("WBSDownRelations")
+                        .WithMany()
                         .HasForeignKey("UpID");
                 });
 

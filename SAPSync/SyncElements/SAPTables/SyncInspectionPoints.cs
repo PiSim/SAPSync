@@ -1,4 +1,5 @@
-﻿using SAPSync.Functions;
+﻿using SAP.Middleware.Connector;
+using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
 using System;
@@ -10,6 +11,11 @@ namespace SAPSync.SyncElements
     public class InspectionPointEvaluator : RecordEvaluator<InspectionPoint, Tuple<long, int, int, int>>
     {
         #region Methods
+
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new InspectionPointValidator();
+        }
 
         protected override Tuple<long, int, int, int> GetIndexKey(InspectionPoint record) => record.GetPrimaryKey();
 
@@ -40,11 +46,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncInspectionPoints : SyncElement<InspectionPoint>
+    public class SyncInspectionPoints : SyncSAPTable<InspectionPoint>
     {
         #region Constructors
 
-        public SyncInspectionPoints()
+        public SyncInspectionPoints(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Punti di Controllo";
         }
@@ -56,11 +62,6 @@ namespace SAPSync.SyncElements
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new InspectionPointEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new InspectionPointValidator();
         }
 
         protected override IList<InspectionPoint> ReadRecordTable() => new ReadInspectionPoints().Invoke(_rfcDestination);

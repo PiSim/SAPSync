@@ -164,9 +164,14 @@
     <Compile Include="Entities\Order.cs" />
     <Compile Include="Entities\OrderComponent.cs" />
     <Compile Include="Entities\OrderConfirmation.cs" />
+    <Compile Include="Entities\OrderData.cs" />
+    <Compile Include="Entities\Project.cs" />
     <Compile Include="Entities\RoutingOperation.cs" />
     <Compile Include="Entities\ScrapCause.cs" />
+    <Compile Include="Entities\TestReport.cs" />
+    <Compile Include="Entities\WBSRelation.cs" />
     <Compile Include="Entities\WorkCenter.cs" />
+    <Compile Include="Entities\WorkPhaseLabData.cs" />
     <Compile Include="Migrations\20190410080932_regeneratedDb.cs" />
     <Compile Include="Migrations\20190410080932_regeneratedDb.designer.cs">
       <DependentUpon>20190410080932_regeneratedDb.cs</DependentUpon>
@@ -198,6 +203,34 @@
     <Compile Include="Migrations\20190531150802_routing.cs" />
     <Compile Include="Migrations\20190531150802_routing.designer.cs">
       <DependentUpon>20190531150802_routing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190603092538_colori.cs" />
+    <Compile Include="Migrations\20190603092538_colori.designer.cs">
+      <DependentUpon>20190603092538_colori.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190604092421_wbs.cs" />
+    <Compile Include="Migrations\20190604092421_wbs.designer.cs">
+      <DependentUpon>20190604092421_wbs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190604113130_prj_desc.cs" />
+    <Compile Include="Migrations\20190604113130_prj_desc.designer.cs">
+      <DependentUpon>20190604113130_prj_desc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190605151433_xmlsupportentities.cs" />
+    <Compile Include="Migrations\20190605151433_xmlsupportentities.designer.cs">
+      <DependentUpon>20190605151433_xmlsupportentities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190606140931_workphasefix.cs" />
+    <Compile Include="Migrations\20190606140931_workphasefix.designer.cs">
+      <DependentUpon>20190606140931_workphasefix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190607095631_orderdatamatcolor.cs" />
+    <Compile Include="Migrations\20190607095631_orderdatamatcolor.designer.cs">
+      <DependentUpon>20190607095631_orderdatamatcolor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\20190607122612_wbsfix2.cs" />
+    <Compile Include="Migrations\20190607122612_wbsfix2.designer.cs">
+      <DependentUpon>20190607122612_wbsfix2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\SSMDContextModelSnapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

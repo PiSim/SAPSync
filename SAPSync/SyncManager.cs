@@ -1,7 +1,10 @@
-﻿using SAPSync.SyncElements;
+﻿using SAP.Middleware.Connector;
+using SAPSync.SyncElements;
+using SAPSync.SyncElements.ExcelWorkbooks;
 using SSMD;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SAPSync
@@ -54,8 +57,7 @@ namespace SAPSync
                     syncElement.SetOnQueue();
 
                 foreach (ISyncElement syncElement in toSync)
-                    syncElement.StartSync(_reader.GetRfcDestination(), _sSMDData);
-
+                    syncElement.StartSync();
             }
             catch (Exception e)
             {
@@ -63,35 +65,72 @@ namespace SAPSync
             }
         }
 
-        private void ResetAllProgress()
+        protected virtual void CreateLogEntry(string message)
         {
-            foreach (ISyncElement syncElement in SyncElements)
-                syncElement.ResetProgress();
+            string logPath = Properties.Settings.Default.LogFilePath;
+            string logString = DateTime.Now.ToString("yyyyMMddhhmmss") + "_" + message;
+            List<string> logLines = new List<string>
+            {
+                logString
+            };
+
+            File.AppendAllLines(logPath, logLines);
+        }
+
+        protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)
+        {
+            CreateLogEntry("Error: " + e.ErrorMessage.Replace('\n', ' '));
+        }
+
+        protected virtual void OnSyncFailureRaised(object sender, EventArgs e)
+        {
+            string logMessage = "Sincronizzazione fallita: " + (sender as ISyncElement).Name;
+            CreateLogEntry(logMessage);
         }
 
         private void InitializeSyncElements()
         {
             try
             {
-                _syncElements = new List<ISyncElement>();
-                _syncElements.Add(new SyncWorkCenters());
-                _syncElements.Add(new SyncMaterialFamilylevels());
-                _syncElements.Add(new SyncMaterialFamilies());
-                _syncElements.Add(new SyncMaterials());
-                _syncElements.Add(new SyncOrders());
-                _syncElements.Add(new SyncRoutingOperations());
-                _syncElements.Add(new SyncComponents());
-                _syncElements.Add(new SyncOrderComponents());
-                _syncElements.Add(new SyncConfirmations());
-                _syncElements.Add(new SyncInspectionCharacteristics());
-                _syncElements.Add(new SyncInspectionLots());
-                _syncElements.Add(new SyncInspectionSpecifications());
-                _syncElements.Add(new SyncInspectionPoints());
+                RfcDestination rfcDestination = _reader.GetRfcDestination();
+                _syncElements = new List<ISyncElement>
+                {
+                    new SyncWorkCenters(rfcDestination, _sSMDData),
+                    new SyncMaterialFamilylevels(rfcDestination, _sSMDData),
+                    new SyncMaterialFamilies(rfcDestination, _sSMDData),
+                    new SyncProjects(rfcDestination, _sSMDData),
+                    new SyncWBSRelations(rfcDestination, _sSMDData),
+                    new SyncMaterials(rfcDestination, _sSMDData),
+                    new SyncOrders(rfcDestination, _sSMDData),
+                    new SyncOrderData(rfcDestination, _sSMDData),
+                    new SyncRoutingOperations(rfcDestination, _sSMDData),
+                    new SyncComponents(rfcDestination, _sSMDData),
+                    new SyncOrderComponents(rfcDestination, _sSMDData),
+                    new SyncConfirmations(rfcDestination, _sSMDData),
+                    new SyncInspectionCharacteristics(rfcDestination, _sSMDData),
+                    new SyncInspectionLots(rfcDestination, _sSMDData),
+                    new SyncInspectionSpecifications(rfcDestination, _sSMDData),
+                    new SyncInspectionPoints(rfcDestination, _sSMDData),
+                    new SyncTrialMasterReport(_sSMDData),
+                    new SyncTESTODPPROVA(_sSMDData)
+                };
+
+                foreach (ISyncElement syncElement in _syncElements)
+                {
+                    syncElement.SyncErrorRaised += OnSyncErrorRaised;
+                    syncElement.SyncFailed += OnSyncFailureRaised;
+                }
             }
             catch (Exception e)
             {
                 throw new Exception("Inizializzazione elementi di sincronizzazione fallita: " + e.Message);
             }
+        }
+
+        private void ResetAllProgress()
+        {
+            foreach (ISyncElement syncElement in SyncElements)
+                syncElement.ResetProgress();
         }
 
         #endregion Methods

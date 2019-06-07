@@ -13,6 +13,7 @@ namespace SAPSync.SyncElements
         void InitializeIndexes(SSMDData sSMDData);
 
         bool IsValid(T record);
+
         #endregion Methods
     }
 
@@ -21,7 +22,7 @@ namespace SAPSync.SyncElements
         #region Methods
 
         public bool CheckIndexesInitialized() => true;
-        
+
         public T GetInsertableRecord(T record) => record;
 
         public void InitializeIndexes(SSMDData sSMDData)
@@ -30,8 +31,6 @@ namespace SAPSync.SyncElements
         }
 
         public bool IsValid(T record) => true;
-
-
 
         #endregion Methods
     }

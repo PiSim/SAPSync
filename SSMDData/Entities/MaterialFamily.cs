@@ -52,7 +52,7 @@ namespace SSMD
         public string L3Description => L3?.Description;
 
         public int L3ID { get; set; }
-        public ICollection<Material> Materials { get; set; }
+        public virtual ICollection<Material> Materials { get; set; }
 
         #endregion Properties
     }

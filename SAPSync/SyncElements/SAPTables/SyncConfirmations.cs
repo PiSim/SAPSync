@@ -1,4 +1,5 @@
 ﻿using DataAccessCore;
+using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -11,6 +12,11 @@ namespace SAPSync.SyncElements
     public class ConfirmationEvaluator : RecordEvaluator<OrderConfirmation, Tuple<int, int>>
     {
         #region Methods
+
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new ConfirmationValidator();
+        }
 
         protected override Tuple<int, int> GetIndexKey(OrderConfirmation record) => new Tuple<int, int>(record.ConfirmationNumber, record.ConfirmationCounter);
 
@@ -43,11 +49,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncConfirmations : SyncElement<OrderConfirmation>
+    public class SyncConfirmations : SyncSAPTable<OrderConfirmation>
     {
         #region Constructors
 
-        public SyncConfirmations()
+        public SyncConfirmations(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Conferme";
         }
@@ -59,11 +65,6 @@ namespace SAPSync.SyncElements
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new ConfirmationEvaluator();
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new ConfirmationValidator();
         }
 
         protected override IList<OrderConfirmation> ReadRecordTable() => new ReadConfirmations().Invoke(_rfcDestination);

@@ -1,4 +1,5 @@
 ﻿using DataAccessCore;
+using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -12,14 +13,19 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        public override void InitializeIndex(SSMDData sSMDData)
+        public override void Initialize(SSMDData sSMDData)
         {
             _recordIndex = sSMDData.RunQuery(new OrderComponentsQuery() { EagerLoadingEnabled = true }).ToDictionary(rec => GetIndexKey(rec), rec => rec);
         }
 
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new OrderComponentValidator();
+        }
+
         protected override Tuple<int, string> GetIndexKey(OrderComponent record) => new Tuple<int, string>(record.OrderNumber, record.Component.Name);
 
-        public override OrderComponent SetPrimaryKeyForExistingRecord(OrderComponent record)
+        protected override OrderComponent SetPrimaryKeyForExistingRecord(OrderComponent record)
         {
             record.ID = RecordIndex[GetIndexKey(record)].ID;
             return base.SetPrimaryKeyForExistingRecord(record);
@@ -60,11 +66,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncOrderComponents : SyncElement<OrderComponent>
+    public class SyncOrderComponents : SyncSAPTable<OrderComponent>
     {
         #region Constructors
 
-        public SyncOrderComponents()
+        public SyncOrderComponents(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Componenti Ordine";
         }
@@ -73,22 +79,9 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void AddRecordToUpdates(OrderComponent record) => base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
-
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new OrderComponentEvaluator();
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new OrderComponentValidator();
-        }
-
-        protected override void UpdateExistingRecords()
-        {
-            IEnumerable<OrderComponent> duplicates = _recordsToUpdate.Where(rec => _recordsToUpdate.Where(rec2 => rec2.ID == rec.ID).Count() > 1);
-            base.UpdateExistingRecords();
         }
 
         protected override IList<OrderComponent> ReadRecordTable() => new ReadOrderComponents().Invoke(_rfcDestination);

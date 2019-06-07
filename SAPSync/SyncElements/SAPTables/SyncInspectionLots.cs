@@ -12,6 +12,11 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new InspectionLotValidator();
+        }
+
         protected override long GetIndexKey(InspectionLot record) => record.Number;
 
         #endregion Methods
@@ -41,11 +46,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncInspectionLots : SyncElement<InspectionLot>
+    public class SyncInspectionLots : SyncSAPTable<InspectionLot>
     {
         #region Constructors
 
-        public SyncInspectionLots()
+        public SyncInspectionLots(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Lotti di Controllo";
         }
@@ -57,11 +62,6 @@ namespace SAPSync.SyncElements
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new InspectionLotEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new InspectionLotValidator();
         }
 
         protected override IList<InspectionLot> ReadRecordTable()
@@ -77,19 +77,19 @@ namespace SAPSync.SyncElements
 
             foreach (IRfcStructure row in materialTable)
             {
-                long currentLotNumber;
                 string lotNumberString = row.GetString("insplot");
 
-                if (!long.TryParse(lotNumberString, out currentLotNumber))
+                if (!long.TryParse(lotNumberString, out long currentLotNumber))
                     continue;
 
-                InspectionLot newInspectionLot = new InspectionLot();
-                newInspectionLot.Number = currentLotNumber;
+                InspectionLot newInspectionLot = new InspectionLot
+                {
+                    Number = currentLotNumber
+                };
 
                 string orderNumberString = row.GetString("order_no");
 
-                int orderNumber;
-                if (!int.TryParse(orderNumberString, out orderNumber))
+                if (!int.TryParse(orderNumberString, out int orderNumber))
                     continue;
 
                 newInspectionLot.OrderNumber = orderNumber;

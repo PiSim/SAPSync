@@ -12,6 +12,11 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new OrderValidator();
+        }
+
         protected override int GetIndexKey(Order record) => record.Number;
 
         #endregion Methods
@@ -46,11 +51,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncOrders : SyncElement<Order>
+    public class SyncOrders : SyncSAPTable<Order>
     {
         #region Constructors
 
-        public SyncOrders()
+        public SyncOrders(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Ordini";
         }
@@ -62,11 +67,6 @@ namespace SAPSync.SyncElements
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new OrderEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new OrderValidator();
         }
 
         protected override IList<Order> ReadRecordTable()
@@ -81,10 +81,9 @@ namespace SAPSync.SyncElements
 
             foreach (IRfcStructure row in ordersTable)
             {
-                int currentOrderNumber;
                 string orderstring = row.GetString("order_number");
 
-                if (int.TryParse(orderstring, out currentOrderNumber))
+                if (int.TryParse(orderstring, out int currentOrderNumber))
                 {
                     string materialCode = row.GetString("material");
 

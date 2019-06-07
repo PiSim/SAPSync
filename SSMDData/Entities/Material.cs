@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,6 +20,13 @@ namespace SSMD
 
         public string Code { get; set; }
 
+        [ForeignKey("ColorComponent")]
+        public int? ColorComponentID { get; set; }
+
+        public Component ColorComponent { get; set; }
+
+        public int ControlPlan { get; set; }
+
         [Key]
         public int ID { get; set; }
 
@@ -28,6 +36,8 @@ namespace SSMD
         public int? MaterialFamilyID { get; set; }
 
         public ICollection<Order> Orders { get; set; }
+        public Project Project { get; set; }
+        public Nullable<int> ProjectID { get; set; }
 
         #endregion Properties
     }

@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSMD;
 
 namespace SSMD.Migrations
 {
     [DbContext(typeof(SSMDContext))]
-    partial class SSMDContextModelSnapshot : ModelSnapshot
+    [Migration("20190606140931_workphasefix")]
+    partial class workphasefix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,8 +134,6 @@ namespace SSMD.Migrations
 
                     b.Property<string>("Code");
 
-                    b.Property<int?>("ColorComponentID");
-
                     b.Property<int>("ControlPlan");
 
                     b.Property<int?>("MaterialFamilyID");
@@ -144,8 +144,6 @@ namespace SSMD.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
-
-                    b.HasIndex("ColorComponentID");
 
                     b.HasIndex("MaterialFamilyID");
 
@@ -519,10 +517,6 @@ namespace SSMD.Migrations
 
             modelBuilder.Entity("SSMD.Material", b =>
                 {
-                    b.HasOne("SSMD.Component", "ColorComponent")
-                        .WithMany()
-                        .HasForeignKey("ColorComponentID");
-
                     b.HasOne("SSMD.MaterialFamily", "MaterialFamily")
                         .WithMany("Materials")
                         .HasForeignKey("MaterialFamilyID");
@@ -587,7 +581,7 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.OrderData", b =>
                 {
                     b.HasOne("SSMD.Order", "Order")
-                        .WithMany("OrderData")
+                        .WithMany()
                         .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -609,11 +603,11 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
                     b.HasOne("SSMD.Project", "Down")
-                        .WithMany("WBSUpRelations")
+                        .WithMany()
                         .HasForeignKey("DownID");
 
                     b.HasOne("SSMD.Project", "Left")
-                        .WithMany("WBSRightRelations")
+                        .WithMany()
                         .HasForeignKey("LeftID");
 
                     b.HasOne("SSMD.Project", "Project")
@@ -622,11 +616,11 @@ namespace SSMD.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("SSMD.Project", "Right")
-                        .WithMany("WBSLeftRelations")
+                        .WithMany()
                         .HasForeignKey("RightID");
 
                     b.HasOne("SSMD.Project", "Up")
-                        .WithMany("WBSDownRelations")
+                        .WithMany()
                         .HasForeignKey("UpID");
                 });
 

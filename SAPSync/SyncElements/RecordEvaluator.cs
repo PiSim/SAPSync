@@ -1,48 +1,53 @@
 ﻿using DataAccessCore;
 using SSMD;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SAPSync.SyncElements
 {
-    public enum SyncAction
-    {
-        Update,
-        Insert,
-        Delete,
-        Ignore
-    }
-
     public interface IRecordEvaluator<T>
     {
         #region Methods
 
-        bool CheckIndexInitialized();
+        bool CheckInitialized();
 
-        IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records);
+        UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records);
 
-        void InitializeIndex(SSMDData sSMDData);
+        void Initialize(SSMDData sSMDData);
 
-        T SetPrimaryKeyForExistingRecord(T record);
-        
         #endregion Methods
     }
 
     public abstract class RecordEvaluator<T, TKey> : IRecordEvaluator<T> where T : class
     {
+        #region Fields
+
+        protected IDictionary<TKey, T> _recordIndex;
+
+        protected IDictionary<TKey, T> _trackedRecordIndex;
+
+        #endregion Fields
+
+        #region Constructors
 
         public RecordEvaluator()
         {
             _trackedRecordIndex = new Dictionary<TKey, T>();
         }
 
-        #region Fields
+        #endregion Constructors
 
-        protected IDictionary<TKey, T> _recordIndex;
-        protected IDictionary<TKey, T> _trackedRecordIndex;
+        #region Enums
 
-        #endregion Fields
+        protected enum SyncAction
+        {
+            Update,
+            Insert,
+            Delete,
+            Ignore
+        }
+
+        #endregion Enums
 
         #region Properties
 
@@ -51,16 +56,75 @@ namespace SAPSync.SyncElements
         public virtual bool IgnoreExistingRecords { get; set; } = false;
 
         public IDictionary<TKey, T> RecordIndex => _recordIndex;
+
         public IDictionary<TKey, T> TrackedRecordIndex => _trackedRecordIndex;
+
+        protected IRecordValidator<T> RecordValidator { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public bool CheckIndexInitialized() => _recordIndex != null;
+        public bool CheckInitialized() => _recordIndex != null;
+
+        public virtual T GetIndexedEntry(TKey key)
+        {
+            if (RecordIndex.ContainsKey(key))
+                return RecordIndex[key];
+            else if (TrackedRecordIndex.ContainsKey(key))
+                return TrackedRecordIndex[key];
+            else return null;
+        }
+
+        public virtual UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records)
+        {
+            IEnumerable<SyncItem<T>> evaluatedRecords = EvaluateRecords(records);
+
+            var validRecords = evaluatedRecords.Where(
+                rec => rec.Action != SyncAction.Ignore
+                    && RecordValidator.IsValid(rec.Item));
+
+            List<T> deleteRecords = new List<T>();
+            List<T> insertRecords = new List<T>();
+            List<T> updateRecords = new List<T>();
+
+            foreach (SyncItem<T> record in validRecords)
+            {
+                T indexedRecord = GetInsertableRecord(record);
+                if (record.Action == SyncAction.Delete)
+                    deleteRecords.Add(indexedRecord);
+                else if (record.Action == SyncAction.Insert)
+                    insertRecords.Add(indexedRecord);
+                else if (record.Action == SyncAction.Update)
+                    updateRecords.Add(indexedRecord);
+
+            }
 
 
-        public IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
+            UpdatePackage<T> output = new UpdatePackage<T>(
+                deleteRecords,
+                insertRecords,
+                updateRecords);
+
+            return output;
+        }
+
+        public virtual void Initialize(SSMDData sSMDData)
+        {
+            _recordIndex = sSMDData.RunQuery(new Query<T, SSMDContext>()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
+
+            ConfigureRecordValidator();
+            InitializeRecordValidator(sSMDData);
+        }
+
+        protected virtual void AddToTrackedRecordIndex(T record) => _trackedRecordIndex.Add(GetIndexKey(record), record);
+
+        protected virtual void ConfigureRecordValidator()
+        {
+            RecordValidator = new RecordValidator<T>();
+        }
+
+        protected virtual IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
         {
             List<SyncItem<T>> retrievedItems = records.Select(rec => new SyncItem<T>(rec)).ToList();
 
@@ -81,22 +145,18 @@ namespace SAPSync.SyncElements
             return retrievedItems;
         }
 
-        public virtual void InitializeIndex(SSMDData sSMDData)
-        {
-            _recordIndex = sSMDData.RunQuery(new Query<T, SSMDContext>()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
-        }
-
-        public virtual T SetPrimaryKeyForExistingRecord(T record) => record;
-
-        protected virtual void AddToTrackedRecordIndex(T record) => _trackedRecordIndex.Add(GetIndexKey(record), record);
-
         protected abstract TKey GetIndexKey(T record);
+
+        protected virtual T GetInsertableRecord(SyncItem<T> syncItem)
+        {
+            T record = (syncItem.Action == SyncAction.Update || syncItem.Action == SyncAction.Delete) ? SetPrimaryKeyForExistingRecord(syncItem.Item) : syncItem.Item;
+            return RecordValidator.GetInsertableRecord(record);
+        }
 
         protected virtual SyncAction GetRecordDesignation(T record)
         {
             if (MustIgnoreRecord(record))
                 return SyncAction.Ignore;
-
             else if (!IsTracked(record))
             {
                 AddToTrackedRecordIndex(record);
@@ -104,7 +164,6 @@ namespace SAPSync.SyncElements
                 {
                     return SyncAction.Insert;
                 }
-
                 else if (!IgnoreExistingRecords)
                     return SyncAction.Update;
             }
@@ -112,45 +171,79 @@ namespace SAPSync.SyncElements
             return SyncAction.Ignore;
         }
 
-        public virtual T GetIndexedEntry(TKey key)
+        protected virtual void InitializeRecordValidator(SSMDData sSMDData)
         {
-            if (RecordIndex.ContainsKey(key))
-                return RecordIndex[key];
-            else if (TrackedRecordIndex.ContainsKey(key))
-                return TrackedRecordIndex[key];
-            else return null;
+            RecordValidator.InitializeIndexes(sSMDData);
         }
-
-        protected virtual bool IsTracked(T record) => TrackedRecordIndex.ContainsKey(GetIndexKey(record));
 
         protected virtual bool IsExistingRecord(T record) => RecordIndex.ContainsKey(GetIndexKey(record));
 
+        protected virtual bool IsTracked(T record) => TrackedRecordIndex.ContainsKey(GetIndexKey(record));
+
         protected virtual bool MustIgnoreRecord(T record) => false;
 
+        protected virtual T SetPrimaryKeyForExistingRecord(T record) => record;
+
         #endregion Methods
+
+        #region Classes
+
+        protected class SyncItem<T> where T : class
+        {
+            #region Fields
+
+            private readonly T _item;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public SyncItem(T item)
+            {
+                _item = item;
+            }
+
+            #endregion Constructors
+
+            #region Properties
+
+            public SyncAction Action { get; set; } = SyncAction.Ignore;
+            public T Item => _item;
+
+            #endregion Properties
+        }
+
+        #endregion Classes
     }
 
-    public class SyncItem<T>
+    public class UpdatePackage<T>
     {
         #region Fields
 
-        private readonly T _item;
+        private readonly IEnumerable<T> _recordsToUpdate,
+            _recordsToInsert,
+            _recordsToDelete;
 
         #endregion Fields
 
         #region Constructors
 
-        public SyncItem(T item)
+        public UpdatePackage(IEnumerable<T> recordsToDelete,
+            IEnumerable<T> recordsToInsert,
+            IEnumerable<T> recordsToUpdate)
         {
-            _item = item;
+            _recordsToDelete = recordsToDelete.ToList();
+            _recordsToInsert = recordsToInsert.ToList();
+            _recordsToUpdate = recordsToUpdate.ToList();
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public SyncAction Action { get; set; } = SyncAction.Ignore;
-        public T Item => _item;
+        public IEnumerable<T> RecordsToDelete => _recordsToDelete;
+        public IEnumerable<T> RecordsToInsert => _recordsToInsert;
+        public IEnumerable<T> RecordsToUpdate => _recordsToUpdate;
 
         #endregion Properties
     }

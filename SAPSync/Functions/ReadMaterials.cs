@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SSMD;
+﻿using SSMD;
 using System.Collections.Generic;
 
 namespace SAPSync.Functions
@@ -14,7 +13,9 @@ namespace SAPSync.Functions
             _fields = new string[]
             {
                 "MATNR",
-                "PRDHA"
+                "PRDHA",
+                "ZEINR",
+                "AUFNR"
             };
 
             _selectionOptions = new List<string> { "MATNR LIKE '1%' OR MATNR LIKE '2%' OR MATNR LIKE '3%'" };
@@ -24,11 +25,14 @@ namespace SAPSync.Functions
 
         #region Methods
 
-        internal override Material ConvertRow(IRfcStructure row)
+        internal override Material ConvertDataArray(string[] data)
         {
-            string[] data = row.GetString("WA").Split(_separator);
-
             string code = data[0].Trim();
+
+            int pdc;
+            if (!int.TryParse(data[2], out pdc))
+                pdc = 0;
+
             MaterialFamily tempFamily;
             if (data[1].Length != 18)
                 tempFamily = null;
@@ -43,7 +47,9 @@ namespace SAPSync.Functions
             Material output = new Material()
             {
                 Code = code,
-                MaterialFamily = tempFamily
+                MaterialFamily = tempFamily,
+                ControlPlan = pdc,
+                Project = new Project() { Code = data[3].Trim() }
             };
             return output;
         }

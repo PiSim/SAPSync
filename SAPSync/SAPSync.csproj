@@ -46,6 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DataAccessCore\DataAccessCore\bin\Release\DataAccessCore.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=4.5.3.1, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.3.1\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Google.Protobuf, Version=3.7.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.7.0\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
@@ -90,6 +93,10 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.Primitives, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Primitives.2.2.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="MySql.Data, Version=8.0.15.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.15\lib\net452\MySql.Data.dll</HintPath>
@@ -162,6 +169,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.2\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
@@ -203,6 +211,9 @@
     <Compile Include="Functions\ReadMaterialFamilies.cs" />
     <Compile Include="Functions\ReadMaterialFamilyLevels.cs" />
     <Compile Include="Functions\ReadOrderComponents.cs" />
+    <Compile Include="Functions\ReadOrderData.cs" />
+    <Compile Include="Functions\ReadWBSRelations.cs" />
+    <Compile Include="Functions\ReadProjects.cs" />
     <Compile Include="Functions\ReadRoutingOperations.cs" />
     <Compile Include="Functions\ReadOrders.cs" />
     <Compile Include="Functions\ReadWorkCenters.cs" />
@@ -212,23 +223,32 @@
     <Compile Include="Functions\ReadTableBase.cs" />
     <Compile Include="SAPDestinationConfig.cs" />
     <Compile Include="SAPReader.cs" />
+    <Compile Include="SyncElements\ExcelWorkbooks\SyncTESTODPPROVA.cs" />
+    <Compile Include="SyncElements\ExcelWorkbooks\SyncTrialMasterReport.cs" />
     <Compile Include="SyncElements\ISyncElement.cs" />
+    <Compile Include="SyncElements\IXmlDto.cs" />
     <Compile Include="SyncElements\RecordValidator.cs" />
-    <Compile Include="SyncElements\SyncComponents.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncComponents.cs" />
     <Compile Include="SyncElements\SyncElement.cs" />
-    <Compile Include="SyncElements\SyncConfirmations.cs" />
-    <Compile Include="SyncElements\SyncInspectionCharacteristics.cs" />
+    <Compile Include="SyncElements\SyncXmlReport.cs" />
+    <Compile Include="SyncElements\SyncExcelWorkbook.cs" />
+    <Compile Include="SyncElements\SyncSAPTable.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncConfirmations.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncInspectionCharacteristics.cs" />
     <Compile Include="SyncElements\RecordEvaluator.cs" />
-    <Compile Include="SyncElements\SyncMaterialFamilies.cs" />
-    <Compile Include="SyncElements\SyncMaterialFamilyLevels.cs" />
-    <Compile Include="SyncElements\SyncOrderComponents.cs" />
-    <Compile Include="SyncElements\SyncRoutingOperations.cs" />
-    <Compile Include="SyncElements\SyncWorkCenter.cs" />
-    <Compile Include="SyncElements\SyncInspectionSpecifications.cs" />
-    <Compile Include="SyncElements\SyncOrders.cs" />
-    <Compile Include="SyncElements\SyncInspectionPoints.cs" />
-    <Compile Include="SyncElements\SyncInspectionLots.cs" />
-    <Compile Include="SyncElements\SyncMaterials.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncMaterialFamilies.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncMaterialFamilyLevels.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncOrderComponents.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncOrderData.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncProjects.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncRoutingOperations.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncWBSRelations.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncWorkCenter.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncInspectionSpecifications.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncOrders.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncInspectionPoints.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncInspectionLots.cs" />
+    <Compile Include="SyncElements\SAPTables\SyncMaterials.cs" />
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

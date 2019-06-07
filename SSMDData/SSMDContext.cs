@@ -26,10 +26,15 @@ namespace SSMD
         public DbSet<Material> Materials { get; set; }
         public DbSet<OrderComponent> OrderComponents { get; set; }
         public DbSet<OrderConfirmation> OrderConfirmations { get; set; }
+        public DbSet<OrderData> OrderData { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<RoutingOperation> RoutingOperations {get;set;}
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<RoutingOperation> RoutingOperations { get; set; }
         public DbSet<ScrapCause> ScrapCauses { get; set; }
+        public DbSet<TestReport> TestReports { get; set; }
+        public DbSet<WBSRelation> WBSRelations { get; set; }
         public DbSet<WorkCenter> WorkCenters { get; set; }
+        public DbSet<WorkPhaseLabData> WorkPhaseLabData { get; set; }
 
         #endregion Properties
 
@@ -137,9 +142,43 @@ namespace SSMD
                 .WithMany(ord => ord.OrderConfirmations)
                 .HasForeignKey(ordc => ordc.OrderNumber);
 
+            modelBuilder.Entity<Project>()
+                .HasIndex(prj => prj.Code);
+
             modelBuilder.Entity<RoutingOperation>()
                 .HasKey(rop => new Tuple<long, int>(rop.RoutingNumber, rop.RoutingCounter));
-            
+
+            modelBuilder.Entity<RoutingOperation>()
+                .HasOne(rop => rop.OrderData)
+                .WithMany(odd => odd.RoutingOperations)
+                .HasForeignKey(rop => rop.RoutingNumber)
+                .HasPrincipalKey(odd => odd.RoutingNumber);
+
+            modelBuilder.Entity<WBSRelation>()
+                .HasOne(wbr => wbr.Project)
+                .WithMany(prj => prj.WBSRelations)
+                .HasForeignKey(wbr => wbr.ProjectID);
+
+            modelBuilder.Entity<WBSRelation>()
+                .HasOne(wbr => wbr.Up)
+                .WithMany(prj => prj.WBSDownRelations)
+                .HasForeignKey(wbr => wbr.UpID);
+
+            modelBuilder.Entity<WBSRelation>()
+                .HasOne(wbr => wbr.Left)
+                .WithMany(prj => prj.WBSRightRelations)
+                .HasForeignKey(wbr => wbr.LeftID);
+
+            modelBuilder.Entity<WBSRelation>()
+                .HasOne(wbr => wbr.Down)
+                .WithMany(prj => prj.WBSUpRelations)
+                .HasForeignKey(wbr => wbr.DownID);
+
+            modelBuilder.Entity<WBSRelation>()
+                .HasOne(wbr => wbr.Right)
+                .WithMany(prj => prj.WBSLeftRelations)
+                .HasForeignKey(wbr => wbr.RightID);
+
             modelBuilder.Entity<WorkCenter>()
                 .HasIndex(wc => wc.ShortName);
         }

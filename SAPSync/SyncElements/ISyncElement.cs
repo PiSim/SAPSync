@@ -1,6 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SSMD;
-using System;
+﻿using System;
 using System.ComponentModel;
 
 namespace SAPSync.SyncElements
@@ -13,12 +11,17 @@ namespace SAPSync.SyncElements
 
         event EventHandler StatusChanged;
 
+        event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
+
+        event EventHandler SyncFailed;
+
         #endregion Events
 
         #region Properties
 
+        DateTime LastUpdate { get; }
         string Name { get; }
-
+        DateTime NextScheduledUpdate { get; }
         int PhaseProgress { get; }
 
         bool RequiresSync { get; set; }
@@ -29,12 +32,21 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        void SetOnQueue();
-
-        void StartSync(RfcDestination rfcDestination, SSMDData sSMDData);
-
         void ResetProgress();
 
+        void SetOnQueue();
+
+        void StartSync();
+
         #endregion Methods
+    }
+
+    public class SyncErrorEventArgs : EventArgs
+    {
+        #region Properties
+
+        public string ErrorMessage { get; set; }
+
+        #endregion Properties
     }
 }

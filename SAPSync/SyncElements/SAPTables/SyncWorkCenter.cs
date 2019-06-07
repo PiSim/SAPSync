@@ -1,14 +1,15 @@
-﻿using SAPSync.Functions;
+﻿using SAP.Middleware.Connector;
+using SAPSync.Functions;
 using SSMD;
 using System.Collections.Generic;
 
 namespace SAPSync.SyncElements
 {
-    public class SyncWorkCenters : SyncElement<WorkCenter>
+    public class SyncWorkCenters : SyncSAPTable<WorkCenter>
     {
         #region Constructors
 
-        public SyncWorkCenters()
+        public SyncWorkCenters(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Centri Di Lavoro";
         }
@@ -20,11 +21,6 @@ namespace SAPSync.SyncElements
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new WorkCenterEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new RecordValidator<WorkCenter>();
         }
 
         protected override IList<WorkCenter> ReadRecordTable() => new ReadWorkCenters().Invoke(_rfcDestination);

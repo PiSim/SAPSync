@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSMD;
 
 namespace SSMD.Migrations
 {
     [DbContext(typeof(SSMDContext))]
-    partial class SSMDContextModelSnapshot : ModelSnapshot
+    [Migration("20190604113130_prj_desc")]
+    partial class prj_desc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,8 +134,6 @@ namespace SSMD.Migrations
 
                     b.Property<string>("Code");
 
-                    b.Property<int?>("ColorComponentID");
-
                     b.Property<int>("ControlPlan");
 
                     b.Property<int?>("MaterialFamilyID");
@@ -144,8 +144,6 @@ namespace SSMD.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
-
-                    b.HasIndex("ColorComponentID");
 
                     b.HasIndex("MaterialFamilyID");
 
@@ -353,60 +351,6 @@ namespace SSMD.Migrations
                     b.ToTable("ScrapCauses");
                 });
 
-            modelBuilder.Entity("SSMD.TestReport", b =>
-                {
-                    b.Property<int>("Number")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<double?>("BreakingElongationL");
-
-                    b.Property<double?>("BreakingElongationT");
-
-                    b.Property<double?>("BreakingLoadL");
-
-                    b.Property<double?>("BreakingLoadT");
-
-                    b.Property<string>("ColorJudgement");
-
-                    b.Property<double?>("DetachForceL");
-
-                    b.Property<double?>("DetachForceT");
-
-                    b.Property<string>("FlammabilityEvaluation");
-
-                    b.Property<double?>("Gloss");
-
-                    b.Property<double?>("GlossZ");
-
-                    b.Property<bool>("HasRollArrived");
-
-                    b.Property<string>("Notes");
-
-                    b.Property<string>("Operator");
-
-                    b.Property<int?>("OrderNumber");
-
-                    b.Property<string>("OtherTests");
-
-                    b.Property<string>("RollStatus");
-
-                    b.Property<double?>("SetL");
-
-                    b.Property<double?>("SetT");
-
-                    b.Property<double?>("StretchL");
-
-                    b.Property<double?>("StretchT");
-
-                    b.Property<double?>("Thickness");
-
-                    b.Property<double?>("Weight");
-
-                    b.HasKey("Number");
-
-                    b.ToTable("TestReports");
-                });
-
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
                     b.Property<int>("ID")
@@ -451,34 +395,6 @@ namespace SSMD.Migrations
                     b.ToTable("WorkCenters");
                 });
 
-            modelBuilder.Entity("SSMD.WorkPhaseLabData", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Actions");
-
-                    b.Property<string>("Analysis");
-
-                    b.Property<string>("NotesC");
-
-                    b.Property<string>("NotesG");
-
-                    b.Property<string>("NotesP");
-
-                    b.Property<string>("NotesS");
-
-                    b.Property<int>("OrderNumber");
-
-                    b.Property<string>("TrialScope");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("OrderNumber");
-
-                    b.ToTable("WorkPhaseLabData");
-                });
-
             modelBuilder.Entity("SSMD.InspectionLot", b =>
                 {
                     b.HasOne("SSMD.Order", "Order")
@@ -519,10 +435,6 @@ namespace SSMD.Migrations
 
             modelBuilder.Entity("SSMD.Material", b =>
                 {
-                    b.HasOne("SSMD.Component", "ColorComponent")
-                        .WithMany()
-                        .HasForeignKey("ColorComponentID");
-
                     b.HasOne("SSMD.MaterialFamily", "MaterialFamily")
                         .WithMany("Materials")
                         .HasForeignKey("MaterialFamilyID");
@@ -587,7 +499,7 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.OrderData", b =>
                 {
                     b.HasOne("SSMD.Order", "Order")
-                        .WithMany("OrderData")
+                        .WithMany()
                         .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -609,11 +521,11 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
                     b.HasOne("SSMD.Project", "Down")
-                        .WithMany("WBSUpRelations")
+                        .WithMany()
                         .HasForeignKey("DownID");
 
                     b.HasOne("SSMD.Project", "Left")
-                        .WithMany("WBSRightRelations")
+                        .WithMany()
                         .HasForeignKey("LeftID");
 
                     b.HasOne("SSMD.Project", "Project")
@@ -622,20 +534,12 @@ namespace SSMD.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("SSMD.Project", "Right")
-                        .WithMany("WBSLeftRelations")
+                        .WithMany()
                         .HasForeignKey("RightID");
 
                     b.HasOne("SSMD.Project", "Up")
-                        .WithMany("WBSDownRelations")
-                        .HasForeignKey("UpID");
-                });
-
-            modelBuilder.Entity("SSMD.WorkPhaseLabData", b =>
-                {
-                    b.HasOne("SSMD.Order", "Order")
                         .WithMany()
-                        .HasForeignKey("OrderNumber")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UpID");
                 });
 #pragma warning restore 612, 618
         }

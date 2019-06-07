@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SSMD;
+﻿using SSMD;
 using System.Collections.Generic;
 
 namespace SAPSync.Functions
@@ -10,28 +9,28 @@ namespace SAPSync.Functions
 
         public ReadComponents() : base()
         {
-            _tableName = "MARA";
+            _tableName = "MAKT";
             _fields = new string[]
             {
-                "MATNR"
+                "MATNR",
+                "MAKTX"
             };
 
-            _selectionOptions = new List<string>() { "MATNR LIKE 'P%' OR MATNR LIKE 'S%'" };
+            _selectionOptions = new List<string>() { "SPRAS = 'IT' AND (MATNR LIKE 'P%' OR MATNR LIKE 'S%')" };
         }
 
         #endregion Constructors
 
         #region Methods
 
-        internal override Component ConvertRow(IRfcStructure row)
+        internal override Component ConvertDataArray(string[] data)
         {
-            string[] data = row.GetString("WA").Split(_separator);
-
             string code = data[0].Trim();
 
             Component output = new Component()
             {
-                Name = code
+                Name = code,
+                Description = data[1]
             };
             return output;
         }

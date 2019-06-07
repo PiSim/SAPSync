@@ -1,4 +1,5 @@
-﻿using SAPSync.Functions;
+﻿using SAP.Middleware.Connector;
+using SAPSync.Functions;
 using SSMD;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace SAPSync.SyncElements
 
         protected override Tuple<int, string> GetIndexKey(MaterialFamilyLevel record) => new Tuple<int, string>(record.Level, record.Code);
 
-        public override MaterialFamilyLevel SetPrimaryKeyForExistingRecord(MaterialFamilyLevel record)
+        protected override MaterialFamilyLevel SetPrimaryKeyForExistingRecord(MaterialFamilyLevel record)
         {
             record.ID = RecordIndex[GetIndexKey(record)].ID;
             return base.SetPrimaryKeyForExistingRecord(record);
@@ -20,11 +21,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncMaterialFamilylevels : SyncElement<MaterialFamilyLevel>
+    public class SyncMaterialFamilylevels : SyncSAPTable<MaterialFamilyLevel>
     {
         #region Constructors
 
-        public SyncMaterialFamilylevels()
+        public SyncMaterialFamilylevels(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Livelli gerarchia prodotto";
         }
@@ -33,15 +34,9 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void AddRecordToUpdates(MaterialFamilyLevel record) => base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new MaterialFamilyLevelEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new RecordValidator<MaterialFamilyLevel>();
         }
 
         protected override IList<MaterialFamilyLevel> ReadRecordTable() => new ReadMaterialFamilyLevels().Invoke(_rfcDestination);

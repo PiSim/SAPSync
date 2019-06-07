@@ -1,4 +1,5 @@
 ﻿using DataAccessCore;
+using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -12,14 +13,19 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        public override void InitializeIndex(SSMDData sSMDData)
+        public override void Initialize(SSMDData sSMDData)
         {
             _recordIndex = sSMDData.RunQuery(new MaterialFamiliesQuery() { EagerLoadingEnabled = true }).ToDictionary(mf => GetIndexKey(mf));
         }
 
+        protected override void ConfigureRecordValidator()
+        {
+            RecordValidator = new MaterialFamilyValidator();
+        }
+
         protected override string GetIndexKey(MaterialFamily record) => record.FullCode;
 
-        public override MaterialFamily SetPrimaryKeyForExistingRecord(MaterialFamily record)
+        protected override MaterialFamily SetPrimaryKeyForExistingRecord(MaterialFamily record)
         {
             record.ID = RecordIndex[GetIndexKey(record)].ID;
             return base.SetPrimaryKeyForExistingRecord(record);
@@ -65,11 +71,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncMaterialFamilies : SyncElement<MaterialFamily>
+    public class SyncMaterialFamilies : SyncSAPTable<MaterialFamily>
     {
         #region Constructors
 
-        public SyncMaterialFamilies()
+        public SyncMaterialFamilies(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Gerarchia prodotto";
         }
@@ -78,16 +84,9 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void AddRecordToUpdates(MaterialFamily record) =>  base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
-        
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new MaterialFamilyEvaluator() { IgnoreExistingRecords = true };
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new MaterialFamilyValidator();
         }
 
         protected override IList<MaterialFamily> ReadRecordTable() => new ReadMaterialFamilies().Invoke(_rfcDestination);

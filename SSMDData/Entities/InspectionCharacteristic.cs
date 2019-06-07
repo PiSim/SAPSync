@@ -22,11 +22,12 @@ namespace SSMD
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        public ICollection<InspectionPoint> InspectionPoints { get; set; }
+        public virtual ICollection<InspectionPoint> InspectionPoints { get; set; }
         public double LowerSpecificationLimit { get; set; }
 
         [Required]
         public string Name { get; set; }
+
         public double TargetValue { get; set; }
         public string UM { get; set; }
         public double UpperSpecificationLimit { get; set; }

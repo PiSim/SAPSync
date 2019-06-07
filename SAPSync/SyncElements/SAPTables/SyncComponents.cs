@@ -1,4 +1,5 @@
-﻿using SAPSync.Functions;
+﻿using SAP.Middleware.Connector;
+using SAPSync.Functions;
 using SSMD;
 using System.Collections.Generic;
 
@@ -10,7 +11,7 @@ namespace SAPSync.SyncElements
 
         protected override string GetIndexKey(Component record) => record.Name;
 
-        public override Component SetPrimaryKeyForExistingRecord(Component record)
+        protected override Component SetPrimaryKeyForExistingRecord(Component record)
         {
             record.ID = RecordIndex[GetIndexKey(record)].ID;
             return base.SetPrimaryKeyForExistingRecord(record);
@@ -19,11 +20,11 @@ namespace SAPSync.SyncElements
         #endregion Methods
     }
 
-    public class SyncComponents : SyncElement<Component>
+    public class SyncComponents : SyncSAPTable<Component>
     {
         #region Constructors
 
-        public SyncComponents()
+        public SyncComponents(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
         {
             Name = "Componenti";
         }
@@ -32,16 +33,9 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        protected override void AddRecordToUpdates(Component record) => base.AddRecordToUpdates(RecordEvaluator.SetPrimaryKeyForExistingRecord(record));
-
         protected override void ConfigureRecordEvaluator()
         {
             RecordEvaluator = new ComponentEvaluator();
-        }
-
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new RecordValidator<Component>();
         }
 
         protected override IList<Component> ReadRecordTable() => new ReadComponents().Invoke(_rfcDestination);
