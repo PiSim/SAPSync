@@ -9,12 +9,6 @@ namespace SSMD
 
         public Project()
         {
-            Materials = new HashSet<Material>();
-            WBSRelations = new HashSet<WBSRelation>();
-            WBSUpRelations = new HashSet<WBSRelation>();
-            WBSDownRelations = new HashSet<WBSRelation>();
-            WBSLeftRelations = new HashSet<WBSRelation>();
-            WBSRightRelations = new HashSet<WBSRelation>();
         }
 
         #endregion Constructors

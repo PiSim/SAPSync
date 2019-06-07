@@ -15,7 +15,7 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 
         public SyncTESTODPPROVA(SSMDData sSMDData) : base(sSMDData)
         {
-            Name = "TEST - ODP PROVA";
+            Name = "Master Odp di Prova";
             PerformExport = true;
         }
 
@@ -31,10 +31,10 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
         protected override void ConfigureWorkbookParameters()
         {
             OriginFolder = "\\\\vulcaflex.locale\\datid\\Laboratorio\\temp\\Pietro";
-            FileName = "TEST_ODPProva.xlsx";
-            BackupFolder = "L:\\LABORATORIO\\BackupReport\\TEST_ODPProva";
+            FileName = "ODPProva.xlsx";
+            BackupFolder = "L:\\LABORATORIO\\BackupReport\\ODPProva";
             UnprotectPassword = "vulcalab";
-            OriginInfo = new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\temp\\Pietro\\TEST_ODPProva.xlsx");
+            OriginInfo = new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx");
             RowsToSkip = 3;
         }
 
@@ -52,14 +52,14 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
         }
 
         protected override IQueryable<WorkPhaseLabData> GetExportingRecordsQuery() => base.GetExportingRecordsQuery()
-            .Include(wpld => wpld.Order)
-                .ThenInclude(ord => ord.Material)
-                    .ThenInclude(mat => mat.Project)
-                        .ThenInclude(prj => prj.WBSDownRelations)
-                            .ThenInclude(wbr => wbr.Down)
             .Include(wpld => wpld.Order.Material.MaterialFamily.L1)
             .Include(wpld => wpld.Order.Material.ColorComponent)
             .Include(wpld => wpld.Order.OrderData)
+            .Include(wpld => wpld.Order)
+                .ThenInclude(ord => ord.Material)
+                    .ThenInclude(mat => mat.Project)
+                        .ThenInclude(prj => prj.WBSUpRelations)
+                            .ThenInclude(prj => prj.Up)
             .Where(wpld => wpld.OrderNumber < 2000000 && wpld.Order.OrderType[0] == 'Z')
             .OrderByDescending(wpld => wpld.OrderNumber);
 
@@ -90,8 +90,8 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
             dto.OrderType = entity.Order?.OrderType;
             dto.Structure = entity.Order?.Material?.MaterialFamily?.L1?.Code;
             dto.Aspect = entity.Order?.Material?.ColorComponent?.Description.Replace("SKIN","");
-            dto.PCA = entity.Order?.Material?.Project?.WBSDownRelations?.FirstOrDefault()?.Down?.Description;
-            dto.ProjectDescription = entity.Order?.Material?.Project?.WBSDownRelations?.FirstOrDefault()?.Down?.Description;
+            dto.PCA = entity.Order?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Code;
+            dto.ProjectDescription = entity.Order?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Description2;
             dto.OrderAmount = entity.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
             return dto;
         }

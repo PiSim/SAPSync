@@ -109,10 +109,11 @@ namespace SAPSync.SyncElements
             return output;
         }
 
+        protected virtual Query<T, SSMDContext> GetIndexEntriesQuery() => new Query<T, SSMDContext>();
+
         public virtual void Initialize(SSMDData sSMDData)
         {
-            _recordIndex = sSMDData.RunQuery(new Query<T, SSMDContext>()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
-
+            _recordIndex = sSMDData.RunQuery(GetIndexEntriesQuery()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
             ConfigureRecordValidator();
             InitializeRecordValidator(sSMDData);
         }

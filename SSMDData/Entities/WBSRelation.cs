@@ -18,8 +18,8 @@ namespace SSMD
         public Nullable<int> LeftID { get; set; }
 
         public Project Project { get; set; }
-
         public int ProjectID { get; set; }
+
         public Project Right { get; set; }
         public Nullable<int> RightID { get; set; }
 

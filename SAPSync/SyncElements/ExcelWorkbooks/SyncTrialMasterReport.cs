@@ -21,6 +21,14 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
         {
         }
 
+        protected override void InitializeRecordEvaluator()
+        {
+        }
+
+        protected override void EnsureInitialized()
+        {
+        }
+
         protected override void ConfigureWorkbookParameters()
         {
             OriginFolder = "L:\\LABORATORIO";

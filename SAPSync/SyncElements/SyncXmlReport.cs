@@ -177,6 +177,12 @@ namespace SAPSync.SyncElements
             return output;
         }
 
+        protected override void ExportData()
+        {
+            CreateBackup();
+            base.ExportData();
+        }
+
         protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
 
         protected virtual IEnumerable<DtoProperty> GetImportedDtoColumns()
@@ -209,8 +215,11 @@ namespace SAPSync.SyncElements
 
             using (ExcelPackage xlPackage = new ExcelPackage(OriginInfo))
             {
-                ExcelWorksheet xlWorkSheet = xlPackage.Workbook.Worksheets[1];
+                if (!xlPackage.File.Exists)
+                    throw new InvalidOperationException("File di origine non trovato: " + xlPackage.File.FullName);
 
+                ExcelWorksheet xlWorkSheet = xlPackage.Workbook.Worksheets[1];
+                
                 var rows = xlWorkSheet.Cells
                    .Select(cell => cell.Start.Row)
                    .Distinct()

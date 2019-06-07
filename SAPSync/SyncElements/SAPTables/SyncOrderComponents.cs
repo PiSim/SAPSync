@@ -13,10 +13,7 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        public override void Initialize(SSMDData sSMDData)
-        {
-            _recordIndex = sSMDData.RunQuery(new OrderComponentsQuery() { EagerLoadingEnabled = true }).ToDictionary(rec => GetIndexKey(rec), rec => rec);
-        }
+        protected override Query<OrderComponent, SSMDContext> GetIndexEntriesQuery() => new OrderComponentsQuery() { EagerLoadingEnabled = true };
 
         protected override void ConfigureRecordValidator()
         {
