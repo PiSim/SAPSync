@@ -15,7 +15,8 @@ namespace SAPSync.Functions
             {
                 "AUFNR",
                 "AUFPL",
-                "GAMNG"
+                "GAMNG",
+                "PLNBEZ"
             };
         }
 
@@ -34,7 +35,11 @@ namespace SAPSync.Functions
             {
                 OrderNumber = orderNumber,
                 RoutingNumber = routingNumber,
-                PlannedQuantity = plannedQuantity
+                PlannedQuantity = plannedQuantity,
+                Material = new Material()
+                {
+                    Code = data[3]
+                }
             };
 
             return output;

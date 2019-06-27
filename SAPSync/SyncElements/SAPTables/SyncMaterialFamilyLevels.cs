@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using System;
 using System.Collections.Generic;
@@ -25,19 +24,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncMaterialFamilylevels(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncMaterialFamilylevels(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Livelli gerarchia prodotto";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Livelli gerarchia prodotto";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<MaterialFamilyLevel> records)
         {
-            RecordEvaluator = new MaterialFamilyLevelEvaluator() { IgnoreExistingRecords = true };
         }
+
+        protected override IRecordEvaluator<MaterialFamilyLevel> GetRecordEvaluator() => new MaterialFamilyLevelEvaluator();
 
         protected override IList<MaterialFamilyLevel> ReadRecordTable() => new ReadMaterialFamilyLevels().Invoke(_rfcDestination);
 

@@ -5,28 +5,26 @@ using SSMD;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace SAPSync.SyncElements.ExcelWorkbooks
 {
-    public class SyncTESTODPPROVA : SyncXmlReport<WorkPhaseLabData, WorkPhaseLabDataDto>
+    public class SyncTrialLabData : SyncXmlReport<WorkPhaseLabData, WorkPhaseLabDataDto>
     {
         #region Constructors
 
-        public SyncTESTODPPROVA(SSMDData sSMDData) : base(sSMDData)
+        public SyncTrialLabData(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Master Odp di Prova";
-            PerformExport = true;
         }
 
         #endregion Constructors
 
-        #region Methods
+        #region Properties
 
-        protected override void ConfigureRecordEvaluator()
-        {
-            RecordEvaluator = new WorkPhaseLabDataEvaluator();
-        }
+        public override string Name => "Master Odp di Prova";
+
+        #endregion Properties
+
+        #region Methods
 
         protected override void ConfigureWorkbookParameters()
         {
@@ -38,37 +36,12 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
             RowsToSkip = 3;
         }
 
-        protected override IEnumerable<ModifyRangeToken> GetRangesToModify()
-        {
-            return new List<ModifyRangeToken>()
-            {
-                new ModifyRangeToken()
-                {
-                    SheetIndex ="Report",
-                    RangeIndex = "LastUpdateDateCell",
-                    Value = DateTime.Now.ToString("dd/MM/yyy hh:mm:ss")
-                }
-            };
-        }
-
-        protected override IQueryable<WorkPhaseLabData> GetExportingRecordsQuery() => base.GetExportingRecordsQuery()
-            .Include(wpld => wpld.Order.Material.MaterialFamily.L1)
-            .Include(wpld => wpld.Order.Material.ColorComponent)
-            .Include(wpld => wpld.Order.OrderData)
-            .Include(wpld => wpld.Order)
-                .ThenInclude(ord => ord.Material)
-                    .ThenInclude(mat => mat.Project)
-                        .ThenInclude(prj => prj.WBSUpRelations)
-                            .ThenInclude(prj => prj.Up)
-            .Where(wpld => wpld.OrderNumber < 2000000 && wpld.Order.OrderType[0] == 'Z')
-            .OrderByDescending(wpld => wpld.OrderNumber);
-
         protected override void ExecutePostImportActions()
         {
             base.ExecutePostImportActions();
 
-            List<Order> trialRecords = _sSMDData.RunQuery(new Query<Order, SSMDContext>()).Where(ord => ord.OrderType[0] == 'Z').ToList();
-            IDictionary<int,WorkPhaseLabData> workPhaseDataIndex = _sSMDData.RunQuery(new Query<WorkPhaseLabData, SSMDContext>()).ToDictionary(wpld => wpld.OrderNumber, wpld => wpld) ;
+            List<Order> trialRecords = SSMDData.RunQuery(new Query<Order, SSMDContext>()).Where(ord => ord.OrderType[0] == 'Z').ToList();
+            IDictionary<int, WorkPhaseLabData> workPhaseDataIndex = SSMDData.RunQuery(new Query<WorkPhaseLabData, SSMDContext>()).ToDictionary(wpld => wpld.OrderNumber, wpld => wpld);
 
             List<WorkPhaseLabData> newTrials = new List<WorkPhaseLabData>();
 
@@ -79,22 +52,51 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
                         OrderNumber = trial.Number
                     });
 
-            _sSMDData.Execute(new InsertEntitiesCommand<SSMDContext>(newTrials));
+            SSMDData.Execute(new InsertEntitiesCommand<SSMDContext>(newTrials));
         }
 
         protected override WorkPhaseLabDataDto GetDtoFromEntity(WorkPhaseLabData entity)
         {
-
             WorkPhaseLabDataDto dto = base.GetDtoFromEntity(entity);
-            dto.MaterialCode = entity.Order?.Material?.Code;
+            dto.MaterialCode = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
             dto.OrderType = entity.Order?.OrderType;
-            dto.Structure = entity.Order?.Material?.MaterialFamily?.L1?.Code;
-            dto.Aspect = entity.Order?.Material?.ColorComponent?.Description.Replace("SKIN","");
-            dto.PCA = entity.Order?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Code;
-            dto.ProjectDescription = entity.Order?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Description2;
+            dto.Structure = entity.Order?.OrderData?.FirstOrDefault()?.Material?.MaterialFamily?.L1?.Code;
+            dto.Aspect = entity.Order?.OrderData?.FirstOrDefault()?.Material?.ColorComponent?.Description.Replace("SKIN", "");
+            dto.PCA = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Code;
+            dto.ProjectDescription = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Description2;
             dto.OrderAmount = entity.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
             return dto;
         }
+
+        protected override IQueryable<WorkPhaseLabData> GetExportingRecordsQuery() => base.GetExportingRecordsQuery()
+            .Include(wpld => wpld.Order.OrderData)
+                .ThenInclude(odd => odd.Material)
+                    .ThenInclude(mat => mat.ColorComponent)
+            .Include(wpld => wpld.Order.OrderData)
+                .ThenInclude(odd => odd.Material)
+                    .ThenInclude(mat => mat.MaterialFamily.L1)
+            .Include(wpld => wpld.Order.OrderData)
+                .ThenInclude(odd => odd.Material)
+                    .ThenInclude(mat => mat.Project)
+                        .ThenInclude(prj => prj.WBSUpRelations)
+                            .ThenInclude(prj => prj.Up)
+            .Where(wpld => wpld.OrderNumber < 2000000 && wpld.Order.OrderType[0] == 'Z')
+            .OrderByDescending(wpld => wpld.OrderNumber);
+
+        protected override IEnumerable<ModifyRangeToken> GetRangesToModify()
+        {
+            return new List<ModifyRangeToken>()
+            {
+                new ModifyRangeToken()
+                {
+                    SheetIndex ="Report",
+                    RangeName = "LastUpdateDateCell",
+                    Value = DateTime.Now.ToString("dd/MM/yyy hh:mm:ss")
+                }
+            };
+        }
+
+        protected override IRecordEvaluator<WorkPhaseLabData> GetRecordEvaluator() => new WorkPhaseLabDataEvaluator();
 
         #endregion Methods
     }
@@ -127,12 +129,6 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
         [Column(11), Imported]
         public string NotesS { get; set; }
 
-        [Column(9)]
-        public string PCA { get; set; }
-
-        [Column(10)]
-        public string ProjectDescription { get; set; }
-
         [Column(4)]
         public double? OrderAmount { get; set; }
 
@@ -141,6 +137,12 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 
         [Column(3)]
         public string OrderType { get; set; }
+
+        [Column(9)]
+        public string PCA { get; set; }
+
+        [Column(10)]
+        public string ProjectDescription { get; set; }
 
         [Column(7)]
         public string Structure { get; set; }
@@ -170,7 +172,6 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
             return record;
         }
 
-
         #endregion Methods
     }
 
@@ -192,8 +193,6 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
         {
             _orderIndex = sSMDData.RunQuery(new Query<Order, SSMDContext>()).ToDictionary(rec => rec.Number, rec => rec);
         }
-
-        
 
         public bool IsValid(WorkPhaseLabData record) => _orderIndex.ContainsKey(record.OrderNumber);
 

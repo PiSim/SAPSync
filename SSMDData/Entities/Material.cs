@@ -11,7 +11,7 @@ namespace SSMD
 
         public Material()
         {
-            Orders = new HashSet<Order>();
+            Orders = new HashSet<OrderData>();
         }
 
         #endregion Constructors
@@ -20,24 +20,27 @@ namespace SSMD
 
         public string Code { get; set; }
 
+        public Component ColorComponent { get; set; }
+
         [ForeignKey("ColorComponent")]
         public int? ColorComponentID { get; set; }
-
-        public Component ColorComponent { get; set; }
 
         public int ControlPlan { get; set; }
 
         [Key]
         public int ID { get; set; }
 
+        public ICollection<MaterialCustomer> MaterialCustomer { get; set; }
         public MaterialFamily MaterialFamily { get; set; }
 
         [ForeignKey("MaterialFamily")]
         public int? MaterialFamilyID { get; set; }
 
-        public ICollection<Order> Orders { get; set; }
+        public ICollection<OrderData> Orders { get; set; }
         public Project Project { get; set; }
         public Nullable<int> ProjectID { get; set; }
+
+        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
 
         #endregion Properties
     }

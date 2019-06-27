@@ -13,6 +13,8 @@ namespace SAPSync
         #region Fields
 
         private SSMDData _ssData;
+        private SyncManager _syncManager;
+        private SyncService.SyncService _syncService;
         private bool destinationIsInitialized = false;
 
         #endregion Fields
@@ -25,6 +27,14 @@ namespace SAPSync
             InitializeDb();
             SAPReader reader = new SAPReader();
             MainWindow = new Views.MainWindow();
+            _syncManager = new SyncManager();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncManager = _syncManager;
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncServiceStartRequested += OnSyncServiceStartRequested;
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncServiceStopRequested += OnSyncServiceStopRequested;
+
+            _syncService = new SyncService.SyncService(_syncManager);
+
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
             MainWindow.Show();
         }
 
@@ -47,7 +57,7 @@ namespace SAPSync
                 {
                     destinationFound = (RfcDestinationManager.GetDestination(destinationConfigName) != null);
                 }
-                catch (Exception e)
+                catch
                 {
                     destinationFound = false;
                 }
@@ -60,6 +70,12 @@ namespace SAPSync
             }
         }
 
+        protected override void OnExit(ExitEventArgs e)
+        {
+            _syncManager.GetAwaiterForOpenReadTasks().Wait();
+            base.OnExit(e);
+        }
+
         private void InitializeDb()
         {
             try
@@ -70,6 +86,28 @@ namespace SAPSync
             {
                 throw new Exception("Inizializzazione Database Fallita: " + e.Message, e);
             }
+        }
+
+        private void OnSyncServiceStartRequested(object sender, EventArgs e)
+        {
+            StartSyncService();
+        }
+
+        private void OnSyncServiceStopRequested(object sender, EventArgs e)
+        {
+            StopSyncService();
+        }
+
+        private void StartSyncService()
+        {
+            _syncService.Start();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
+        }
+
+        private void StopSyncService()
+        {
+            _syncService.Stop();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
         }
 
         #endregion Methods

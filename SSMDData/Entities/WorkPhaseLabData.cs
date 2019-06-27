@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSMD
 {
@@ -24,7 +23,6 @@ namespace SSMD
 
         public Order Order { get; set; }
 
-        [ForeignKey("Order")]
         public int OrderNumber { get; set; }
 
         public string TrialScope { get; set; }

@@ -13,8 +13,7 @@ namespace SAPSync.Functions
             _fields = new string[]
             {
                 "AUFNR",
-                "AUTYP",
-                "MATNR"
+                "AUTYP"
             };
         }
 
@@ -28,16 +27,11 @@ namespace SAPSync.Functions
                 return null;
 
             string orderType = data[1];
-            string matCode = data[2];
 
             Order output = new Order()
             {
                 Number = orderNumber,
                 OrderType = orderType,
-                Material = new Material()
-                {
-                    Code = matCode
-                }
             };
 
             return output;

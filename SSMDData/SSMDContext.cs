@@ -17,10 +17,13 @@ namespace SSMD
         #region Properties
 
         public DbSet<Component> Components { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<GoodMovement> GoodMovements { get; set; }
         public DbSet<InspectionCharacteristic> InspectionCharacteristics { get; set; }
         public DbSet<InspectionLot> InspectionLots { get; set; }
         public DbSet<InspectionPoint> InspectionPoints { get; set; }
         public DbSet<InspectionSpecification> InspectionSpecifications { get; set; }
+        public DbSet<MaterialCustomer> MaterialCustomers { get; set; }
         public DbSet<MaterialFamily> MaterialFamilies { get; set; }
         public DbSet<MaterialFamilyLevel> MaterialFamilyLevels { get; set; }
         public DbSet<Material> Materials { get; set; }
@@ -31,6 +34,7 @@ namespace SSMD
         public DbSet<Project> Projects { get; set; }
         public DbSet<RoutingOperation> RoutingOperations { get; set; }
         public DbSet<ScrapCause> ScrapCauses { get; set; }
+        public DbSet<SyncElementData> SyncElementData { get; set; }
         public DbSet<TestReport> TestReports { get; set; }
         public DbSet<WBSRelation> WBSRelations { get; set; }
         public DbSet<WorkCenter> WorkCenters { get; set; }
@@ -80,6 +84,19 @@ namespace SSMD
                 .WithMany(mfa => mfa.Materials)
                 .HasForeignKey(mat => mat.MaterialFamilyID);
 
+            modelBuilder.Entity<MaterialCustomer>()
+                .HasKey(mac => new Tuple<int, int>(mac.MaterialID, mac.CustomerID));
+
+            modelBuilder.Entity<MaterialCustomer>()
+                .HasOne(mac => mac.Material)
+                .WithMany(mat => mat.MaterialCustomer)
+                .HasForeignKey(mac => mac.MaterialID);
+
+            modelBuilder.Entity<MaterialCustomer>()
+                .HasOne(mac => mac.Customer)
+                .WithMany(cus => cus.MaterialCustomers)
+                .HasForeignKey(mac => mac.CustomerID);
+
             modelBuilder.Entity<MaterialFamily>()
                 .HasOne(matf => matf.L1)
                 .WithMany()
@@ -105,7 +122,7 @@ namespace SSMD
             modelBuilder.Entity<Order>()
                 .HasIndex(ord => ord.OrderType);
 
-            modelBuilder.Entity<Order>()
+            modelBuilder.Entity<OrderData>()
                 .HasOne(ord => ord.Material)
                 .WithMany(mat => mat.Orders)
                 .HasForeignKey(ord => ord.MaterialID);
@@ -154,10 +171,23 @@ namespace SSMD
                 .HasForeignKey(rop => rop.RoutingNumber)
                 .HasPrincipalKey(odd => odd.RoutingNumber);
 
+            modelBuilder.Entity<TestReport>()
+                .HasOne(trp => trp.Order)
+                .WithMany(ord => ord.TestReports)
+                .HasForeignKey(trp => trp.OrderNumber);
+
+            modelBuilder.Entity<GoodMovement>()
+                .HasOne(gmo => gmo.Material)
+                .WithMany(mat => mat.GoodMovements);
+
+            modelBuilder.Entity<GoodMovement>()
+                .HasOne(gmo => gmo.Order)
+                .WithMany(ord => ord.GoodMovements);
+
             modelBuilder.Entity<WBSRelation>()
                 .HasOne(wbr => wbr.Project)
                 .WithMany(prj => prj.WBSRelations)
-                .HasForeignKey(wbr => wbr.ProjectID);
+                .HasForeignKey(wbr => wbr.ID);
 
             modelBuilder.Entity<WBSRelation>()
                 .HasOne(wbr => wbr.Up)
@@ -181,6 +211,11 @@ namespace SSMD
 
             modelBuilder.Entity<WorkCenter>()
                 .HasIndex(wc => wc.ShortName);
+
+            modelBuilder.Entity<WorkPhaseLabData>()
+                .HasOne(wpld => wpld.Order)
+                .WithMany(ord => ord.WorkPhaseLabData)
+                .HasForeignKey(ord => ord.OrderNumber);
         }
 
         #endregion Methods

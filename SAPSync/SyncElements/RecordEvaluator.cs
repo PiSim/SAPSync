@@ -7,6 +7,14 @@ namespace SAPSync.SyncElements
 {
     public interface IRecordEvaluator<T>
     {
+        #region Properties
+
+        bool CheckRemovedRecords { get; set; }
+
+        bool IgnoreExistingRecords { get; set; }
+
+        #endregion Properties
+
         #region Methods
 
         bool CheckInitialized();
@@ -82,7 +90,8 @@ namespace SAPSync.SyncElements
 
             var validRecords = evaluatedRecords.Where(
                 rec => rec.Action != SyncAction.Ignore
-                    && RecordValidator.IsValid(rec.Item));
+                    && RecordValidator.IsValid(rec.Item))
+                    .ToList();
 
             List<T> deleteRecords = new List<T>();
             List<T> insertRecords = new List<T>();
@@ -97,9 +106,7 @@ namespace SAPSync.SyncElements
                     insertRecords.Add(indexedRecord);
                 else if (record.Action == SyncAction.Update)
                     updateRecords.Add(indexedRecord);
-
             }
-
 
             UpdatePackage<T> output = new UpdatePackage<T>(
                 deleteRecords,
@@ -108,8 +115,6 @@ namespace SAPSync.SyncElements
 
             return output;
         }
-
-        protected virtual Query<T, SSMDContext> GetIndexEntriesQuery() => new Query<T, SSMDContext>();
 
         public virtual void Initialize(SSMDData sSMDData)
         {
@@ -145,6 +150,8 @@ namespace SAPSync.SyncElements
 
             return retrievedItems;
         }
+
+        protected virtual Query<T, SSMDContext> GetIndexEntriesQuery() => new Query<T, SSMDContext>();
 
         protected abstract TKey GetIndexKey(T record);
 
@@ -189,17 +196,17 @@ namespace SAPSync.SyncElements
 
         #region Classes
 
-        protected class SyncItem<T> where T : class
+        protected class SyncItem<TI> where TI : T
         {
             #region Fields
 
-            private readonly T _item;
+            private readonly TI _item;
 
             #endregion Fields
 
             #region Constructors
 
-            public SyncItem(T item)
+            public SyncItem(TI item)
             {
                 _item = item;
             }
@@ -209,7 +216,7 @@ namespace SAPSync.SyncElements
             #region Properties
 
             public SyncAction Action { get; set; } = SyncAction.Ignore;
-            public T Item => _item;
+            public TI Item => _item;
 
             #endregion Properties
         }

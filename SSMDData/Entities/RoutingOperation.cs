@@ -15,6 +15,7 @@ namespace SSMD
 
         #region Properties
 
+        public int BaseQuantity { get; set; } = 0;
         public OrderData OrderData { get; set; }
 
         [Required]

@@ -50,19 +50,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncInspectionLots(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncInspectionLots(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Lotti di Controllo";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Lotti di Controllo";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<InspectionLot> records)
         {
-            RecordEvaluator = new InspectionLotEvaluator() { IgnoreExistingRecords = true };
         }
+
+        protected override IRecordEvaluator<InspectionLot> GetRecordEvaluator() => new InspectionLotEvaluator() { IgnoreExistingRecords = true };
 
         protected override IList<InspectionLot> ReadRecordTable()
         {

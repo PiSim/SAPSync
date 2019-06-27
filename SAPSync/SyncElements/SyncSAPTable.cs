@@ -1,6 +1,5 @@
 ﻿using SAP.Middleware.Connector;
 using SAPSync.SyncElements;
-using SSMD;
 using System;
 using System.Collections.Generic;
 
@@ -16,20 +15,31 @@ namespace SAPSync
 
         #region Constructors
 
-        public SyncSAPTable(RfcDestination rfcDestination, SSMDData sSMDData) : base(sSMDData)
+        public SyncSAPTable(SyncElementConfiguration configuration) : base(configuration)
         {
-            _rfcDestination = rfcDestination;
         }
 
         #endregion Constructors
 
         #region Methods
 
+        public override void Clear()
+        {
+            _rfcDestination = null;
+            base.Clear();
+        }
+
         protected override void EnsureInitialized()
         {
             base.EnsureInitialized();
             if (_rfcDestination == null)
                 throw new ArgumentNullException("RfcDestination");
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            _rfcDestination = (new SAPReader()).GetRfcDestination();
         }
 
         protected override IEnumerable<T> ReadRecords()

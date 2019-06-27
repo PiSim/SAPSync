@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -53,19 +52,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncConfirmations(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncConfirmations(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Conferme";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Conferme";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<OrderConfirmation> records)
         {
-            RecordEvaluator = new ConfirmationEvaluator();
         }
+
+        protected override IRecordEvaluator<OrderConfirmation> GetRecordEvaluator() => new ConfirmationEvaluator();
 
         protected override IList<OrderConfirmation> ReadRecordTable() => new ReadConfirmations().Invoke(_rfcDestination);
 

@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using System.Collections.Generic;
@@ -11,19 +10,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncWBSRelations(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncWBSRelations(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Relazioni WBS";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Relazioni WBS";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<WBSRelation> records)
         {
-            RecordEvaluator = new WBSRelationEvaluator();
         }
+
+        protected override IRecordEvaluator<WBSRelation> GetRecordEvaluator() => new WBSRelationEvaluator();
 
         protected override IList<WBSRelation> ReadRecordTable() => new ReadWBSRelations().Invoke(_rfcDestination);
 

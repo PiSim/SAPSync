@@ -4,14 +4,16 @@ namespace SSMD.Migrations
 {
     public partial class wbsfix2 : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-
-        }
+        #region Methods
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
         }
+
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+        }
+
+        #endregion Methods
     }
 }

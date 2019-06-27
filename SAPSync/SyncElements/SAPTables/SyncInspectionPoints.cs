@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
 using System;
@@ -50,19 +49,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncInspectionPoints(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncInspectionPoints(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Punti di Controllo";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Punti di Controllo";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<InspectionPoint> records)
         {
-            RecordEvaluator = new InspectionPointEvaluator() { IgnoreExistingRecords = true };
         }
+
+        protected override IRecordEvaluator<InspectionPoint> GetRecordEvaluator() => new InspectionPointEvaluator();
 
         protected override IList<InspectionPoint> ReadRecordTable() => new ReadInspectionPoints().Invoke(_rfcDestination);
 

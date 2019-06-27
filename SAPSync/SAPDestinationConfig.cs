@@ -20,18 +20,25 @@ namespace SAPSync
 
         public RfcConfigParameters GetParameters(string destinationName)
         {
-            RfcConfigParameters prms = new RfcConfigParameters();
-            prms.Add(RfcConfigParameters.Name, "PRD");
-            prms.Add(RfcConfigParameters.AppServerHost, ConfigurationManager.AppSettings["SAP_APPSERVERHOST"]);
-            prms.Add(RfcConfigParameters.SystemNumber, ConfigurationManager.AppSettings["SAP_SYSTEMNUM"]);
-            prms.Add(RfcConfigParameters.SystemID, ConfigurationManager.AppSettings["SAP_CLIENT"]);
-            prms.Add(RfcConfigParameters.User, ConfigurationManager.AppSettings["SAP_USERNAME"]);
-            prms.Add(RfcConfigParameters.Password, ConfigurationManager.AppSettings["SAP_PASSWORD"]);
-            prms.Add(RfcConfigParameters.Client, ConfigurationManager.AppSettings["SAP_CLIENT"]);
-            prms.Add(RfcConfigParameters.Language, ConfigurationManager.AppSettings["SAP_LANGUAGE"]);
-            prms.Add(RfcConfigParameters.PoolSize, ConfigurationManager.AppSettings["SAP_POOLSIZE"]);
+            RfcConfigParameters prms = new RfcConfigParameters
+            {
+                { RfcConfigParameters.Name, "PRD" },
+                { RfcConfigParameters.AppServerHost, ConfigurationManager.AppSettings["SAP_APPSERVERHOST"] },
+                { RfcConfigParameters.SystemNumber, ConfigurationManager.AppSettings["SAP_SYSTEMNUM"] },
+                { RfcConfigParameters.SystemID, ConfigurationManager.AppSettings["SAP_CLIENT"] },
+                { RfcConfigParameters.User, ConfigurationManager.AppSettings["SAP_USERNAME"] },
+                { RfcConfigParameters.Password, ConfigurationManager.AppSettings["SAP_PASSWORD"] },
+                { RfcConfigParameters.Client, ConfigurationManager.AppSettings["SAP_CLIENT"] },
+                { RfcConfigParameters.Language, ConfigurationManager.AppSettings["SAP_LANGUAGE"] },
+                { RfcConfigParameters.PoolSize, ConfigurationManager.AppSettings["SAP_POOLSIZE"] }
+            };
 
             return prms;
+        }
+
+        protected virtual void RaiseConfigurationChanged()
+        {
+            ConfigurationChanged?.Invoke(this.ToString(), new RfcConfigurationEventArgs(RfcConfigParameters.EventType.CHANGED));
         }
 
         #endregion Methods

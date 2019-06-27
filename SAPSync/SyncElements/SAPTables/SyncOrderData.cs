@@ -1,7 +1,7 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
+using SSMD.Queries;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,22 +25,29 @@ namespace SAPSync.SyncElements
     {
         #region Fields
 
+        private IDictionary<string, Material> _materialDictionary;
         private IDictionary<int, Order> _orderIndex;
 
         #endregion Fields
 
         #region Methods
 
-        public bool CheckIndexesInitialized() => _orderIndex != null;
+        public bool CheckIndexesInitialized() => _orderIndex != null && _materialDictionary != null;
 
-        public OrderData GetInsertableRecord(OrderData record) => record;
+        public OrderData GetInsertableRecord(OrderData record)
+        {
+            record.MaterialID = _materialDictionary[record.Material.Code].ID;
+            record.Material = null;
+            return record;
+        }
 
         public void InitializeIndexes(SSMDData sSMDData)
         {
             _orderIndex = sSMDData.RunQuery(new Query<Order, SSMDContext>()).ToDictionary(ord => ord.Number);
+            _materialDictionary = sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
         }
 
-        public bool IsValid(OrderData record) => _orderIndex.ContainsKey(record.OrderNumber);
+        public bool IsValid(OrderData record) => _orderIndex.ContainsKey(record.OrderNumber) && _materialDictionary.ContainsKey(record.Material.Code);
 
         #endregion Methods
     }
@@ -49,19 +56,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncOrderData(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncOrderData(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Dati Ordine";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Dati Ordine";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<OrderData> records)
         {
-            RecordEvaluator = new OrderDataEvaluator();
         }
+
+        protected override IRecordEvaluator<OrderData> GetRecordEvaluator() => new OrderDataEvaluator();
 
         protected override IList<OrderData> ReadRecordTable() => new ReadOrderData().Invoke(_rfcDestination);
 

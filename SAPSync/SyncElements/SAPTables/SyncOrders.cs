@@ -1,10 +1,6 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
-using SSMD.Queries;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SAPSync.SyncElements
 {
@@ -12,41 +8,7 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new OrderValidator();
-        }
-
         protected override int GetIndexKey(Order record) => record.Number;
-
-        #endregion Methods
-    }
-
-    public class OrderValidator : IRecordValidator<Order>
-    {
-        #region Fields
-
-        private IDictionary<string, Material> _materialDictionary;
-
-        #endregion Fields
-
-        #region Methods
-
-        public bool CheckIndexesInitialized() => _materialDictionary != null;
-
-        public Order GetInsertableRecord(Order record)
-        {
-            record.MaterialID = _materialDictionary[record.Material.Code].ID;
-            record.Material = null;
-            return record;
-        }
-
-        public void InitializeIndexes(SSMDData sSMDData)
-        {
-            _materialDictionary = sSMDData.RunQuery(new MaterialsQuery()).ToDictionary(mat => mat.Code, mat => mat);
-        }
-
-        public bool IsValid(Order record) => _materialDictionary.ContainsKey(record.Material.Code);
 
         #endregion Methods
     }
@@ -55,66 +17,27 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncOrders(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncOrders(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Ordini";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Ordini";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<Order> records)
         {
-            RecordEvaluator = new OrderEvaluator() { IgnoreExistingRecords = true };
         }
 
-        protected override IList<Order> ReadRecordTable()
-        {
-            IRfcTable recordTable = RetrieveOrders(_rfcDestination);
-            return ConvertOrdersTable(recordTable);
-        }
+        protected override IRecordEvaluator<Order> GetRecordEvaluator() => new OrderEvaluator();
 
-        private IList<Order> ConvertOrdersTable(IRfcTable ordersTable)
-        {
-            IList<Order> output = new List<Order>();
-
-            foreach (IRfcStructure row in ordersTable)
-            {
-                string orderstring = row.GetString("order_number");
-
-                if (int.TryParse(orderstring, out int currentOrderNumber))
-                {
-                    string materialCode = row.GetString("material");
-
-                    Order newOrder = new Order()
-                    {
-                        Number = currentOrderNumber,
-                        Material = new Material() { Code = materialCode },
-                        OrderType = row.GetString("order_type")
-                    };
-
-                    output.Add(newOrder);
-                };
-            }
-            return output;
-        }
-
-        private IRfcTable RetrieveOrders(RfcDestination destination)
-        {
-            IRfcTable output;
-
-            try
-            {
-                output = new OrdersGetList().Invoke(destination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("RetrieveOrders error: " + e.Message);
-            }
-
-            return output;
-        }
+        protected override IList<Order> ReadRecordTable() => new ReadOrders().Invoke(_rfcDestination);
 
         #endregion Methods
     }

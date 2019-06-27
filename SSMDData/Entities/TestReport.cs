@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSMD
@@ -28,27 +27,24 @@ namespace SSMD
 
         public double? GlossZ { get; set; }
 
-        public bool HasRollArrived { get; set; }
-
         public string Notes { get; set; }
+        public string Notes2 { get; set; }
 
-        [Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Number { get; set; }
 
         public string Operator { get; set; }
 
-        [ForeignKey("Order")]
+        public Order Order { get; set; }
         public int? OrderNumber { get; set; }
 
         public string OtherTests { get; set; }
-        public string RollStatus { get; set; }
         public double? SetL { get; set; }
         public double? SetT { get; set; }
         public double? StretchL { get; set; }
         public double? StretchT { get; set; }
         public double? Thickness { get; set; }
         public double? Weight { get; set; }
-        private DateTime RollArrivalDate { get; set; }
 
         #endregion Properties
     }

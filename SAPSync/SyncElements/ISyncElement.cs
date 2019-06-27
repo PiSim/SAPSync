@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements
 {
@@ -9,7 +10,15 @@ namespace SAPSync.SyncElements
 
         event ProgressChangedEventHandler ProgressChanged;
 
+        event EventHandler<TaskEventArgs> ReadTaskCompleted;
+
+        event EventHandler<TaskEventArgs> ReadTaskStarting;
+
         event EventHandler StatusChanged;
+
+        event EventHandler SyncCompleted;
+
+        event EventHandler SyncElementStarting;
 
         event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
 
@@ -19,24 +28,26 @@ namespace SAPSync.SyncElements
 
         #region Properties
 
-        DateTime LastUpdate { get; }
+        Task CurrentSyncTask { get; }
+        bool EnforceUpdate { get; set; }
+        bool ForbidUpdate { get; set; }
+        bool HasCompletedCurrentSyncTask { get; }
+        bool IsFailed { get; set; }
+        bool IsUpForScheduledUpdate { get; }
+        DateTime? LastUpdate { get; }
+        bool MustPerformUpdate { get; }
         string Name { get; }
-        DateTime NextScheduledUpdate { get; }
+        DateTime? NextScheduledUpdate { get; }
         int PhaseProgress { get; }
-
-        bool RequiresSync { get; set; }
-
         string SyncStatus { get; }
 
         #endregion Properties
 
         #region Methods
 
-        void ResetProgress();
+        void OnSyncTaskStarted(object sender, EventArgs e);
 
-        void SetOnQueue();
-
-        void StartSync();
+        void OnSyncTaskStarting(object sender, EventArgs e);
 
         #endregion Methods
     }

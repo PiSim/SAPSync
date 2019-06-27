@@ -22,20 +22,21 @@ namespace SSMD
         public int ControlPlanNumber { get; set; }
         public int ID { get; set; }
         public virtual ICollection<InspectionLot> InspectionLots { get; set; }
-        public Material Material { get; set; }
-        public int MaterialID { get; set; }
 
         [Key]
         public int Number { get; set; }
 
         public virtual ICollection<OrderComponent> OrderComponents { get; set; }
         public virtual ICollection<OrderConfirmation> OrderConfirmations { get; set; }
+        public virtual ICollection<OrderData> OrderData { get; set; }
         public string OrderType { get; set; }
         public long RoutingNumber { get; set; }
+        public virtual ICollection<TestReport> TestReports { get; set; }
         public double TotalQuantity { get; set; }
         public double TotalScrap { get; set; }
+        public virtual ICollection<WorkPhaseLabData> WorkPhaseLabData { get; set; }
 
-        public virtual ICollection<OrderData> OrderData { get; set; }
+        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
 
         #endregion Properties
     }

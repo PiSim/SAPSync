@@ -24,13 +24,13 @@ namespace SSMD
 
         public virtual ICollection<Material> Materials { get; set; }
 
+        public virtual ICollection<WBSRelation> WBSDownRelations { get; set; }
+        public virtual ICollection<WBSRelation> WBSLeftRelations { get; set; }
         public int WBSLevel { get; set; }
 
         public virtual ICollection<WBSRelation> WBSRelations { get; set; }
-        public virtual ICollection<WBSRelation> WBSUpRelations { get; set; }
-        public virtual ICollection<WBSRelation> WBSDownRelations { get; set; }
-        public virtual ICollection<WBSRelation> WBSLeftRelations { get; set; }
         public virtual ICollection<WBSRelation> WBSRightRelations { get; set; }
+        public virtual ICollection<WBSRelation> WBSUpRelations { get; set; }
 
         #endregion Properties
     }

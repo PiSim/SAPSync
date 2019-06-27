@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SSMD;
+﻿using SSMD;
 
 namespace SAPSync.Functions
 {
@@ -21,11 +20,9 @@ namespace SAPSync.Functions
 
         #region Methods
 
-        internal override MaterialFamilyLevel ConvertRow(IRfcStructure row)
+        internal override MaterialFamilyLevel ConvertDataArray(string[] data)
         {
             MaterialFamilyLevel output = new MaterialFamilyLevel();
-
-            string[] data = row.GetString("WA").Split(_separator);
 
             string fullcode = data[0].Trim();
 
@@ -41,7 +38,8 @@ namespace SAPSync.Functions
             output = new MaterialFamilyLevel()
             {
                 Level = level,
-                Code = code
+                Code = code,
+                Description = data[1]
             };
 
             return output;

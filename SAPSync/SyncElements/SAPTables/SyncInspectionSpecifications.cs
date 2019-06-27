@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -63,19 +62,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncInspectionSpecifications(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncInspectionSpecifications(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Specifiche di controllo";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Specifiche di controllo";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<InspectionSpecification> records)
         {
-            RecordEvaluator = new InspectionSpecificationEvaluator();
         }
+
+        protected override IRecordEvaluator<InspectionSpecification> GetRecordEvaluator() => new InspectionSpecificationEvaluator();
 
         protected override IList<InspectionSpecification> ReadRecordTable() => new ReadInspectionSpecifications().Invoke(_rfcDestination);
 

@@ -8,12 +8,13 @@ namespace SAPSync.Functions
 
         public ReadRoutingOperations()
         {
-            _tableName = "AFVV";
+            _tableName = "AFVC";
 
             _fields = new string[]
             {
                 "AUFPL",
-                "APLZL"
+                "APLZL",
+                "ARBID"
             };
         }
 
@@ -23,14 +24,16 @@ namespace SAPSync.Functions
 
         internal override RoutingOperation ConvertDataArray(string[] data)
         {
-            if (!long.TryParse(data[0], out long routingOperationNumber)
-                || !int.TryParse(data[1], out int routingOperationCounter))
+            if (!int.TryParse(data[0], out int routingOperationNumber)
+                || !int.TryParse(data[1], out int routingOperationCounter)
+                || !int.TryParse(data[2], out int workCenterID))
                 return null;
 
             RoutingOperation output = new RoutingOperation()
             {
                 RoutingNumber = routingOperationNumber,
-                RoutingCounter = routingOperationCounter
+                RoutingCounter = routingOperationCounter,
+                WorkCenterID = workCenterID
             };
 
             return output;

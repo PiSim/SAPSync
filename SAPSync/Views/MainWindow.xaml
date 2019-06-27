@@ -6,19 +6,64 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d"
-        Title="SapSync" Height="500" Width="500">
+        Title="SapSync" Height="600" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Button Content="Inizia Sincronizzazione"
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Stato servizio:"
+                       Grid.Column="0"
+                       VerticalAlignment="Center" />
+            <TextBlock Text="{Binding ServiceStatus}"
+                       Grid.Column="1"
+                       VerticalAlignment="Center" />
+            <Button Content="Inizia Sincronizzazione"
                 Command="{Binding StartSyncCommand}"
-                Grid.Row="0"
+                Grid.Column="3"
                 HorizontalAlignment="Left"
                 Margin="5"
                 Padding="5"
                 VerticalAlignment="Center" />
+            <Button
+                Command="{Binding ToggleSyncServiceCommand}"
+                Grid.Column="2"
+                HorizontalAlignment="Left"
+                Margin="5"
+                Padding="5"
+                VerticalAlignment="Center">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+
+                            <DataTrigger Binding="{Binding ServiceStatus}"
+                             Value="Running">
+                                <Setter Property="Content"
+                            Value="Ferma" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ServiceStatus}"
+                             Value="Stopped">
+                                <Setter Property="Content"
+                            Value="Avvia" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Log"
+                    Command="{Binding OpenLogWindowCommand}"
+                    Grid.Column="4"
+                    Margin="5"/>
+        </Grid>
 
         <DataGrid AutoGenerateColumns="false"
                   CanUserAddRows="False"
@@ -32,7 +77,8 @@
                   RowHeight="30"
                   VerticalGridLinesBrush="Transparent">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridCheckBoxColumn Header="Forza" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridCheckBoxColumn Header="Blocca" Binding="{Binding IsUpdateForbidden, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
                 <DataGridTextColumn Header="Stato"
@@ -47,6 +93,14 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Ultimo Aggiornamento"
+                                    Binding="{Binding LastUpdate,
+                                                      StringFormat=dd/MM/yyyy hh:mm,
+                                                      Mode=OneWay}" />
+                <DataGridTextColumn Header="Prossimo Aggiornamento"
+                                    Binding="{Binding NextScheduledUpdate,
+                                                      StringFormat=dd/MM/yyyy hh:mm,
+                                                      Mode=OneWay}" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

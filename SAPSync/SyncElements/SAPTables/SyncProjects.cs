@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using System.Collections.Generic;
 
@@ -18,19 +17,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncProjects(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncProjects(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Progetti";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Progetti";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<Project> records)
         {
-            RecordEvaluator = new ProjectEvaluator();
         }
+
+        protected override IRecordEvaluator<Project> GetRecordEvaluator() => new ProjectEvaluator();
 
         protected override IList<Project> ReadRecordTable() => new ReadProjects().Invoke(_rfcDestination);
 

@@ -1,21 +1,22 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.SyncElements;
+﻿using SAPSync.SyncElements;
 using SAPSync.SyncElements.ExcelWorkbooks;
+using SAPSync.SyncElements.SAPTables;
 using SSMD;
+using SyncService;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public class SyncManager
+    public class SyncManager : ISyncManager
     {
         #region Fields
 
-        private readonly SSMDData _sSMDData;
-        private SAPReader _reader;
         private List<ISyncElement> _syncElements;
+        private List<Task> _taskList;
 
         #endregion Fields
 
@@ -23,46 +24,354 @@ namespace SAPSync
 
         public SyncManager()
         {
-            _reader = new SAPReader();
-            _sSMDData = new SSMDData(new SSMDContextFactory());
+            _taskList = new List<Task>();
+            ActiveSyncs = new HashSet<ISyncElement>();
         }
 
         #endregion Constructors
 
+        #region Events
+
+        public event EventHandler NewSyncTaskStarted;
+
+        public event EventHandler NewSyncTaskStarting;
+
+        public event EventHandler SyncTaskCompleted;
+
+        #endregion Events
+
         #region Properties
+
+        public ICollection<ISyncElement> ActiveSyncs { get; }
+        public bool HasRunningTasks => _taskList.Where(tsk => tsk.Status == TaskStatus.Running).Count() != 0;
 
         public ICollection<ISyncElement> SyncElements
         {
             get
             {
                 if (_syncElements == null)
+                {
+                    ConfigureSyncElements();
                     InitializeSyncElements();
+                }
 
                 return _syncElements;
             }
         }
 
+        public bool UpdateRunning { get; set; }
+
         #endregion Properties
 
         #region Methods
 
+        public Task GetAwaiterForOpenReadTasks()
+        {
+            return Task.WhenAll(_taskList.Where(tsk => tsk?.Status == TaskStatus.Running).ToList());
+        }
+
+        public SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
+
+        public DateTime? GetTimeForNextUpdate() => SyncElements.Min(sel => sel.NextScheduledUpdate);
+
         public void StartSync()
         {
-            try
+            if (SyncElements.Count != 0 && !UpdateRunning)
             {
-                ResetAllProgress();
-                IEnumerable<ISyncElement> toSync = SyncElements.Where(syel => syel.RequiresSync);
-
-                foreach (ISyncElement syncElement in toSync)
-                    syncElement.SetOnQueue();
-
-                foreach (ISyncElement syncElement in toSync)
-                    syncElement.StartSync();
+                UpdateRunning = true;
+                RaiseNewSyncTaskStarting();
+                RaiseNewSyncTaskStarted();
             }
-            catch (Exception e)
-            {
-                throw new Exception("Sincronizzazione Fallita:" + e.Message, e);
-            }
+        }
+
+        protected virtual bool CheckAllElementsComplete() => ActiveSyncs.Count == 0;
+
+        protected virtual void ConfigureSyncElements()
+        {
+            ISyncElement WorkCentersElement = new SyncWorkCenters(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement MaterialFamilyLevelsElement = new SyncMaterialFamilylevels(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement MaterialFamiliesElement = new SyncMaterialFamilies(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                        MaterialFamilyLevelsElement
+                });
+
+            ISyncElement ProjectsElement = new SyncProjects(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement WBSRelationsElement = new SyncWBSRelations(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                        ProjectsElement
+                });
+
+            ISyncElement MaterialsElement = new SyncMaterials(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                        MaterialFamiliesElement,
+                        ProjectsElement
+                });
+
+            ISyncElement OrdersElement = new SyncOrders(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                        MaterialsElement
+                });
+
+            ISyncElement OrderDataElement = new SyncOrderData(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement
+                });
+
+            ISyncElement RoutingOperationsElement = new SyncRoutingOperations(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    WorkCentersElement,
+                    OrderDataElement
+                });
+
+            ISyncElement ComponentsElement = new SyncComponents(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement ConfirmationsElements = new SyncConfirmations(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    WorkCentersElement
+                });
+
+            ISyncElement OrderComponentsElement = new SyncOrderComponents(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    ComponentsElement
+                });
+
+            ISyncElement InspectionCharacteristicsElement = new SyncInspectionCharacteristics(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement InspectionLotsElement = new SyncInspectionLots(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement
+                });
+
+            ISyncElement CustomersElement = new SyncCustomers(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = false,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                });
+
+            ISyncElement MaterialCustomerElement = new SyncMaterialCustomers(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = true,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    MaterialsElement,
+                    CustomersElement
+                });
+
+            ISyncElement InspectionSpecificationsElement = new SyncInspectionSpecifications(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    InspectionCharacteristicsElement
+                });
+
+            ISyncElement InspectionPointsElement = new SyncInspectionPoints(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = false,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    InspectionLotsElement,
+                    InspectionSpecificationsElement,
+                });
+
+            ISyncElement TrialMasterListElement = new SyncTrialMasterReportTEST(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = false,
+                    IgnoreExistingRecords = false,
+                    PerformExport = true,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    OrderDataElement
+                });
+
+            ISyncElement TrialLabDataElement = new SyncTrialLabData(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = true,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    OrderDataElement,
+                    TrialMasterListElement
+                });
+
+            ISyncElement TestReportsElement = new SyncTestReports(
+                new SyncElementConfiguration()
+                {
+                    CheckDeletedElements = true,
+                    IgnoreExistingRecords = false,
+                    PerformExport = true,
+                    PerformImport = true
+                })
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    OrderDataElement,
+                    TrialMasterListElement
+                });
+
+            _syncElements = new List<ISyncElement>
+                {
+                    WorkCentersElement,
+                    CustomersElement,
+                    MaterialFamilyLevelsElement,
+                    MaterialFamiliesElement,
+                    MaterialCustomerElement,
+                    ProjectsElement,
+                    WBSRelationsElement,
+                    MaterialsElement,
+                    OrdersElement,
+                    ComponentsElement,
+                    RoutingOperationsElement,
+                    OrderDataElement,
+                    OrderComponentsElement,
+                    ConfirmationsElements,
+                    InspectionCharacteristicsElement,
+                    InspectionLotsElement,
+                    InspectionSpecificationsElement,
+                    InspectionPointsElement,
+                    TrialMasterListElement,
+                    TrialLabDataElement,
+                    TestReportsElement
+                };
         }
 
         protected virtual void CreateLogEntry(string message)
@@ -77,6 +386,54 @@ namespace SAPSync
             File.AppendAllLines(logPath, logLines);
         }
 
+        protected virtual void InitializeSyncElements()
+        {
+            try
+            {
+                foreach (ISyncElement syncElement in _syncElements)
+                {
+                    NewSyncTaskStarted += syncElement.OnSyncTaskStarted;
+                    NewSyncTaskStarting += syncElement.OnSyncTaskStarting;
+                    syncElement.SyncErrorRaised += OnSyncErrorRaised;
+                    syncElement.SyncFailed += OnSyncFailureRaised;
+                    syncElement.SyncCompleted += OnSyncElementCompleted;
+                    syncElement.ReadTaskCompleted += OnReadTaskComplete;
+                    syncElement.ReadTaskStarting += OnReadTaskStarting;
+                    syncElement.SyncElementStarting += OnSyncElementStarting;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Inizializzazione elementi di sincronizzazione fallita: " + e.Message);
+            }
+        }
+
+        protected virtual void OnReadTaskComplete(object sender, TaskEventArgs e)
+        {
+        }
+
+        protected virtual void OnReadTaskStarting(object sender, TaskEventArgs e)
+        {
+            _taskList.Add(e.ReadingTask);
+        }
+
+        protected virtual void OnSyncElementCompleted(object sender, EventArgs e)
+        {
+            if (ActiveSyncs.Contains(sender as ISyncElement))
+                ActiveSyncs.Remove(sender as ISyncElement);
+
+            if (CheckAllElementsComplete())
+            {
+                UpdateRunning = false;
+                RaiseSyncTaskCompleted();
+            }
+        }
+
+        protected virtual void OnSyncElementStarting(object sender, EventArgs e)
+        {
+            ActiveSyncs.Add(sender as ISyncElement);
+        }
+
         protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)
         {
             CreateLogEntry("Error: " + e.ErrorMessage.Replace('\n', ' '));
@@ -88,49 +445,19 @@ namespace SAPSync
             CreateLogEntry(logMessage);
         }
 
-        private void InitializeSyncElements()
+        protected virtual void RaiseNewSyncTaskStarted()
         {
-            try
-            {
-                RfcDestination rfcDestination = _reader.GetRfcDestination();
-                _syncElements = new List<ISyncElement>
-                {
-                    new SyncWorkCenters(rfcDestination, _sSMDData),
-                    new SyncMaterialFamilylevels(rfcDestination, _sSMDData),
-                    new SyncMaterialFamilies(rfcDestination, _sSMDData),
-                    new SyncProjects(rfcDestination, _sSMDData),
-                    new SyncWBSRelations(rfcDestination, _sSMDData),
-                    new SyncMaterials(rfcDestination, _sSMDData),
-                    new SyncOrders(rfcDestination, _sSMDData),
-                    new SyncOrderData(rfcDestination, _sSMDData),
-                    new SyncRoutingOperations(rfcDestination, _sSMDData),
-                    new SyncComponents(rfcDestination, _sSMDData),
-                    new SyncOrderComponents(rfcDestination, _sSMDData),
-                    new SyncConfirmations(rfcDestination, _sSMDData),
-                    new SyncInspectionCharacteristics(rfcDestination, _sSMDData),
-                    new SyncInspectionLots(rfcDestination, _sSMDData),
-                    new SyncInspectionSpecifications(rfcDestination, _sSMDData),
-                    new SyncInspectionPoints(rfcDestination, _sSMDData),
-                    new SyncTrialMasterReport(_sSMDData),
-                    new SyncTESTODPPROVA(_sSMDData)
-                };
-
-                foreach (ISyncElement syncElement in _syncElements)
-                {
-                    syncElement.SyncErrorRaised += OnSyncErrorRaised;
-                    syncElement.SyncFailed += OnSyncFailureRaised;
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Inizializzazione elementi di sincronizzazione fallita: " + e.Message);
-            }
+            NewSyncTaskStarted?.Invoke(this, new EventArgs());
         }
 
-        private void ResetAllProgress()
+        protected virtual void RaiseNewSyncTaskStarting()
         {
-            foreach (ISyncElement syncElement in SyncElements)
-                syncElement.ResetProgress();
+            NewSyncTaskStarting?.Invoke(this, new EventArgs());
+        }
+
+        protected virtual void RaiseSyncTaskCompleted()
+        {
+            SyncTaskCompleted?.Invoke(this, new EventArgs());
         }
 
         #endregion Methods

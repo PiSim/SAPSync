@@ -1,5 +1,4 @@
-﻿using SAP.Middleware.Connector;
-using SAPSync.Functions;
+﻿using SAPSync.Functions;
 using SSMD;
 using System.Collections.Generic;
 
@@ -24,19 +23,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncInspectionCharacteristics(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncInspectionCharacteristics(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Caratteristiche di Controllo";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Caratteristiche di Controllo";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<InspectionCharacteristic> records)
         {
-            RecordEvaluator = new InspectionCharacteristicEvaluator() { IgnoreExistingRecords = true };
         }
+
+        protected override IRecordEvaluator<InspectionCharacteristic> GetRecordEvaluator() => new InspectionCharacteristicEvaluator();
 
         protected override IList<InspectionCharacteristic> ReadRecordTable() => new ReadInspectionCharacteristics().Invoke(_rfcDestination);
 

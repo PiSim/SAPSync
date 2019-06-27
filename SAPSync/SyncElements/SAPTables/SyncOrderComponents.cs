@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -13,12 +12,12 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        protected override Query<OrderComponent, SSMDContext> GetIndexEntriesQuery() => new OrderComponentsQuery() { EagerLoadingEnabled = true };
-
         protected override void ConfigureRecordValidator()
         {
             RecordValidator = new OrderComponentValidator();
         }
+
+        protected override Query<OrderComponent, SSMDContext> GetIndexEntriesQuery() => new OrderComponentsQuery() { EagerLoadingEnabled = true };
 
         protected override Tuple<int, string> GetIndexKey(OrderComponent record) => new Tuple<int, string>(record.OrderNumber, record.Component.Name);
 
@@ -67,19 +66,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncOrderComponents(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncOrderComponents(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Componenti Ordine";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Componenti Ordine";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<OrderComponent> records)
         {
-            RecordEvaluator = new OrderComponentEvaluator();
         }
+
+        protected override IRecordEvaluator<OrderComponent> GetRecordEvaluator() => new OrderComponentEvaluator();
 
         protected override IList<OrderComponent> ReadRecordTable() => new ReadOrderComponents().Invoke(_rfcDestination);
 

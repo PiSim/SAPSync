@@ -2,7 +2,7 @@
 
 namespace SAPSync.Functions
 {
-    public class BAPITableFunctionBase : IBAPITableFunction
+    public class BAPITableFunctionBase
     {
         #region Fields
 

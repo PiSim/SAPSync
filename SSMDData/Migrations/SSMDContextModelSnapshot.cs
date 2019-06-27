@@ -14,7 +14,7 @@ namespace SSMD.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("SSMD.Component", b =>
@@ -31,6 +31,20 @@ namespace SSMD.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Components");
+                });
+
+            modelBuilder.Entity("SSMD.Customer", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.Property<string>("Name2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SSMD.InspectionCharacteristic", b =>
@@ -154,6 +168,19 @@ namespace SSMD.Migrations
                     b.ToTable("Materials");
                 });
 
+            modelBuilder.Entity("SSMD.MaterialCustomer", b =>
+                {
+                    b.Property<int>("MaterialID");
+
+                    b.Property<int>("CustomerID");
+
+                    b.HasKey("MaterialID", "CustomerID");
+
+                    b.HasIndex("CustomerID");
+
+                    b.ToTable("MaterialCustomers");
+                });
+
             modelBuilder.Entity("SSMD.MaterialFamily", b =>
                 {
                     b.Property<int>("ID")
@@ -205,8 +232,6 @@ namespace SSMD.Migrations
 
                     b.Property<int>("ID");
 
-                    b.Property<int>("MaterialID");
-
                     b.Property<string>("OrderType");
 
                     b.Property<long>("RoutingNumber");
@@ -216,8 +241,6 @@ namespace SSMD.Migrations
                     b.Property<double>("TotalScrap");
 
                     b.HasKey("Number");
-
-                    b.HasIndex("MaterialID");
 
                     b.HasIndex("OrderType");
 
@@ -295,11 +318,21 @@ namespace SSMD.Migrations
                 {
                     b.Property<int>("OrderNumber");
 
+                    b.Property<bool>("HasSampleArrived");
+
+                    b.Property<int>("MaterialID");
+
                     b.Property<double>("PlannedQuantity");
 
                     b.Property<long>("RoutingNumber");
 
+                    b.Property<DateTime?>("SampleArrivalDate");
+
+                    b.Property<string>("SampleRollStatus");
+
                     b.HasKey("OrderNumber");
+
+                    b.HasIndex("MaterialID");
 
                     b.ToTable("OrderData");
                 });
@@ -330,6 +363,8 @@ namespace SSMD.Migrations
 
                     b.Property<int>("RoutingCounter");
 
+                    b.Property<int>("BaseQuantity");
+
                     b.Property<int>("WorkCenterID");
 
                     b.HasKey("RoutingNumber", "RoutingCounter");
@@ -353,10 +388,25 @@ namespace SSMD.Migrations
                     b.ToTable("ScrapCauses");
                 });
 
+            modelBuilder.Entity("SSMD.SyncElementData", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ElementType");
+
+                    b.Property<DateTime>("LastUpdate");
+
+                    b.Property<int>("UpdateInterval");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("SyncElementData");
+                });
+
             modelBuilder.Entity("SSMD.TestReport", b =>
                 {
-                    b.Property<int>("Number")
-                        .ValueGeneratedOnAdd();
+                    b.Property<int>("Number");
 
                     b.Property<double?>("BreakingElongationL");
 
@@ -378,17 +428,15 @@ namespace SSMD.Migrations
 
                     b.Property<double?>("GlossZ");
 
-                    b.Property<bool>("HasRollArrived");
-
                     b.Property<string>("Notes");
+
+                    b.Property<string>("Notes2");
 
                     b.Property<string>("Operator");
 
                     b.Property<int?>("OrderNumber");
 
                     b.Property<string>("OtherTests");
-
-                    b.Property<string>("RollStatus");
 
                     b.Property<double?>("SetL");
 
@@ -404,13 +452,14 @@ namespace SSMD.Migrations
 
                     b.HasKey("Number");
 
+                    b.HasIndex("OrderNumber");
+
                     b.ToTable("TestReports");
                 });
 
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd();
+                    b.Property<int>("ID");
 
                     b.Property<int?>("DownID");
 
@@ -427,8 +476,6 @@ namespace SSMD.Migrations
                     b.HasIndex("DownID");
 
                     b.HasIndex("LeftID");
-
-                    b.HasIndex("ProjectID");
 
                     b.HasIndex("RightID");
 
@@ -532,6 +579,19 @@ namespace SSMD.Migrations
                         .HasForeignKey("ProjectID");
                 });
 
+            modelBuilder.Entity("SSMD.MaterialCustomer", b =>
+                {
+                    b.HasOne("SSMD.Customer", "Customer")
+                        .WithMany("MaterialCustomers")
+                        .HasForeignKey("CustomerID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SSMD.Material", "Material")
+                        .WithMany("MaterialCustomer")
+                        .HasForeignKey("MaterialID")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("SSMD.MaterialFamily", b =>
                 {
                     b.HasOne("SSMD.MaterialFamilyLevel", "L1")
@@ -547,14 +607,6 @@ namespace SSMD.Migrations
                     b.HasOne("SSMD.MaterialFamilyLevel", "L3")
                         .WithMany()
                         .HasForeignKey("L3ID")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("SSMD.Order", b =>
-                {
-                    b.HasOne("SSMD.Material", "Material")
-                        .WithMany("Orders")
-                        .HasForeignKey("MaterialID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -586,6 +638,11 @@ namespace SSMD.Migrations
 
             modelBuilder.Entity("SSMD.OrderData", b =>
                 {
+                    b.HasOne("SSMD.Material", "Material")
+                        .WithMany("Orders")
+                        .HasForeignKey("MaterialID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("SSMD.Order", "Order")
                         .WithMany("OrderData")
                         .HasForeignKey("OrderNumber")
@@ -606,20 +663,27 @@ namespace SSMD.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("SSMD.TestReport", b =>
+                {
+                    b.HasOne("SSMD.Order", "Order")
+                        .WithMany("TestReports")
+                        .HasForeignKey("OrderNumber");
+                });
+
             modelBuilder.Entity("SSMD.WBSRelation", b =>
                 {
                     b.HasOne("SSMD.Project", "Down")
                         .WithMany("WBSUpRelations")
                         .HasForeignKey("DownID");
 
+                    b.HasOne("SSMD.Project", "Project")
+                        .WithMany("WBSRelations")
+                        .HasForeignKey("ID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("SSMD.Project", "Left")
                         .WithMany("WBSRightRelations")
                         .HasForeignKey("LeftID");
-
-                    b.HasOne("SSMD.Project", "Project")
-                        .WithMany("WBSRelations")
-                        .HasForeignKey("ProjectID")
-                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("SSMD.Project", "Right")
                         .WithMany("WBSLeftRelations")
@@ -633,7 +697,7 @@ namespace SSMD.Migrations
             modelBuilder.Entity("SSMD.WorkPhaseLabData", b =>
                 {
                     b.HasOne("SSMD.Order", "Order")
-                        .WithMany()
+                        .WithMany("WorkPhaseLabData")
                         .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

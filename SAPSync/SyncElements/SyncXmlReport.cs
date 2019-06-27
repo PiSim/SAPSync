@@ -1,6 +1,5 @@
-﻿using DataAccessCore;
-using OfficeOpenXml;
-using SSMD;
+﻿using OfficeOpenXml;
+using SAPSync.SyncElements.ExcelWorkbooks;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -46,7 +45,7 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncXmlReport(SSMDData sSMDData) : base(sSMDData)
+        public SyncXmlReport(SyncElementConfiguration configuration) : base(configuration)
         {
         }
 
@@ -58,12 +57,12 @@ namespace SAPSync.SyncElements
 
         protected string BackupFolder { get; set; }
 
+        protected DirectoryInfo BackupInfo { get; set; }
         protected string FileName { get; set; }
 
         protected string FullOriginPath => OriginFolder + "\\" + FileName;
 
         protected string OriginFolder { get; set; }
-
         protected FileInfo OriginInfo { get; set; }
 
         protected string OutputFolder { get; set; }
@@ -73,6 +72,31 @@ namespace SAPSync.SyncElements
         #endregion Properties
 
         #region Methods
+
+        protected virtual void ApplyModifyRangeToken(ExcelWorkbook xlWorkbook, ExcelWorkbooks.ModifyRangeToken token)
+        {
+            if (token.RangeName != null)
+                xlWorkbook.Names[token.RangeName].Value = token.Value;
+            else
+            {
+                ExcelWorksheet xlWorkSheet = xlWorkbook.Worksheets[token.SheetIndex];
+                ExcelRangeBase xlRange = xlWorkSheet.Cells[token.StartCell.Item1, token.StartCell.Item2, token.EndCell.Item1, token.EndCell.Item2];
+                xlRange.Value = token.Value;
+            }
+        }
+
+        protected virtual void ApplyModifyRangeTokens(ExcelWorkbook xlWorkbook)
+        {
+            foreach (ModifyRangeToken token in GetRangesToModify())
+                try
+                {
+                    ApplyModifyRangeToken(xlWorkbook, token);
+                }
+                catch
+                {
+                    RaiseSyncError("Impossibile applicare token modifica range");
+                }
+        }
 
         protected void ClearRange(ref ExcelWorksheet xlWorkSheet)
         {
@@ -88,12 +112,15 @@ namespace SAPSync.SyncElements
         {
             try
             {
-                File.Copy(OriginInfo.FullName, BackupFolder + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + FileName, true);
+                if (BackupInfo != null)
+                    File.Copy(OriginInfo.FullName, BackupInfo.FullName + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + OriginInfo.Name, true);
+                else
+                    File.Copy(OriginInfo.FullName, BackupFolder + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + FileName, true);
             }
             catch (Exception e)
             {
                 SyncFailure();
-                throw new InvalidOperationException("Impossibile accedere al file");
+                throw new InvalidOperationException("Impossibile accedere al file:" + e.Message, e);
             }
         }
 
@@ -101,6 +128,12 @@ namespace SAPSync.SyncElements
         {
             IEnumerable<TDto> exportDtos = GetDtosFromEntities(records);
             WriteToOrigin(exportDtos);
+        }
+
+        protected override void ExportData()
+        {
+            CreateBackup();
+            base.ExportData();
         }
 
         protected virtual IEnumerable<DtoProperty> GetDtoColumns()
@@ -134,30 +167,44 @@ namespace SAPSync.SyncElements
 
             foreach (DtoProperty column in GetImportedDtoColumns())
             {
-                var cell = xlWorksheet.Cells[row, column.ColumnIndex];
-                Type t = column.Property.PropertyType;
+                try
+                {
+                    var cell = xlWorksheet.Cells[row, column.ColumnIndex];
+                    Type t = column.Property.PropertyType;
 
-                if (cell.Value == null)
-                    column.Property.SetValue(output, null);
-                else if (column.Property.PropertyType == typeof(int))
-                    column.Property.SetValue(output, cell.GetValue<int>());
-                else if (column.Property.PropertyType == typeof(double))
-                    column.Property.SetValue(output, cell.GetValue<double>());
-                else if (column.Property.PropertyType == typeof(DateTime))
-                    column.Property.SetValue(output, cell.GetValue<DateTime>());
-                else if (column.Property.PropertyType == typeof(string))
-                    column.Property.SetValue(output, cell.GetValue<string>());
-                else
-                    throw new InvalidOperationException("Impossibile convertire la riga, tipo non supportato : " + column.Property.PropertyType.ToString());
+                    if (cell.Value == null)
+                        column.Property.SetValue(output, null);
+                    else if (column.Property.PropertyType == typeof(int))
+                        column.Property.SetValue(output, cell.GetValue<int>());
+                    else if (column.Property.PropertyType == typeof(int?))
+                        column.Property.SetValue(output, cell.GetValue<int?>());
+                    else if (column.Property.PropertyType == typeof(double))
+                        column.Property.SetValue(output, cell.GetValue<double>());
+                    else if (column.Property.PropertyType == typeof(double?))
+                        column.Property.SetValue(output, cell.GetValue<double?>());
+                    else if (column.Property.PropertyType == typeof(DateTime))
+                        column.Property.SetValue(output, cell.GetValue<DateTime>());
+                    else if (column.Property.PropertyType == typeof(DateTime?))
+                        column.Property.SetValue(output, cell.GetValue<DateTime?>());
+                    else if (column.Property.PropertyType == typeof(string))
+                        column.Property.SetValue(output, cell.GetValue<string>());
+                    else
+                        throw new InvalidOperationException("Impossibile convertire la riga, tipo non supportato : " + column.Property.PropertyType.ToString());
+                }
+                catch (Exception e)
+                {
+                    RaiseSyncError(e.Message);
+                }
             }
 
             return output;
         }
 
+        protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
+
         protected virtual IEnumerable<TDto> GetDtosFromTable(ExcelWorksheet xlWorksheet, IEnumerable<int> rows)
         {
-            var output = rows.Skip(RowsToSkip)
-                .Select(
+            var output = rows.Select(
                 row => GetDtoFromRow(xlWorksheet, row))
                 .ToList();
 
@@ -171,19 +218,11 @@ namespace SAPSync.SyncElements
             PropertyInfo[] dtoProperties = typeof(TDto).GetProperties();
 
             foreach (PropertyInfo tproperty in tProperties)
-                if (dtoProperties.Any(pro => pro.Name == tproperty.Name && pro.PropertyType == tproperty.PropertyType))
+                if (dtoProperties.Any(pro => pro.Name == tproperty.Name))
                     tproperty.SetValue(output, dtoProperties.First(p => p.Name == tproperty.Name).GetValue(dto));
 
             return output;
         }
-
-        protected override void ExportData()
-        {
-            CreateBackup();
-            base.ExportData();
-        }
-
-        protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
 
         protected virtual IEnumerable<DtoProperty> GetImportedDtoColumns()
         {
@@ -219,7 +258,7 @@ namespace SAPSync.SyncElements
                     throw new InvalidOperationException("File di origine non trovato: " + xlPackage.File.FullName);
 
                 ExcelWorksheet xlWorkSheet = xlPackage.Workbook.Worksheets[1];
-                
+
                 var rows = xlWorkSheet.Cells
                    .Select(cell => cell.Start.Row)
                    .Distinct()
@@ -260,6 +299,8 @@ namespace SAPSync.SyncElements
 
                 foreach (TDto dto in dtos)
                     SetRowValuesFromDto(xlWorkSheet, startRow++, dto);
+
+                ApplyModifyRangeTokens(xlPackage.Workbook);
 
                 xlPackage.SaveAs(OriginInfo);
             }

@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -35,13 +34,13 @@ namespace SAPSync.SyncElements
 
         private IDictionary<string, MaterialFamily> _familyDictionary;
         private IDictionary<string, Project> _projectIndex;
-        private IDictionary<string, Component> _componentIndex;
+        private IDictionary<string, Component> _splColorIndex, _calColorIndex;
 
         #endregion Fields
 
         #region Methods
 
-        public bool CheckIndexesInitialized() => _familyDictionary != null;
+        public bool CheckIndexesInitialized() => _familyDictionary != null && _projectIndex != null && _splColorIndex != null && _calColorIndex != null;
 
         public Material GetInsertableRecord(Material record)
         {
@@ -53,8 +52,11 @@ namespace SAPSync.SyncElements
                 if (_projectIndex.ContainsKey(record.Project?.Code))
                     record.ProjectID = _projectIndex[record.Project?.Code].ID;
 
-                if (record.Code.Length >= 15 && _componentIndex.ContainsKey(record.Code.Substring(10, 4)))
-                    record.ColorComponentID = _componentIndex[record.Code.Substring(10, 4)].ID;
+                if (record.Code.Length >= 15 && record.Code[0] == '3' && _splColorIndex.ContainsKey(record.Code.Substring(10, 4)))
+                    record.ColorComponentID = _splColorIndex[record.Code.Substring(10, 4)].ID;
+
+                if (record.Code.Length >= 15 && record.Code[0] == '1' && _calColorIndex.ContainsKey(record.Code.Substring(10, 4)))
+                    record.ColorComponentID = _calColorIndex[record.Code.Substring(10, 4)].ID;
 
                 record.MaterialFamily = null;
                 record.Project = null;
@@ -67,11 +69,18 @@ namespace SAPSync.SyncElements
         {
             _familyDictionary = sSMDData.RunQuery(new MaterialFamiliesQuery() { EagerLoadingEnabled = true }).ToDictionary(fam => fam.FullCode);
             _projectIndex = sSMDData.RunQuery(new Query<Project, SSMDContext>()).ToDictionary(prj => prj.Code);
-            _componentIndex = new Dictionary<string, Component>();
+
+            _splColorIndex = new Dictionary<string, Component>();
             foreach (Component com in sSMDData.RunQuery(new Query<Component, SSMDContext>())
-                .Where(com => com.Name.Length >= 12 && Regex.IsMatch(com.Name, "^PMP110SK")))
-                if (!_componentIndex.ContainsKey(com.Name.Substring(8, 4)))
-                    _componentIndex.Add(com.Name.Substring(8, 4), com);
+                .Where(com => com.Name.Length >= 12 && Regex.IsMatch(com.Name, "^PMP110(SK|ES)")))
+                if (!_splColorIndex.ContainsKey(com.Name.Substring(8, 4)))
+                    _splColorIndex.Add(com.Name.Substring(8, 4), com);
+
+            _calColorIndex = new Dictionary<string, Component>();
+            foreach (Component com in sSMDData.RunQuery(new Query<Component, SSMDContext>())
+                .Where(com => com.Name.Length >= 12 && Regex.IsMatch(com.Name, "^PMP060(CL|ED)")))
+                if (!_calColorIndex.ContainsKey(com.Name.Substring(8, 4)))
+                    _calColorIndex.Add(com.Name.Substring(8, 4), com);
         }
 
         public bool IsValid(Material record) => record.Code[0] == '1' || record.Code[0] == '2' || record.Code[0] == '3';
@@ -83,19 +92,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncMaterials(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncMaterials(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Materiali";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Materiali";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<Material> records)
         {
-            RecordEvaluator = new MaterialEvaluator();
         }
+
+        protected override IRecordEvaluator<Material> GetRecordEvaluator() => new MaterialEvaluator();
 
         protected override IList<Material> ReadRecordTable() => new ReadMaterials().Invoke(_rfcDestination);
 

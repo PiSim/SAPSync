@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAP.Middleware.Connector;
 using SAPSync.Functions;
 using SSMD;
 using SSMD.Queries;
@@ -75,19 +74,25 @@ namespace SAPSync.SyncElements
     {
         #region Constructors
 
-        public SyncMaterialFamilies(RfcDestination rfcDestination, SSMDData sSMDData) : base(rfcDestination, sSMDData)
+        public SyncMaterialFamilies(SyncElementConfiguration configuration) : base(configuration)
         {
-            Name = "Gerarchia prodotto";
         }
 
         #endregion Constructors
 
+        #region Properties
+
+        public override string Name => "Gerarchia prodotto";
+
+        #endregion Properties
+
         #region Methods
 
-        protected override void ConfigureRecordEvaluator()
+        protected override void ExecuteExport(IEnumerable<MaterialFamily> records)
         {
-            RecordEvaluator = new MaterialFamilyEvaluator() { IgnoreExistingRecords = true };
         }
+
+        protected override IRecordEvaluator<MaterialFamily> GetRecordEvaluator() => new MaterialFamilyEvaluator();
 
         protected override IList<MaterialFamily> ReadRecordTable() => new ReadMaterialFamilies().Invoke(_rfcDestination);
 

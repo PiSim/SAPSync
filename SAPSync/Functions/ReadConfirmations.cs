@@ -18,10 +18,10 @@ namespace SAPSync.Functions
                 "RUECK",
                 "RMZHL",
                 "ERSDA",
-                "ISDD",
-                "ISDZ",
-                "IEDD",
-                "IEDZ",
+                "ISBD",
+                "ISBZ",
+                "IEBD",
+                "IEBZ",
                 "STZHL",
                 "LMNGA",
                 "XMNGA",
@@ -31,7 +31,10 @@ namespace SAPSync.Functions
                 "ARBID",
                 "ZWIP_IN",
                 "ZWIP_OUT",
-                "STOKZ"
+                "STOKZ",
+                "ZZREWORK",
+                "ZZRW_BUONA",
+                "ZZRW_SCARTO"
             };
         }
 
@@ -53,7 +56,7 @@ namespace SAPSync.Functions
             bool deletionFlag = (data[7] != "00000000" || data[16] == "X");
             double yield = double.Parse(data[8], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." });
             double scrap = double.Parse(data[9], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." });
-            string scrapCause = data[10];
+            string scrapCause = data[10].Trim();
             string um = data[11];
             int orderNumber;
 
@@ -63,6 +66,8 @@ namespace SAPSync.Functions
             int wcID = int.Parse(data[13]);
             string wipIn = data[14];
             string wipOut = data[15];
+
+            bool isRework = data[16] == "x";
 
             OrderConfirmation converted = new OrderConfirmation()
             {
@@ -79,7 +84,8 @@ namespace SAPSync.Functions
                 WIPOut = wipOut,
                 EntryDate = acquisitionDate,
                 StartTime = startTime,
-                EndTime = endTime
+                EndTime = endTime,
+                IsRework = isRework
             };
 
             return converted;
