@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadRoutingOperationValues : ReadTableBase<RoutingOperation>
     {
+        public override string Name => "ReadRoutingOperationValues";
         #region Constructors
 
         public ReadRoutingOperationValues()

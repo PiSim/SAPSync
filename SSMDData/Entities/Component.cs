@@ -21,6 +21,8 @@ namespace SSMD
         public string Name { get; set; }
         public virtual ICollection<OrderComponent> OrderComponents { get; set; }
 
+        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
+
         #endregion Properties
     }
 }

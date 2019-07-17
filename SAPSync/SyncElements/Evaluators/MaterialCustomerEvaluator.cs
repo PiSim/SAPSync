@@ -10,10 +10,7 @@ namespace SAPSync.SyncElements.Evaluators
     {
         #region Methods
 
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new MaterialCustomerValidator();
-        }
+        protected override IRecordValidator<MaterialCustomer> GetRecordValidator() => new MaterialCustomerValidator();
 
         protected override Query<MaterialCustomer, SSMDContext> GetIndexEntriesQuery() => new MaterialCustomersQuery() { EagerLoadingEnabled = true };
 

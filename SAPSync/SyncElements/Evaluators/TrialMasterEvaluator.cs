@@ -6,10 +6,7 @@ namespace SAPSync.SyncElements
     {
         #region Methods
 
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new TrialMasterRecordValidator();
-        }
+        protected override IRecordValidator<OrderData> GetRecordValidator() => new TrialMasterRecordValidator();
 
         protected override int GetIndexKey(OrderData record) => record.OrderNumber;
 

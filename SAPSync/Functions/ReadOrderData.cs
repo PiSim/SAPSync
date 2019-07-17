@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadOrderData : ReadTableBase<OrderData>
     {
+        public override string Name => "ReadOrderData";
         #region Constructors
 
         public ReadOrderData() : base()

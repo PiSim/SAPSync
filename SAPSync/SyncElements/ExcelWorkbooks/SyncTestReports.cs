@@ -34,28 +34,7 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
             RowsToSkip = 3;
         }
 
-        protected override TestReportDto GetDtoFromEntity(TestReport entity)
-        {
-            TestReportDto output = base.GetDtoFromEntity(entity);
-
-            output.MaterialCode = entity.Order?.OrderData?.FirstOrDefault().Material?.Code;
-            output.OrderType = entity.Order?.OrderType;
-            output.PlannedOrderQuantity = entity.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
-            output.ColorName = entity.Order?.OrderData?.FirstOrDefault().Material?.ColorComponent?.Description?.Replace("SKIN", "");
-            output.Structure = entity.Order?.OrderData?.FirstOrDefault().Material?.MaterialFamily?.L1?.Code;
-            output.TrialScope = entity.Order?.WorkPhaseLabData?.FirstOrDefault().TrialScope;
-            output.PCA = entity.Order?.OrderData?.FirstOrDefault().Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
-            output.Customer = entity.Order?.OrderData?.FirstOrDefault().Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
-            output.ControlPlan = entity.Order?.OrderData?.FirstOrDefault().Material?.ControlPlan;
-
-            IEnumerable<InspectionPoint> thicknessPoints = entity.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPE"));
-            IEnumerable<InspectionPoint> weightPoints = entity.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
-
-            output.EmbossingavgThickness = (thicknessPoints != null && thicknessPoints.Count() != 0) ? thicknessPoints.Average(inp => inp.AvgValue) : new double?();
-            output.EmbossingAvgWeight = (weightPoints != null && weightPoints.Count() != 0) ? weightPoints.Average(inp => inp.AvgValue) : new double?();
-
-            return output;
-        }
+        protected override TestReportDto GetDtoFromEntity(TestReport entity) => new TestReportDto(entity);
 
         protected override IQueryable<TestReport> GetExportingRecordsQuery() => base.GetExportingRecordsQuery()
             .Include(trp => trp.Order)
@@ -107,6 +86,32 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 
     public class TestReportDto : IXmlDto
     {
+        public TestReportDto()
+        {
+
+        }
+
+        public TestReportDto(TestReport testReport)
+        {
+
+            MaterialCode = testReport.Order?.OrderData?.FirstOrDefault().Material?.Code;
+            OrderType = testReport.Order?.OrderType;
+            PlannedOrderQuantity = testReport.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
+            ColorName = testReport.Order?.OrderData?.FirstOrDefault().Material?.ColorComponent?.Description?.Replace("SKIN", "");
+            Structure = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialFamily?.L1?.Code;
+            TrialScope = testReport.Order?.WorkPhaseLabData?.FirstOrDefault().TrialScope;
+            PCA = testReport.Order?.OrderData?.FirstOrDefault().Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
+            Customer = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
+            ControlPlan = testReport.Order?.OrderData?.FirstOrDefault().Material?.ControlPlan;
+
+            IEnumerable<InspectionPoint> thicknessPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPE"));
+            IEnumerable<InspectionPoint> weightPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
+
+            EmbossingavgThickness = (thicknessPoints != null && thicknessPoints.Count() != 0) ? thicknessPoints.Average(inp => inp.AvgValue) : new double?();
+            EmbossingAvgWeight = (weightPoints != null && weightPoints.Count() != 0) ? weightPoints.Average(inp => inp.AvgValue) : new double?();
+
+        }
+
         #region Properties
 
         [Column(27), Imported]
@@ -215,10 +220,7 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
     {
         #region Methods
 
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new TestReportRecordValidator();
-        }
+        protected override IRecordValidator<TestReport> GetRecordValidator() => new TestReportRecordValidator();
 
         protected override int GetIndexKey(TestReport record) => record.Number;
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 
@@ -8,10 +10,12 @@ namespace SyncService
     {
         #region Constructors
 
+        public TimeSpan UpdateTimeSlack { get; protected set; } = new TimeSpan(0, 15, 0);
+
         public SyncService(ISyncManager syncManager)
         {
             SyncManager = syncManager;
-            SyncManager.SyncTaskCompleted += OnSyncCompleted;
+            SyncManager.SyncTaskController.SyncTaskCompleted += OnSyncCompleted;
         }
 
         #endregion Constructors
@@ -52,6 +56,7 @@ namespace SyncService
         {
             Status = ServiceControllerStatus.Stopped;
             CurrentTimer.Dispose();
+            CurrentTimer = null;
             RaiseServiceStopped();
             base.OnStop();
         }
@@ -70,20 +75,38 @@ namespace SyncService
         {
             CurrentTimer = new Timer(new TimerCallback(RunUpdate));
 
-            DateTime timeOfNextUpdate = SyncManager.GetTimeForNextUpdate() ?? new DateTime(0);
+
+
+            DateTime timeOfNextUpdate = CalculateTimeForNextUpdate(SyncManager.GetUpdateSchedule());
             TimeSpan timeToNextUpdate = (timeOfNextUpdate <= DateTime.Now) ? new TimeSpan(0) : new TimeSpan(timeOfNextUpdate.Ticks - DateTime.Now.Ticks);
 
             CurrentTimer.Change(timeToNextUpdate, Timeout.InfiniteTimeSpan);
         }
 
+
+        protected virtual DateTime CalculateTimeForNextUpdate(IEnumerable<DateTime?> updateSchedule)
+        {
+            if (updateSchedule.Count() == 0)
+                return DateTime.Now;
+
+            else
+            {
+                DateTime? baseTime = updateSchedule.Min();
+                DateTime? output = updateSchedule.Where(tmg => tmg <= (baseTime + UpdateTimeSlack)).Max();
+                return output ?? DateTime.Now;
+            }
+
+        }
+
         private void OnSyncCompleted(object sender, EventArgs e)
         {
-            ScheduleNextUpdate();
+            if (Status == ServiceControllerStatus.Running)
+                ScheduleNextUpdate();
         }
 
         private void RunUpdate(object e)
         {
-            SyncManager.StartSync();
+            SyncManager.SyncOutdatedElements();
         }
 
         #endregion Methods

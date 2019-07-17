@@ -47,6 +47,28 @@ namespace SSMD.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("SSMD.GoodMovement", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ComponentID");
+
+                    b.Property<int>("OrderNumber");
+
+                    b.Property<double>("Quantity");
+
+                    b.Property<string>("UM");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ComponentID");
+
+                    b.HasIndex("OrderNumber");
+
+                    b.ToTable("GoodMovements");
+                });
+
             modelBuilder.Entity("SSMD.InspectionCharacteristic", b =>
                 {
                     b.Property<int>("ID")
@@ -500,8 +522,7 @@ namespace SSMD.Migrations
 
             modelBuilder.Entity("SSMD.WorkPhaseLabData", b =>
                 {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd();
+                    b.Property<int>("OrderNumber");
 
                     b.Property<string>("Actions");
 
@@ -515,15 +536,24 @@ namespace SSMD.Migrations
 
                     b.Property<string>("NotesS");
 
-                    b.Property<int>("OrderNumber");
-
                     b.Property<string>("TrialScope");
 
-                    b.HasKey("ID");
-
-                    b.HasIndex("OrderNumber");
+                    b.HasKey("OrderNumber");
 
                     b.ToTable("WorkPhaseLabData");
+                });
+
+            modelBuilder.Entity("SSMD.GoodMovement", b =>
+                {
+                    b.HasOne("SSMD.Component", "Component")
+                        .WithMany("GoodMovements")
+                        .HasForeignKey("ComponentID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SSMD.Order", "Order")
+                        .WithMany("GoodMovements")
+                        .HasForeignKey("OrderNumber")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("SSMD.InspectionLot", b =>

@@ -10,9 +10,6 @@ namespace SSMD
 
         public string Analysis { get; set; }
 
-        [Key]
-        public int ID { get; set; }
-
         public string NotesC { get; set; }
 
         public string NotesG { get; set; }
@@ -23,6 +20,7 @@ namespace SSMD
 
         public Order Order { get; set; }
 
+        [Key]
         public int OrderNumber { get; set; }
 
         public string TrialScope { get; set; }

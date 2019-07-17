@@ -187,121 +187,9 @@
     <Compile Include="Entities\WBSRelation.cs" />
     <Compile Include="Entities\WorkCenter.cs" />
     <Compile Include="Entities\WorkPhaseLabData.cs" />
-    <Compile Include="Migrations\20190410080932_regeneratedDb.cs" />
-    <Compile Include="Migrations\20190410080932_regeneratedDb.designer.cs">
-      <DependentUpon>20190410080932_regeneratedDb.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190411113020_addedinspectionspecifications.cs" />
-    <Compile Include="Migrations\20190411113020_addedinspectionspecifications.designer.cs">
-      <DependentUpon>20190411113020_addedinspectionspecifications.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190424074539_workcenter.cs" />
-    <Compile Include="Migrations\20190424074539_workcenter.designer.cs">
-      <DependentUpon>20190424074539_workcenter.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190429131752_materialfamiliesimplementation.cs" />
-    <Compile Include="Migrations\20190429131752_materialfamiliesimplementation.designer.cs">
-      <DependentUpon>20190429131752_materialfamiliesimplementation.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190430100118_uniquematcode.cs" />
-    <Compile Include="Migrations\20190430100118_uniquematcode.designer.cs">
-      <DependentUpon>20190430100118_uniquematcode.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190514093411_confIndex.cs" />
-    <Compile Include="Migrations\20190514093411_confIndex.designer.cs">
-      <DependentUpon>20190514093411_confIndex.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190529114710_rework.cs" />
-    <Compile Include="Migrations\20190529114710_rework.designer.cs">
-      <DependentUpon>20190529114710_rework.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190531150802_routing.cs" />
-    <Compile Include="Migrations\20190531150802_routing.designer.cs">
-      <DependentUpon>20190531150802_routing.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190603092538_colori.cs" />
-    <Compile Include="Migrations\20190603092538_colori.designer.cs">
-      <DependentUpon>20190603092538_colori.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190604092421_wbs.cs" />
-    <Compile Include="Migrations\20190604092421_wbs.designer.cs">
-      <DependentUpon>20190604092421_wbs.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190604113130_prj_desc.cs" />
-    <Compile Include="Migrations\20190604113130_prj_desc.designer.cs">
-      <DependentUpon>20190604113130_prj_desc.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190605151433_xmlsupportentities.cs" />
-    <Compile Include="Migrations\20190605151433_xmlsupportentities.designer.cs">
-      <DependentUpon>20190605151433_xmlsupportentities.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190606140931_workphasefix.cs" />
-    <Compile Include="Migrations\20190606140931_workphasefix.designer.cs">
-      <DependentUpon>20190606140931_workphasefix.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190607095631_orderdatamatcolor.cs" />
-    <Compile Include="Migrations\20190607095631_orderdatamatcolor.designer.cs">
-      <DependentUpon>20190607095631_orderdatamatcolor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190607122612_wbsfix2.cs" />
-    <Compile Include="Migrations\20190607122612_wbsfix2.designer.cs">
-      <DependentUpon>20190607122612_wbsfix2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190610124514_reports.cs" />
-    <Compile Include="Migrations\20190610124514_reports.designer.cs">
-      <DependentUpon>20190610124514_reports.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190610133857_wbsfix3.cs" />
-    <Compile Include="Migrations\20190610133857_wbsfix3.designer.cs">
-      <DependentUpon>20190610133857_wbsfix3.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190613082908_reportnotes2.cs" />
-    <Compile Include="Migrations\20190613082908_reportnotes2.designer.cs">
-      <DependentUpon>20190613082908_reportnotes2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190614065354_syncelementdata.cs" />
-    <Compile Include="Migrations\20190614065354_syncelementdata.designer.cs">
-      <DependentUpon>20190614065354_syncelementdata.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190614143434_sampledatatoorder.cs" />
-    <Compile Include="Migrations\20190614143434_sampledatatoorder.designer.cs">
-      <DependentUpon>20190614143434_sampledatatoorder.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190614145310_removedreportsampledata.cs" />
-    <Compile Include="Migrations\20190614145310_removedreportsampledata.designer.cs">
-      <DependentUpon>20190614145310_removedreportsampledata.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190614152858_testreportfix.cs" />
-    <Compile Include="Migrations\20190614152858_testreportfix.designer.cs">
-      <DependentUpon>20190614152858_testreportfix.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190618073858_orderdataext.cs" />
-    <Compile Include="Migrations\20190618073858_orderdataext.designer.cs">
-      <DependentUpon>20190618073858_orderdataext.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190618075255_orderdataextfix.cs" />
-    <Compile Include="Migrations\20190618075255_orderdataextfix.designer.cs">
-      <DependentUpon>20190618075255_orderdataextfix.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190618075444_orderdataextfinal.cs" />
-    <Compile Include="Migrations\20190618075444_orderdataextfinal.designer.cs">
-      <DependentUpon>20190618075444_orderdataextfinal.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190618124206_elementdataext.cs" />
-    <Compile Include="Migrations\20190618124206_elementdataext.designer.cs">
-      <DependentUpon>20190618124206_elementdataext.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190621133544_operationvalues.cs" />
-    <Compile Include="Migrations\20190621133544_operationvalues.designer.cs">
-      <DependentUpon>20190621133544_operationvalues.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190625080940_customers.cs" />
-    <Compile Include="Migrations\20190625080940_customers.designer.cs">
-      <DependentUpon>20190625080940_customers.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20190625095326_customersfix.cs" />
-    <Compile Include="Migrations\20190625095326_customersfix.designer.cs">
-      <DependentUpon>20190625095326_customersfix.cs</DependentUpon>
+    <Compile Include="Migrations\20190708083442_regenDB.cs" />
+    <Compile Include="Migrations\20190708083442_regenDB.designer.cs">
+      <DependentUpon>20190708083442_regenDB.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\SSMDContextModelSnapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -309,6 +197,7 @@
     <Compile Include="Queries\InspectionPointsQuery.cs" />
     <Compile Include="Queries\InspectionCharacteristicsQuery.cs" />
     <Compile Include="Queries\InspectionLotsQuery.cs" />
+    <Compile Include="Queries\LoadedTestReportQuery.cs" />
     <Compile Include="Queries\MaterialFamiliesQuery.cs" />
     <Compile Include="Queries\MaterialCustomersQuery.cs" />
     <Compile Include="Queries\OrderComponentsQuery.cs" />

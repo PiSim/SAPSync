@@ -20,7 +20,7 @@ namespace SAPSync
 
         public RfcConfigParameters GetParameters(string destinationName)
         {
-            RfcConfigParameters prms = new RfcConfigParameters
+            RfcConfigParameters prms = new RfcConfigParameters()
             {
                 { RfcConfigParameters.Name, "PRD" },
                 { RfcConfigParameters.AppServerHost, ConfigurationManager.AppSettings["SAP_APPSERVERHOST"] },

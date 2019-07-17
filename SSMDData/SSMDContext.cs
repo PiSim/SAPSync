@@ -55,7 +55,8 @@ namespace SSMD
                 .HasKey(comp => comp.ID);
 
             modelBuilder.Entity<Component>()
-                .HasIndex(comp => comp.Name);
+                .HasIndex(comp => comp.Name)
+                .IsUnique();
 
             modelBuilder.Entity<InspectionCharacteristic>()
                 .HasIndex(insc => insc.Name)
@@ -177,8 +178,8 @@ namespace SSMD
                 .HasForeignKey(trp => trp.OrderNumber);
 
             modelBuilder.Entity<GoodMovement>()
-                .HasOne(gmo => gmo.Material)
-                .WithMany(mat => mat.GoodMovements);
+                .HasOne(gmo => gmo.Component)
+                .WithMany(comp => comp.GoodMovements);
 
             modelBuilder.Entity<GoodMovement>()
                 .HasOne(gmo => gmo.Order)
@@ -216,6 +217,10 @@ namespace SSMD
                 .HasOne(wpld => wpld.Order)
                 .WithMany(ord => ord.WorkPhaseLabData)
                 .HasForeignKey(ord => ord.OrderNumber);
+
+            modelBuilder.Entity<WorkPhaseLabData>()
+                .HasKey(wpld => wpld.OrderNumber);
+                
         }
 
         #endregion Methods

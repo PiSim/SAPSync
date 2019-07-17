@@ -92,9 +92,10 @@ namespace SAPSync.SyncElements
                 {
                     ApplyModifyRangeToken(xlWorkbook, token);
                 }
-                catch
+                catch(Exception e)
                 {
-                    RaiseSyncError("Impossibile applicare token modifica range");
+                    RaiseSyncError(e:e,
+                        errorMessage: "Impossibile applicare token modifica range");
                 }
         }
 
@@ -193,7 +194,8 @@ namespace SAPSync.SyncElements
                 }
                 catch (Exception e)
                 {
-                    RaiseSyncError(e.Message);
+                    RaiseSyncError(e:e,
+                        errorMessage: e.Message);
                 }
             }
 

@@ -40,8 +40,6 @@ namespace SSMD
         public Project Project { get; set; }
         public Nullable<int> ProjectID { get; set; }
 
-        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
-
         #endregion Properties
     }
 }

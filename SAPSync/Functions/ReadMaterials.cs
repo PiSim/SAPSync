@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadMaterials : ReadTableBase<Material>
     {
+        public override string Name => "ReadMaterials";
         #region Constructors
 
         public ReadMaterials()

@@ -27,7 +27,7 @@
             <TextBlock Text="{Binding ServiceStatus}"
                        Grid.Column="1"
                        VerticalAlignment="Center" />
-            <Button Content="Inizia Sincronizzazione"
+            <Button Content="Sincronizza selezionati"
                 Command="{Binding StartSyncCommand}"
                 Grid.Column="3"
                 HorizontalAlignment="Left"
@@ -77,12 +77,12 @@
                   RowHeight="30"
                   VerticalGridLinesBrush="Transparent">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Forza" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
-                <DataGridCheckBoxColumn Header="Blocca" Binding="{Binding IsUpdateForbidden, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
                 <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding Status, Mode=OneWay}" />
+                                    Binding="{Binding ElementStatus, Mode=OneWay}"/>
+                <DataGridTextColumn Binding="{Binding SyncStatus, Mode=OneWay}" />
                 <DataGridTemplateColumn>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

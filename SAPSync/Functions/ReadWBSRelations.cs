@@ -4,6 +4,8 @@ namespace SAPSync.Functions
 {
     public class ReadWBSRelations : ReadTableBase<WBSRelation>
     {
+
+        public override string Name => "ReadWBSRelations";
         #region Constructors
 
         public ReadWBSRelations() : base()

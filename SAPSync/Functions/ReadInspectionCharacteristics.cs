@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadInspectionCharacteristics : ReadTableBase<InspectionCharacteristic>
     {
+        public override string Name => "ReadInspectionCharacteristics";
         #region Constructors
 
         public ReadInspectionCharacteristics()

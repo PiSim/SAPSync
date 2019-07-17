@@ -4,6 +4,11 @@ namespace SSMD
 {
     public class SyncElementData
     {
+        public SyncElementData()
+        {
+            UpdateInterval = 4;
+        }
+
         #region Properties
 
         public string ElementType { get; set; }

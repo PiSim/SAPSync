@@ -1,8 +1,9 @@
 ﻿using SAP.Middleware.Connector;
+using SAPSync.SyncElements;
 
 namespace SAPSync.Functions
 {
-    public class BAPITableFunctionBase
+    public class BAPITableFunctionBase : SyncElementBase
     {
         #region Fields
 
@@ -18,6 +19,8 @@ namespace SAPSync.Functions
         public BAPITableFunctionBase()
         {
         }
+
+        public override string Name => "BAPITableFunctionBase";
 
         #endregion Constructors
 

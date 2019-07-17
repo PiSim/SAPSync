@@ -4,6 +4,7 @@ namespace SAPSync.Functions
 {
     public class ReadOrders : ReadTableBase<Order>
     {
+        public override string Name => "ReadOrders";
         #region Constructors
 
         public ReadOrders()
@@ -13,7 +14,7 @@ namespace SAPSync.Functions
             _fields = new string[]
             {
                 "AUFNR",
-                "AUTYP"
+                "AUART"
             };
         }
 

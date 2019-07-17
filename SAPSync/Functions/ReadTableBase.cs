@@ -1,11 +1,12 @@
 ﻿using SAP.Middleware.Connector;
+using SAPSync.SyncElements;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SAPSync.Functions
 {
-    public abstract class ReadTableBase<T>
+    public abstract class ReadTableBase<T> : SyncElementBase, IRecordReader<T>
     {
         #region Fields
 
@@ -43,6 +44,8 @@ namespace SAPSync.Functions
                 results.AddRange(ConvertRfcTable(output));
             }
 
+
+            
             return results;
         }
 
@@ -70,14 +73,13 @@ namespace SAPSync.Functions
             string monthString = date.Substring(4, 2);
             string dayString = date.Substring(6, 2);
 
-            int year, month, day;
             int hour = 0,
                 minute = 0,
                 second = 0;
 
-            if (int.TryParse(yearString, out year) &&
-                int.TryParse(monthString, out month) &&
-                int.TryParse(dayString, out day))
+            if (int.TryParse(yearString, out int year) &&
+                int.TryParse(monthString, out int month) &&
+                int.TryParse(dayString, out int day))
             {
                 if (!string.IsNullOrEmpty(time) && time.Length >= 6)
                 {
@@ -136,21 +138,13 @@ namespace SAPSync.Functions
                 executionStack.Add(GetInitializedFunction(rfcDestination, _selectionOptions));
             else
             {
-                long currentValue = BatchingOptions.MinValue;
-                long currentMax = (currentValue + BatchingOptions.BatchSize) - 1;
-
-                while (currentValue <= BatchingOptions.MaxValue)
+                foreach (string batch in BatchingOptions.GetSelectionStrings())
                 {
-                    if (currentMax > BatchingOptions.MaxValue)
-                        currentMax = BatchingOptions.MaxValue;
-
-                    string batchParameters = string.Format("{0} GE '{1}' AND {0} LE '{2}'", new object[] { BatchingOptions.Field, currentValue.ToString("000000000000"), currentMax.ToString("000000000000") });
-
-                    List<string> batchSelection = new List<string>(_selectionOptions);
-                    batchSelection.Add(batchParameters);
+                    List<string> batchSelection = new List<string>(_selectionOptions)
+                    {
+                        batch
+                    };
                     IRfcFunction currentFunction = GetInitializedFunction(rfcDestination, batchSelection);
-                    currentValue += BatchingOptions.BatchSize;
-                    currentMax += BatchingOptions.BatchSize;
                     executionStack.Add(currentFunction);
                 }
             }
@@ -196,6 +190,9 @@ namespace SAPSync.Functions
             return rfcFunction;
         }
 
+        public IEnumerable<T> ReadRecords() => Invoke((new SAPReader()).GetRfcDestination());
+
+
         #endregion Methods
     }
 
@@ -207,7 +204,28 @@ namespace SAPSync.Functions
         public string Field { get; set; } = "";
         public long MaxValue { get; set; } = 999999;
         public long MinValue { get; set; } = 0;
+        public string StringFormat { get; set; } = "";
 
         #endregion Properties
+
+        public IEnumerable<string> GetSelectionStrings()
+        {
+            List<string> output = new List<string>();
+            long currentValue = MinValue;
+            long currentMax = (currentValue + BatchSize) - 1;
+
+            while (currentValue <= MaxValue)
+            {
+                if (currentMax > MaxValue)
+                    currentMax = MaxValue;
+
+                string batchParameters = string.Format("{0} GE '{1}' AND {0} LE '{2}'", new object[] { Field, currentValue.ToString(StringFormat), currentMax.ToString(StringFormat) });
+                output.Add(batchParameters);
+                currentValue += BatchSize;
+                currentMax += BatchSize;
+            }
+
+            return output;
+        }
     }
 }

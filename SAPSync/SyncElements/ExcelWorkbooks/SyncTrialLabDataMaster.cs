@@ -157,20 +157,10 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
     {
         #region Methods
 
-        protected override void ConfigureRecordValidator()
-        {
-            RecordValidator = new WorkPhaseLabDataValidator();
-        }
+        protected override IRecordValidator<WorkPhaseLabData> GetRecordValidator() => new WorkPhaseLabDataValidator();
+        
 
         protected override int GetIndexKey(WorkPhaseLabData record) => record.OrderNumber;
-
-        protected override WorkPhaseLabData SetPrimaryKeyForExistingRecord(WorkPhaseLabData record)
-        {
-            if (_recordIndex.ContainsKey(GetIndexKey(record)))
-                record.ID = _recordIndex[GetIndexKey(record)].ID;
-
-            return record;
-        }
 
         #endregion Methods
     }

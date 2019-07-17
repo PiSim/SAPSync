@@ -13,9 +13,9 @@ namespace SSMD
         [Key]
         public int ID { get; set; }
 
-        public int MaterialID { get; set; }
+        public int ComponentID { get; set; }
 
-        public Material Material { get; set; }
+        public Component Component { get; set; }
 
         
         public int OrderNumber { get; set; }

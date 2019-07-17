@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadComponents : ReadTableBase<Component>
     {
+        public override string Name => "ReadComponents";
         #region Constructors
 
         public ReadComponents() : base()

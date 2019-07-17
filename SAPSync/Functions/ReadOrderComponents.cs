@@ -5,6 +5,7 @@ namespace SAPSync.Functions
 {
     public class ReadOrderComponents : ReadTableBase<OrderComponent>
     {
+        public override string Name => "ReadOrderComponents";
         #region Constructors
 
         public ReadOrderComponents()
@@ -49,6 +50,7 @@ namespace SAPSync.Functions
             BatchingOptions = new ReadTableBatchingOptions()
             {
                 Field = "AUFNR",
+                StringFormat = "000000000000",
                 MinValue = 1000000,
                 MaxValue = 1999999,
                 BatchSize = 10000

@@ -7,6 +7,7 @@ namespace SAPSync.Functions
 {
     public class ReadConfirmations : ReadTableBase<OrderConfirmation>
     {
+        public override string Name => "ReadConfirmations";
         #region Constructors
 
         public ReadConfirmations()
@@ -58,9 +59,8 @@ namespace SAPSync.Functions
             double scrap = double.Parse(data[9], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." });
             string scrapCause = data[10].Trim();
             string um = data[11];
-            int orderNumber;
 
-            if (!int.TryParse(data[12], out orderNumber))
+            if (!int.TryParse(data[12], out int orderNumber))
                 return null;
 
             int wcID = int.Parse(data[13]);
@@ -96,6 +96,7 @@ namespace SAPSync.Functions
             BatchingOptions = new ReadTableBatchingOptions()
             {
                 BatchSize = 50000,
+                StringFormat = "000000000000",
                 Field = "AUFNR",
                 MinValue = 1000000,
                 MaxValue = 1999999

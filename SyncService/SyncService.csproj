@@ -59,8 +59,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISyncBase.cs" />
+    <Compile Include="ISyncElement.cs" />
     <Compile Include="ISyncManager.cs" />
+    <Compile Include="ISyncTask.cs" />
+    <Compile Include="ISyncTaskController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskEventArgs.cs" />
     <Compile Include="SyncService.cs">
       <SubType>Component</SubType>
     </Compile>

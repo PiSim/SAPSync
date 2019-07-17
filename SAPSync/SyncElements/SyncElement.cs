@@ -1,94 +1,66 @@
 ﻿using DataAccessCore;
 using DataAccessCore.Commands;
 using SSMD;
+using SyncService;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements
 {
-    public abstract class SyncElement<T> : ISyncElement where T : class
+    public abstract class SyncElement<T> : SyncElementBase, ISyncElement where T : class
     {
-        #region Fields
-
-        private bool _forbidUpdate, _enforceUpdate;
-
-        #endregion Fields
-
         #region Constructors
 
         public SyncElement(SyncElementConfiguration configuration)
         {
             Configuration = configuration;
-            SyncStatus = "";
+            ElementStatus = SyncElementStatus.Idle;
+            SyncStatus = SyncProgress.Idle;
             ReadElementData();
         }
 
         public SyncElement()
         {
             Configuration = new SyncElementConfiguration();
-            SyncStatus = "";
+            ElementStatus = SyncElementStatus.Idle;
+            SyncStatus = SyncProgress.Idle;
             ReadElementData();
         }
 
+        public void SetCurrentTask(ISyncTask syncTask)
+        {
+            CurrentTask = syncTask;
+        }
+        
         #endregion Constructors
 
+        public ISyncTask CurrentTask { get; protected set; }
+
         #region Events
-
-        public event ProgressChangedEventHandler ProgressChanged;
-
-        public event EventHandler<TaskEventArgs> ReadTaskCompleted;
-
-        public event EventHandler<TaskEventArgs> ReadTaskStarting;
-
-        public event EventHandler StatusChanged;
-
+               
         public event EventHandler SyncAborted;
 
         public event EventHandler SyncCompleted;
 
-        public event EventHandler SyncElementStarting;
-
-        public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
-
-        public event EventHandler SyncFailed;
+        public event EventHandler<SyncErrorEventArgs> SyncFailed;
 
         #endregion Events
 
         #region Properties
 
+        private SyncElementStatus[] PendingStates => new SyncElementStatus[] { SyncElementStatus.Running, SyncElementStatus.OnQueue };
+
         public AbortToken AbortStatus { get; set; }
         public SyncElementConfiguration Configuration { get; private set; }
-        public Task CurrentSyncTask { get; set; }
 
-        public Task CurrentTask { get; set; }
         public SyncElementData ElementData { get; protected set; }
 
-        public bool EnforceUpdate
-        {
-            get => _enforceUpdate;
-            set
-            {
-                _enforceUpdate = value;
-                if (value)
-                    _forbidUpdate = !value;
-            }
-        }
-
-        public bool ForbidUpdate
-        {
-            get => _forbidUpdate;
-            set
-            {
-                _forbidUpdate = value;
-                if (value)
-                    _enforceUpdate = !value;
-            }
-        }
-
-        public bool HasCompletedCurrentSyncTask { get; set; } = true;
+        public bool HasPendingRequirements => RequiredElements.Count != 0
+            && RequiredElements.Any(rel => PendingStates.Contains(rel.ElementStatus)); 
 
         public bool IsFailed { get; set; } = false;
 
@@ -96,9 +68,7 @@ namespace SAPSync.SyncElements
 
         public DateTime? LastUpdate => ElementData?.LastUpdate;
 
-        public bool MustPerformUpdate => !ForbidUpdate && (EnforceUpdate || IsUpForScheduledUpdate);
-
-        public virtual string Name { get; }
+        public override string Name => "SyncElement";
 
         public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
 
@@ -106,7 +76,9 @@ namespace SAPSync.SyncElements
 
         public IList<ISyncElement> RequiredElements { get; } = new List<ISyncElement>();
 
-        public string SyncStatus { get; protected set; }
+        public SyncProgress SyncStatus { get; protected set; }
+
+        public SyncElementStatus ElementStatus { get; protected set; }
 
         protected bool IsSyncRunning { get; set; } = false;
 
@@ -118,11 +90,21 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
-        public virtual void Clear()
+        public void SetTaskController(ISyncTaskController taskController)
         {
-            RecordEvaluator = null;
+            taskController.SyncTaskStarting += OnSyncTaskStarting;
+            taskController.NewSyncTaskStarted += OnSyncTaskStarted;
         }
 
+        public ISyncTaskController TaskController { get; protected set; }
+
+        protected override void Clear()
+        {
+            base.Clear();
+            RecordEvaluator = null;
+            CurrentTask = null;
+        }
+        
         public virtual SyncElement<T> DependsOn(IEnumerable<ISyncElement> parentElements)
         {
             foreach (ISyncElement element in parentElements)
@@ -131,75 +113,72 @@ namespace SAPSync.SyncElements
             return this;
         }
 
-        public async virtual void OnSyncTaskStarted(object sender, EventArgs e)
-        {
-            if (MustPerformUpdate)
-            {
-                await Task.WhenAll(RequiredElements
-                    .Where(ele => ele.CurrentSyncTask != null)
-                    .Select(req => req.CurrentSyncTask));
-
-                CurrentSyncTask.Start();
-            }
-        }
+        public virtual bool IsActive => PendingStates.Contains(ElementStatus);
 
         public virtual void OnSyncTaskStarting(object sender, EventArgs e)
         {
-            ResetProgress();
-            if (!HasCompletedCurrentSyncTask)
+            if (!IsActive)
             {
-                SetOnQueue();
-                InitializeNewCurrentTask();
-                RaiseSyncElementStarting();
+                ResetProgress();
+                if (sender == CurrentTask)
+                    SetOnQueue();
             }
         }
-
-        public void RaiseReadTaskStarting(Task t)
-        {
-            ReadTaskStarting?.Invoke(this, new TaskEventArgs(t));
-        }
-
+        
         public virtual void ResetProgress()
         {
-            ChangeStatus("");
-            RaisePhaseProgressChanged(0);
-            HasCompletedCurrentSyncTask = !MustPerformUpdate;
+            IsFailed = false;
+            ChangeSyncStatus(SyncProgress.Idle);
+            RaiseProgressChanged(0);
         }
 
         public void SetOnQueue()
         {
-            ChangeStatus("In Coda");
+            ChangeElementStatus(SyncElementStatus.OnQueue);
         }
+        
+        protected virtual void OnJobErrorRaised(object sender, SyncErrorEventArgs e)
+        {
+            RaiseSyncError(e.Exception, e.ErrorMessage, e.Severity);
+        }
+
+        protected virtual void OnJobStatusChanged(object sender, EventArgs e)
+        {
+            RaiseStatusChanged();
+        }
+
+        protected virtual void OnJobProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            RaiseProgressChanged(e.ProgressPercentage);
+        }
+
 
         public virtual void StartSync()
         {
-            IsSyncRunning = true;
-
-            if (MustPerformUpdate)
+            ElementStatus = SyncElementStatus.Running;
+            
+            try
+            {
+                Initialize();
+                EnsureInitialized();
+            }
+            catch(Exception e)
+            {
+                SyncFailure(e);
+            }
+            
+            if (AbortStatus == null)
             {
                 try
                 {
-                    Initialize();
-                    EnsureInitialized();
+                    RunSyncronizationSequence();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    RaiseSyncError("Errore di inizializzazione: " + e.Message + "\t\tInnerException: " + e.InnerException?.Message);
-                    SyncFailure();
-                }
-                if (AbortStatus == null)
-                {
-                    try
-                    {
-                        RunSyncronizationSequence();
-                    }
-                    catch (Exception e)
-                    {
-                        RaiseSyncError(e.Message);
-                        SyncFailure();
-                    }
+                    SyncFailure(e);
                 }
             }
+
             FinalizeSync();
         }
 
@@ -211,10 +190,10 @@ namespace SAPSync.SyncElements
 
         protected void ChangeProgress(object sender, ProgressChangedEventArgs e)
         {
-            RaisePhaseProgressChanged(e.ProgressPercentage);
+            RaiseProgressChanged(e.ProgressPercentage);
         }
 
-        protected virtual void ChangeStatus(string newStatus)
+        protected virtual void ChangeSyncStatus(SyncProgress newStatus)
         {
             SyncStatus = newStatus;
             RaiseStatusChanged();
@@ -229,12 +208,14 @@ namespace SAPSync.SyncElements
 
         protected virtual void DeleteRecords(IEnumerable<T> records)
         {
-            ChangeStatus("Cancellazione vecchi record");
+            ChangeSyncStatus(SyncProgress.ImportDelete);
             SSMDData.Execute(new DeleteEntitiesCommand<SSMDContext>(records));
         }
 
-        protected virtual void EnsureInitialized()
+        protected override void EnsureInitialized()
         {
+            base.EnsureInitialized();
+
             if (RecordEvaluator == null || !RecordEvaluator.CheckInitialized())
                 throw new InvalidOperationException("RecordEvaluator non inizializzato");
             if (ElementData == null)
@@ -245,8 +226,6 @@ namespace SAPSync.SyncElements
         {
             if (records == null)
                 throw new ArgumentNullException("RecordList");
-
-            ChangeStatus("Controllo dei Record letti");
         }
 
         protected abstract void ExecuteExport(IEnumerable<T> records);
@@ -261,15 +240,15 @@ namespace SAPSync.SyncElements
             ExecuteExport(exportRecords);
         }
 
+        protected virtual ICollection<ISyncJob> GetJobStack() => new List<ISyncJob>();
+
         protected virtual void FinalizeSync()
         {
             Clear();
             IsSyncRunning = false;
-            HasCompletedCurrentSyncTask = true;
             ElementData.LastUpdate = DateTime.Now;
 
-            RaisePhaseProgressChanged(100);
-            RaiseSyncCompleted();
+            RaiseProgressChanged(100);
 
             try
             {
@@ -277,15 +256,14 @@ namespace SAPSync.SyncElements
             }
             catch (Exception e)
             {
-                RaiseSyncError("Impossibile salvare ElementData: " + e.Message + "\t\tInnerException: " + e.InnerException?.Message);
+                RaiseSyncError(errorMessage: "Impossibile salvare ElementData: " + e.Message + "\t\tInnerException: " + e.InnerException?.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Minor);
             }
-            
-            if (AbortStatus != null)
-                ChangeStatus("Annullato: " + AbortStatus.AbortReason);
-            else if (IsFailed)
-                ChangeStatus("Fallito");
-            else
-                ChangeStatus("Completato");
+
+            if (ElementStatus != SyncElementStatus.Failed && ElementStatus != SyncElementStatus.Aborted)
+                ChangeElementStatus(SyncElementStatus.Completed);
+
+            RaiseSyncCompleted();
         }
 
         protected virtual IQueryable<T> GetExportingRecordsQuery() => SSMDData.RunQuery(new Query<T, SSMDContext>());
@@ -305,15 +283,17 @@ namespace SAPSync.SyncElements
             try
             {
                 Task<IEnumerable<T>> getResultsTask = new Task<IEnumerable<T>>(() => ReadRecords());
-                RaiseReadTaskStarting(getResultsTask);
+                RaiseExternalTaskStarting(getResultsTask);
                 getResultsTask.Start();
                 getResultsTask.Wait();
-                RaiseReadTaskCompleted(getResultsTask);
+                RaiseExternalTaskCompleted(getResultsTask);
                 records = getResultsTask.Result;
             }
             catch (Exception e)
             {
-                RaiseSyncError("Errore di lettura: " + e.Message + "\t\tInnerException :" + e.InnerException.Message);
+                RaiseSyncError(e: e,
+                    errorMessage: "Errore di lettura: " + e.Message + "\t\tInnerException :" + e.InnerException.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
                 throw new Exception("Lettura Record Fallita: " + e.Message, e);
             }
             
@@ -324,22 +304,20 @@ namespace SAPSync.SyncElements
             }
             catch (Exception e)
             {
-                RaiseSyncError("Errore nell'importazione dei record " + e.Message + "\t\tInnerException : " + e.InnerException.Message);
+                RaiseSyncError(e: e,
+                    errorMessage: "Errore nell'importazione dei record " + e.Message + "\t\tInnerException : " + e.InnerException.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
             }
         }
 
-        protected virtual void Initialize()
+        protected override void Initialize()
         {
-            ChangeStatus("Inizializzazione");
-            RaisePhaseProgressChanged(0);
+            base.Initialize();
+            ChangeSyncStatus(SyncProgress.Initializing);
+            RaiseProgressChanged(0);
 
             ConfigureRecordEvaluator();
             InitializeRecordEvaluator();
-        }
-
-        protected virtual void InitializeNewCurrentTask()
-        {
-            CurrentSyncTask = new Task(() => StartSync());
         }
 
         protected virtual void InitializeRecordEvaluator()
@@ -349,30 +327,13 @@ namespace SAPSync.SyncElements
 
         protected virtual void InsertNewRecords(IEnumerable<T> records)
         {
-            ChangeStatus("Inserimento Nuovi record");
-            RaisePhaseProgressChanged(0);
+            ChangeSyncStatus(SyncProgress.ImportInsert);
+            RaiseProgressChanged(0);
             BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(records);
             insertCommand.ProgressChanged += ChangeProgress;
             SSMDData.Execute(insertCommand);
         }
-
-        protected void RaisePhaseProgressChanged(int newProgress)
-        {
-            PhaseProgress = newProgress;
-            ProgressChangedEventArgs e = new ProgressChangedEventArgs(newProgress, null);
-            ProgressChanged?.Invoke(this, e);
-        }
-
-        protected virtual void RaiseReadTaskCompleted(Task t)
-        {
-            ReadTaskCompleted?.Invoke(this, new TaskEventArgs(t));
-        }
-
-        protected void RaiseStatusChanged()
-        {
-            EventArgs e = new EventArgs();
-            StatusChanged?.Invoke(this, e);
-        }
+        
 
         protected virtual void RaiseSyncAborted()
         {
@@ -385,24 +346,19 @@ namespace SAPSync.SyncElements
             SyncCompleted?.Invoke(this, e);
         }
 
-        protected virtual void RaiseSyncElementStarting()
-        {
-            SyncElementStarting?.Invoke(this, new EventArgs());
-        }
 
-        protected virtual void RaiseSyncError(string errorMessage)
+        protected virtual void RaiseSyncFailed(Exception e = null)
         {
             SyncErrorEventArgs args = new SyncErrorEventArgs()
             {
-                ErrorMessage = errorMessage
+                Exception = e,
+                ErrorMessage = "Sincronizzazione fallita",
+                NameOfElement = Name,
+                Progress = SyncStatus,
+                Severity = SyncErrorEventArgs.ErrorSeverity.Critical,
+                TypeOfElement = GetType()
             };
 
-            SyncErrorRaised?.Invoke(this, args);
-        }
-
-        protected virtual void RaiseSyncFailed()
-        {
-            EventArgs args = new EventArgs();
             SyncFailed?.Invoke(this, args);
         }
 
@@ -429,7 +385,9 @@ namespace SAPSync.SyncElements
             catch (Exception e)
             {
                 string errorMessage = "Importazione record fallita: " + e.Message;
-                RaiseSyncError(e.Message);
+                RaiseSyncError(e:e,
+                    errorMessage: e.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
                 if (!Configuration.ContinueExportingOnImportFail)
                     throw new InvalidOperationException(errorMessage, e);
             }
@@ -442,14 +400,16 @@ namespace SAPSync.SyncElements
             catch (Exception e)
             {
                 string errorMessage = "Errore nell'elaborazione post-importazione: " + e.Message;
-                RaiseSyncError(e.Message);
+                RaiseSyncError(e:e,
+                    errorMessage: e.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
                 if (!Configuration.ContinueExportingOnImportFail)
                     throw new InvalidOperationException(errorMessage, e);
             }
 
             try
             {
-                SyncStatus = "Esportazione Dati";
+                ChangeSyncStatus(SyncProgress.Export);
                 RaiseStatusChanged();
                 if (Configuration.PerformExport)
                     ExportData();
@@ -457,20 +417,34 @@ namespace SAPSync.SyncElements
             catch (Exception e)
             {
                 string errorMessage = "Esportazione record fallita: " + e.Message;
-                RaiseSyncError(e.Message);
+                RaiseSyncError(e:e,
+                    errorMessage: e.Message,
+                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
                 throw new InvalidOperationException(errorMessage, e);
             }
         }
+        public void OnSyncTaskStarted(object sender, EventArgs e)
+        {
+
+        }
+
 
         protected virtual void SaveElementData()
         {
             SSMDData.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
         }
 
-        protected virtual void SyncFailure()
+        protected virtual void ChangeElementStatus(SyncElementStatus newStatus)
         {
-            IsFailed = true;
-            RaiseSyncFailed();
+            ElementStatus = newStatus;
+            RaiseStatusChanged();
+        }
+
+        protected virtual void SyncFailure(Exception e = null)
+        {
+            RaiseSyncFailed(e);
+            ChangeElementStatus(SyncElementStatus.Failed);
+            ChangeSyncStatus(SyncProgress.Idle);
         }
 
         protected virtual void UpdateDatabase(UpdatePackage<T> updatePackage)
@@ -482,8 +456,8 @@ namespace SAPSync.SyncElements
 
         protected virtual void UpdateExistingRecords(IEnumerable<T> records)
         {
-            ChangeStatus("Aggiornamento record esistenti");
-            RaisePhaseProgressChanged(0);
+            ChangeSyncStatus(SyncProgress.ImportUpdate);
+            RaiseProgressChanged(0);
             BatchUpdateEntitiesCommand<SSMDContext> updateCommand = new BatchUpdateEntitiesCommand<SSMDContext>(records);
             updateCommand.ProgressChanged += ChangeProgress;
             SSMDData.Execute(updateCommand);

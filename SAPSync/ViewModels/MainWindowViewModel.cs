@@ -22,7 +22,6 @@ namespace SAPSync.ViewModels
 
         public MainWindowViewModel()
         {
-            _syncManager = new SyncManager();
             StartSyncCommand = new DelegateCommand(() => StartSync());
             ToggleSyncServiceCommand = new DelegateCommand(() => ToggleSyncService());
             OpenLogWindowCommand = new DelegateCommand(() => OpenLogWindow());
@@ -87,9 +86,9 @@ namespace SAPSync.ViewModels
             RaisePropertyChanged("ServiceStatus");
         }
 
-        private async void StartSync()
+        private void StartSync()
         {
-            await Task.Run(() => _syncManager?.StartSync());
+            Task.Run(() => _syncManager?.StartSync(SyncElements.Where(sel => sel.IsSelected).Select(sel => sel.SyncElement)));
         }
 
         private void ToggleSyncService()

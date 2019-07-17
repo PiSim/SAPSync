@@ -17,6 +17,8 @@ namespace SAPSync.SyncElements
 
         #region Methods
 
+        void Clear();
+
         bool CheckInitialized();
 
         UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records);
@@ -38,9 +40,15 @@ namespace SAPSync.SyncElements
 
         #region Constructors
 
+        public void Clear()
+        {
+            RecordValidator = null;
+            _recordIndex = null;            
+            _trackedRecordIndex = null;
+        }
+
         public RecordEvaluator()
         {
-            _trackedRecordIndex = new Dictionary<TKey, T>();
         }
 
         #endregion Constructors
@@ -118,17 +126,15 @@ namespace SAPSync.SyncElements
 
         public virtual void Initialize(SSMDData sSMDData)
         {
+            _trackedRecordIndex = new Dictionary<TKey, T>();
             _recordIndex = sSMDData.RunQuery(GetIndexEntriesQuery()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
-            ConfigureRecordValidator();
+            RecordValidator = GetRecordValidator();
             InitializeRecordValidator(sSMDData);
         }
 
         protected virtual void AddToTrackedRecordIndex(T record) => _trackedRecordIndex.Add(GetIndexKey(record), record);
 
-        protected virtual void ConfigureRecordValidator()
-        {
-            RecordValidator = new RecordValidator<T>();
-        }
+        protected virtual IRecordValidator<T> GetRecordValidator() =>  new RecordValidator<T>();
 
         protected virtual IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
         {
