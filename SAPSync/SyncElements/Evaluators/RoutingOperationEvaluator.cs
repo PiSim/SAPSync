@@ -8,6 +8,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class RoutingOperationEvaluator : RecordEvaluator<RoutingOperation, Tuple<long, int>>
     {
+        public RoutingOperationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override IRecordValidator<RoutingOperation> GetRecordValidator() => new RoutingOperationValidator();

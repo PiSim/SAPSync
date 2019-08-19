@@ -6,6 +6,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionCharacteristicEvaluator : RecordEvaluator<InspectionCharacteristic, string>
     {
+        public InspectionCharacteristicEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override string GetIndexKey(InspectionCharacteristic record) => record.Name;

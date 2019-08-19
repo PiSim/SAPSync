@@ -8,6 +8,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class WBSRelationEvaluator : RecordEvaluator<WBSRelation, int>
     {
+        public WBSRelationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override IRecordValidator<WBSRelation> GetRecordValidator() => new WBSRelationValidator();

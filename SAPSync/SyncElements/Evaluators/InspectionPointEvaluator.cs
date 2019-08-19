@@ -9,6 +9,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionPointEvaluator : RecordEvaluator<InspectionPoint, Tuple<long, int, int, int>>
     {
+        public InspectionPointEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override IRecordValidator<InspectionPoint> GetRecordValidator() => new InspectionPointValidator();

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SAPSync.Properties {
+namespace SyncService.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -22,27 +22,33 @@ namespace SAPSync.Properties {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("L:\\temp\\Pietro\\error.log")]
-        public string ErrorLogPath {
-            get {
+        public string ErrorLogPath
+        {
+            get
+            {
                 return ((string)(this["ErrorLogPath"]));
             }
-            set {
+            set
+            {
                 this["ErrorLogPath"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("L:\\temp\\Pietro\\general.log")]
-        public string GeneralLogPath {
-            get {
+        public string GeneralLogPath
+        {
+            get
+            {
                 return ((string)(this["GeneralLogPath"]));
             }
-            set {
+            set
+            {
                 this["GeneralLogPath"] = value;
             }
         }

@@ -38,7 +38,7 @@ namespace SAPSync.SyncElements.SyncJobs
                 getResultsTask.Start();
                 getResultsTask.Wait();
                 RaiseExternalTaskCompleted(getResultsTask);
-                records = getResultsTask.Result;
+                records = getResultsTask.Result ?? throw new Exception("Lettura Record Fallita");
             }
             catch (Exception e)
             {

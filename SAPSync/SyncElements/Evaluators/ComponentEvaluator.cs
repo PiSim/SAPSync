@@ -6,6 +6,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class ComponentEvaluator : RecordEvaluator<Component, string>
     {
+        public ComponentEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override string GetIndexKey(Component record) => record.Name;

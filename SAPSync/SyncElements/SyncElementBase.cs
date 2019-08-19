@@ -12,6 +12,9 @@ namespace SAPSync.SyncElements
 
     public abstract class SyncElementBase : ISyncBase, IDisposable
     {
+        public event EventHandler ElementStarting;
+        public event EventHandler ElementCompleted;
+
         public abstract string Name { get; }
 
         protected virtual void Initialize()
@@ -47,6 +50,16 @@ namespace SAPSync.SyncElements
             ExternalTaskCompleted?.Invoke(this, new TaskEventArgs(t));
         }
 
+        protected virtual void RaiseElementStarting()
+        {
+            ElementStarting?.Invoke(this, new EventArgs());
+        }
+
+        protected virtual void RaiseElementComplete()
+        {
+            ElementCompleted?.Invoke(this, new EventArgs());
+        }
+
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
                
         public virtual void Run()
@@ -57,7 +70,6 @@ namespace SAPSync.SyncElements
                 Initialize();
                 EnsureInitialized();
                 Execute();
-                OnCompleting();
             }
             catch (Exception e)
             {
@@ -65,7 +77,10 @@ namespace SAPSync.SyncElements
                 RaiseSyncError(e: e,
                     errorMessage: "Errore: " + e.Message + "\t\tInnerException :" + e.InnerException.Message,
                     errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
-                throw new Exception(": " + e.Message, e);
+            }
+            finally
+            {
+                OnCompleting();
             }
         }
 
@@ -76,12 +91,13 @@ namespace SAPSync.SyncElements
 
         protected virtual void OnStarting()
         {
-
+            RaiseElementStarting();
         }
 
         protected virtual void OnCompleting()
         {
-
+            RaiseElementComplete();
+            Clear();
         }
 
         protected virtual void Execute()
@@ -133,6 +149,16 @@ namespace SAPSync.SyncElements
             ProgressChanged?.Invoke(sender, e);
         }
 
+        protected virtual void OnSubscribedElementCompleted(object sender, EventArgs e)
+        {
+            ElementCompleted?.Invoke(sender, e);
+        }
+
+        protected virtual void OnSubscribedElementStarting(object sender, EventArgs e)
+        {
+            ElementStarting?.Invoke(sender, e);
+        }
+
         protected virtual void OnSubscribedStatusChanged(object sender, EventArgs e)
         {
             StatusChanged?.Invoke(sender, e);
@@ -150,6 +176,18 @@ namespace SAPSync.SyncElements
             syncBase.ProgressChanged += OnSubscribedProgressChanged;
             syncBase.StatusChanged += OnSubscribedStatusChanged;
             syncBase.SyncErrorRaised += OnSubscribedSyncErrorRaised;
+            syncBase.ElementStarting += OnSubscribedElementStarting;
+            syncBase.ElementCompleted += OnSubscribedElementCompleted;
+        }
+        protected virtual void UnsubscribeFromElement(ISyncBase syncBase)
+        {
+            syncBase.ExternalTaskCompleted -= OnSubscribedExternalTaskCompleted;
+            syncBase.ExternalTaskStarting -= OnSubscribedExternalTaskStarting;
+            syncBase.ProgressChanged -= OnSubscribedProgressChanged;
+            syncBase.StatusChanged -= OnSubscribedStatusChanged;
+            syncBase.SyncErrorRaised -= OnSubscribedSyncErrorRaised;
+            syncBase.ElementStarting -= OnSubscribedElementStarting;
+            syncBase.ElementCompleted -= OnSubscribedElementCompleted;
         }
     }
 }

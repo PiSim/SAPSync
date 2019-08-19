@@ -10,6 +10,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionSpecificationEvaluator : RecordEvaluator<InspectionSpecification, Tuple<long, int, int>>
     {
+        public InspectionSpecificationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override IRecordValidator<InspectionSpecification> GetRecordValidator() => new InspectionSpecificationValidator();
@@ -31,10 +35,7 @@ namespace SAPSync.SyncElements.Evaluators
 
         #region Methods
 
-        public bool CheckIndexesInitialized()
-        {
-            throw new NotImplementedException();
-        }
+        public bool CheckIndexesInitialized() => _characteristicDictionary != null && _lotDictionary != null;
 
         public InspectionSpecification GetInsertableRecord(InspectionSpecification record)
         {

@@ -9,10 +9,7 @@ namespace SAPSync.SyncElements
     {
         #region Properties
 
-        bool CheckRemovedRecords { get; set; }
-
-        bool IgnoreExistingRecords { get; set; }
-
+        RecordEvaluatorConfiguration Configuration { get; }
         #endregion Properties
 
         #region Methods
@@ -26,6 +23,13 @@ namespace SAPSync.SyncElements
         void Initialize(SSMDData sSMDData);
 
         #endregion Methods
+    }
+
+    public class RecordEvaluatorConfiguration
+    {
+        public bool CheckRemovedRecords { get; set; } = true;
+
+        public bool IgnoreExistingRecords { get; set; } = false;
     }
 
     public abstract class RecordEvaluator<T, TKey> : IRecordEvaluator<T> where T : class
@@ -47,8 +51,9 @@ namespace SAPSync.SyncElements
             _trackedRecordIndex = null;
         }
 
-        public RecordEvaluator()
+        public RecordEvaluator(RecordEvaluatorConfiguration configuration = null)
         {
+            Configuration = configuration ?? new RecordEvaluatorConfiguration();
         }
 
         #endregion Constructors
@@ -67,15 +72,13 @@ namespace SAPSync.SyncElements
 
         #region Properties
 
-        public virtual bool CheckRemovedRecords { get; set; } = true;
-
-        public virtual bool IgnoreExistingRecords { get; set; } = false;
-
         public IDictionary<TKey, T> RecordIndex => _recordIndex;
 
         public IDictionary<TKey, T> TrackedRecordIndex => _trackedRecordIndex;
 
         protected IRecordValidator<T> RecordValidator { get; set; }
+
+        public RecordEvaluatorConfiguration Configuration { get; }
 
         #endregion Properties
 
@@ -143,7 +146,7 @@ namespace SAPSync.SyncElements
             foreach (SyncItem<T> record in retrievedItems)
                 record.Action = GetRecordDesignation(record.Item);
 
-            if (CheckRemovedRecords)
+            if (Configuration.CheckRemovedRecords)
             {
                 HashSet<TKey> existingKeysIndex = new HashSet<TKey>(retrievedItems.Select(rec => GetIndexKey(rec.Item)).Distinct());
                 foreach (T record in _recordIndex.Values)
@@ -178,7 +181,7 @@ namespace SAPSync.SyncElements
                 {
                     return SyncAction.Insert;
                 }
-                else if (!IgnoreExistingRecords)
+                else if (!Configuration.IgnoreExistingRecords)
                     return SyncAction.Update;
             }
 

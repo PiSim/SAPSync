@@ -80,10 +80,15 @@ namespace SAPSync
         {
             ActiveSyncElements.Add(sender as ISyncElement);
         }
-
-        protected virtual void OnSyncElementCompleted(object sender, EventArgs e)
+        
+        protected override void OnSubscribedElementCompleted(object sender, EventArgs e)
         {
+            base.OnSubscribedElementCompleted(sender, e);
+            if (!(sender is ISyncElement))
+                return;
+
             ISyncElement element = sender as ISyncElement;
+            
             CompletedSyncElements.Add(element);
             if (ActiveSyncElements.Contains(element))
                 ActiveSyncElements.Remove(element);
@@ -91,7 +96,14 @@ namespace SAPSync
             StartReadyPendingElements();
 
             if (CheckAllElementsComplete())
-                RaiseSyncTaskCompleted();
+                OnCompleting();
+        }
+        protected override void OnCompleting()
+        {
+            foreach (ISyncBase element in CompletedSyncElements)
+                UnsubscribeFromElement(element);
+            RaiseSyncTaskCompleted();
+            base.OnCompleting();
         }
 
         protected virtual void RaiseSyncTaskStarted() => SyncTaskStarted?.Invoke(this, new EventArgs());

@@ -4,11 +4,13 @@ using SAPSync.SyncElements.Evaluators;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using SAPSync.SyncElements.SAPTables;
 using SAPSync.SyncElements.SyncJobs;
+using SAPSync.SyncElements.SyncJobs.Dto;
 using SSMD;
 using SSMD.Queries;
 using SyncService;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,62 +22,50 @@ namespace SAPSync
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
             ISyncElement WorkCentersElement = new JobAggregator(
-                "Centri di Lavoro",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Centri di Lavoro")
                 .HasJob(
                     new SyncData<WorkCenter>(
                         new ReadWorkCenters(),
                         new RecordWriter<WorkCenter>(
-                            new WorkCenterEvaluator())));
+                            new WorkCenterEvaluator(new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))));
 
 
             ISyncElement MaterialFamiliesElement = new JobAggregator(
                 "Gerarchia Prodotto",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                new SyncElementConfiguration())
                 .HasJob(new SyncData<MaterialFamilyLevel>(
                     new ReadMaterialFamilyLevels(),
                     new RecordWriter<MaterialFamilyLevel>(
-                        new MaterialFamilyLevelEvaluator())))
+                        new MaterialFamilyLevelEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))))
                 .HasJob(new SyncData<MaterialFamily>(
                     new ReadMaterialFamilies(),
                     new RecordWriter<MaterialFamily>(
-                        new MaterialFamilyEvaluator())));
+                        new MaterialFamilyEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))));
 
             ISyncElement ProjectsElement = new JobAggregator(
-                "Progetti",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Progetti")
                 .HasJob(new SyncData<Project>(
                     new ReadProjects(),
                     new RecordWriter<Project>(
-                        new ProjectEvaluator())));
+                        new ProjectEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))));
 
             ISyncElement WBSRelationsElement = new JobAggregator(
-                "Struttura progetti",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Struttura progetti")
                 .HasJob(new SyncData<WBSRelation>(
                     new ReadWBSRelations(),
                     new RecordWriter<WBSRelation>(
@@ -86,14 +76,7 @@ namespace SAPSync
                 });
 
             ISyncElement MaterialsElement = new JobAggregator(
-                "Materiali",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Materiali")
                 .HasJob(new SyncData<Material>(
                     new ReadMaterials(),
                     new RecordWriter<Material>(
@@ -105,14 +88,7 @@ namespace SAPSync
                 });
 
             ISyncElement OrdersElement = new JobAggregator(
-                "Ordini",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Ordini")
                 .HasJob(new SyncData<Order>(
                     new ReadOrders(),
                     new RecordWriter<Order>(
@@ -127,14 +103,7 @@ namespace SAPSync
                 });
 
             ISyncElement RoutingOperationsElement = new JobAggregator(
-                "Operazioni ordine",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Operazioni ordine")
                 .HasJob(new SyncData<RoutingOperation>(
                     new ReadRoutingOperations(),
                     new RecordWriter<RoutingOperation>(
@@ -145,28 +114,17 @@ namespace SAPSync
                 });
 
             ISyncElement ComponentsElement = new JobAggregator(
-                "Componenti",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Componenti")
                 .HasJob(new SyncData<Component>(
                     new ReadComponents(),
                     new RecordWriter<Component>(
-                        new ComponentEvaluator())));
+                        new ComponentEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                            IgnoreExistingRecords = true}))));
 
             ISyncElement ConfirmationsElements = new JobAggregator(
-                "Conferme ordine",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Conferme ordine")
                 .HasJob(new SyncData<OrderConfirmation>(
                     new ReadConfirmations(),
                     new RecordWriter<OrderConfirmation>(
@@ -178,18 +136,16 @@ namespace SAPSync
                 });
 
             ISyncElement OrderComponentsElement = new JobAggregator(
-                "Componenti ordine",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Componenti ordine")
                 .HasJob(new SyncData<OrderComponent>(
                     new ReadOrderComponents(),
                     new RecordWriter<OrderComponent>(
-                        new OrderComponentEvaluator())))
+                        new OrderComponentEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+
+                                IgnoreExistingRecords = true
+                            }))))
                 .DependsOn(new ISyncElement[]
                 {
                     OrdersElement,
@@ -197,26 +153,33 @@ namespace SAPSync
                 });
 
             ISyncElement InspectionCharacteristicsElement = new JobAggregator(
-                "Controlli",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Controlli")
                 .HasJob(new SyncData<InspectionCharacteristic>(
                     new ReadInspectionCharacteristics(),
                     new RecordWriter<InspectionCharacteristic>(
-                        new InspectionCharacteristicEvaluator())))
+                        new InspectionCharacteristicEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+
+                                IgnoreExistingRecords = true
+                            }))))
                 .HasJob(new SyncData<InspectionLot>(
                     new InspLotGetList(),
                     new RecordWriter<InspectionLot>(
-                        new InspectionLotEvaluator())))
+                        new InspectionLotEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))))
                 .HasJob(new SyncData<InspectionSpecification>(
                     new ReadInspectionSpecifications(),
                     new RecordWriter<InspectionSpecification>(
-                        new InspectionSpecificationEvaluator())))
+                        new InspectionSpecificationEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+
+                                IgnoreExistingRecords = true
+                            }))))
                 .HasJob(new SyncData<InspectionPoint>(
                     new ReadInspectionPoints(),
                     new RecordWriter<InspectionPoint>(
@@ -228,32 +191,27 @@ namespace SAPSync
                     });
 
             ISyncElement CustomersElement = new JobAggregator(
-                "Clienti",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = false,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Clienti")
                 .HasJob(new SyncData<Customer>(
                     new ReadCustomers(),
                     new RecordWriter<Customer>(
-                        new CustomerEvaluator())));
+                        new CustomerEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                CheckRemovedRecords = false,
+                                IgnoreExistingRecords = true
+                            }))));
 
             ISyncElement MaterialCustomerElement = new JobAggregator(
-                "Clienti per materiale",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = true,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Clienti per materiale")
                 .HasJob(new SyncData<MaterialCustomer>(
                     new ReadMaterialCustomers(),
                     new RecordWriter<MaterialCustomer>(
-                        new MaterialCustomerEvaluator())))
+                        new MaterialCustomerEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                IgnoreExistingRecords = true
+                            }))))
                 .DependsOn(new ISyncElement[]
                 {
                     MaterialsElement,
@@ -262,14 +220,7 @@ namespace SAPSync
 
 
             ISyncElement GoodMovementsElement = new JobAggregator(
-                "Movimenti Merce",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = false,
-                    PerformImport = true
-                })
+                "Movimenti Merce")
                 .HasJob(new SyncData<GoodMovement>(
                     new ReadGoodMovements(),
                     new RecordWriter<GoodMovement>(
@@ -280,67 +231,121 @@ namespace SAPSync
                     OrdersElement
                 });
 
-            ISyncElement TrialMasterListElement = new SyncTrialMasterReportTEST(
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = false,
-                    IgnoreExistingRecords = false,
-                    PerformExport = true,
-                    PerformImport = true
-                })
+            ISyncElement TrialMasterListElement = new JobAggregator(
+                "Foglio Master Prove")
+                .HasJob(new SyncData<OrderData>(
+                    new XmlReader<OrderData, TrialMasterDataDto>(
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("L:\\LABORATORIO\\StatoOdpProva.xlsx"),
+                            "Master Prove",
+                            4,
+                            new System.IO.DirectoryInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\BackupReport\\StatoOdpProva"))),
+                    new RecordWriter<OrderData>(
+                        new TrialMasterEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                CheckRemovedRecords = false
+                            }))))
+                .HasJob(new SyncData<OrderData>(
+                    new SSMDReader<OrderData>(() => new LoadedOrderDataQuery()),
+                    new XmlWriter<OrderData, TrialMasterDataDto>(
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("L:\\LABORATORIO\\StatoOdpProva.xlsx"),
+                            "Master Prove",
+                            4,
+                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))
+                        {
+                            ImportedColumnFill = Color.Yellow
+                        })))
                 .DependsOn(new ISyncElement[]
                 {
-                    OrdersElement
+                    OrdersElement,
+                    OrderComponentsElement
                 });
 
-            ISyncElement TrialLabDataElement = new SyncTrialLabData(
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = true,
-                    PerformImport = true
-                })
+            ISyncElement TrialLabDataElement = new JobAggregator(
+                "Foglio note fasi di lavorazione")
+                .HasJob(new SyncData<WorkPhaseLabData>(
+                    new XmlReader<WorkPhaseLabData, WorkPhaseLabDataDto>(
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
+                            "SCHEMA",
+                            4,
+                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))),
+                    new RecordWriter<WorkPhaseLabData>(
+                        new WorkPhaseLabDataEvaluator(
+                            new RecordEvaluatorConfiguration()
+                            {
+                                CheckRemovedRecords = false
+                            }))))
+                .HasJob(new CreateMissingTrialLabData())
+                .HasJob(new SyncData<WorkPhaseLabData>(
+                    new SSMDReader<WorkPhaseLabData>(() => new LoadedWorkPhaseLabDataQuery()),
+                    new XmlWriter<WorkPhaseLabData, WorkPhaseLabDataDto>(
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
+                            "SCHEMA",
+                            4,
+                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))
+                        {
+                            ImportedColumnFill = Color.Yellow
+                        })))
                 .DependsOn(new ISyncElement[]
                 {
                     OrdersElement,
                     TrialMasterListElement
                 });
-
-            ISyncElement TestReportsElement = new SyncTestReports(
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = true,
-                    PerformImport = true
-                })
-                .DependsOn(new ISyncElement[]
-                {
-                    OrdersElement,
-                    TrialMasterListElement
-                });
-
-            ISyncElement XmlJobTestElement = new JobAggregator(
-                "XMLJob Test",
-                new SyncElementConfiguration()
-                {
-                    CheckDeletedElements = true,
-                    IgnoreExistingRecords = false,
-                    PerformExport = true,
-                    PerformImport = true
-                })
+            
+            ISyncElement TestReportElement = new JobAggregator(
+                "Test Report")
                 .HasJob(new SyncData<TestReport>(
                     new XmlReader<TestReport, TestReportDto>(
-                        new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx")),
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"), 
+                            "Report",
+                            4)),
                     new RecordWriter<TestReport>(
                         new TestReportRecordEvaluator())))
                 .HasJob(new SyncData<TestReport>(
                     new SSMDReader<TestReport>( () => new LoadedTestReportQuery()),
                     new XmlWriter<TestReport, TestReportDto>(
-                        new XmlWriterConfiguration(
-                            new System.IO.FileInfo("L:\\temp\\Pietro\\ListaReport.xlsx"),
-                            new System.IO.DirectoryInfo("L:\\temp\\Pietro")))));
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"),
+                            "Report",
+                            4,
+                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ListaReport"))
+                        {
+                            ImportedColumnFill = Color.Yellow
+                        })))
+                .DependsOn(new ISyncElement[]
+                {
+                    OrdersElement,
+                    TrialMasterListElement
+                });
+
+            ISyncElement TrialScrapListElement = new JobAggregator(
+                "Foglio scarti di prova")
+                .HasJob(new SyncData<IGrouping<Tuple<Order, string>, OrderConfirmation>>(
+                    new SSMDReader<OrderConfirmation, IGrouping<Tuple<Order, string>, OrderConfirmation>>(
+                        qu => qu.GroupBy(con => new Tuple<Order, string>(con.Order, con.ScrapCause))
+                            .ToList()
+                            .AsQueryable()
+                            .OrderByDescending(grp => grp.Key.Item1.Number),
+                        () => new LoadedOrderScrapCauseConfirmations()),
+                    new XmlWriter<IGrouping<Tuple<Order, string>, OrderConfirmation>, TrialScrapDto>(
+                        new XmlInteractionConfiguration(
+                            new System.IO.FileInfo("W:\\Bacheca\\Qualita Pubblica\\Scarti\\ScartoOdp.xlsx"),
+                            "Scarti",
+                            4,
+                            new System.IO.DirectoryInfo("L:\\temp\\Pietro"))
+                        {
+                            ImportedColumnFill = Color.Yellow
+                        })))
+                .DependsOn(new ISyncElement[]
+                {
+                    ConfirmationsElements,
+                    OrdersElement
+                });
 
             List<ISyncElement> output = new List<ISyncElement>
                 {
@@ -360,8 +365,8 @@ namespace SAPSync
                     InspectionCharacteristicsElement,
                     TrialMasterListElement,
                     TrialLabDataElement,
-                    TestReportsElement,
-                    XmlJobTestElement
+                    TestReportElement,
+                    TrialScrapListElement
                 };
 
             return output;

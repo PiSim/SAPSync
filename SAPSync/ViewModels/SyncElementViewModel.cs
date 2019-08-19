@@ -9,9 +9,8 @@ namespace SAPSync.ViewModels
 {
     public class SyncElementViewModel : BindableBase
     {
-        #region Fields
 
-        private readonly ISyncElement _syncElement;
+        #region Fields
 
         #endregion Fields
 
@@ -19,10 +18,10 @@ namespace SAPSync.ViewModels
 
         public SyncElementViewModel(ISyncElement syncElement)
         {
-            _syncElement = syncElement;
-            _syncElement.ProgressChanged += OnPhaseProgressChanged;
-            _syncElement.StatusChanged += OnStatusChanged;
-            _syncElement.SyncCompleted += OnSyncCompleted;
+            SyncElement = syncElement;
+            SyncElement.ProgressChanged += OnPhaseProgressChanged;
+            SyncElement.StatusChanged += OnStatusChanged;
+            SyncElement.SyncCompleted += OnSyncCompleted;
         }
 
         #endregion Constructors
@@ -52,19 +51,9 @@ namespace SAPSync.ViewModels
         public DateTime? LastUpdate => SyncElement.LastUpdate;
         public string Name => SyncElement.Name;
         public DateTime? NextScheduledUpdate => SyncElement.NextScheduledUpdate;
-        public int PhaseProgress => SyncElement.PhaseProgress;
+        public int PhaseProgress { get; set; } = 0;
 
-        public string SyncStatus
-        {
-            get
-            {
-                if (_progressIndex.ContainsKey(SyncElement.SyncStatus))
-                    return _progressIndex[SyncElement.SyncStatus];
-
-                else
-                    return "";
-            }
-        }
+        public string SyncStatus { get; set; }
 
         public string ElementStatus
         {
@@ -77,7 +66,7 @@ namespace SAPSync.ViewModels
                     return "";
             }
         }
-        public ISyncElement SyncElement => _syncElement;
+        public ISyncElement SyncElement { get; }
 
         #endregion Properties
 
@@ -85,13 +74,19 @@ namespace SAPSync.ViewModels
 
         public void OnPhaseProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            PhaseProgress = e.ProgressPercentage;
             RaisePropertyChanged("PhaseProgress");
+            if (sender is ISyncBase)
+            {
+                SyncStatus = (sender as ISyncBase).Name;
+                RaisePropertyChanged("SyncStatus");
+            }
         }
 
         public void OnStatusChanged(object sender, EventArgs e)
         {
-            RaisePropertyChanged("SyncStatus");
-            RaisePropertyChanged("ElementStatus");
+            if (sender is ISyncElement)
+                RaisePropertyChanged("ElementStatus");
         }
 
         public void OnSyncCompleted(object sender, EventArgs e)

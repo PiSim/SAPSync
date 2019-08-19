@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SyncService
 {
-    public interface ISyncTask
+    public interface ISyncTask : ISyncBase
     {
         void Start();
         event EventHandler SyncTaskCompleted;
@@ -14,7 +14,6 @@ namespace SyncService
         List<Task> TaskList { get; }
         event EventHandler SyncTaskStarting;
         event EventHandler SyncTaskStarted;
-        event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
         
         ICollection<ISyncElement> PendingSyncElements { get; }
         ICollection<Task> ActiveReadTasks { get; }

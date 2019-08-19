@@ -95,11 +95,11 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Ultimo Aggiornamento"
                                     Binding="{Binding LastUpdate,
-                                                      StringFormat=dd/MM/yyyy hh:mm,
+                                                      StringFormat=dd/MM/yyyy HH:mm,
                                                       Mode=OneWay}" />
                 <DataGridTextColumn Header="Prossimo Aggiornamento"
                                     Binding="{Binding NextScheduledUpdate,
-                                                      StringFormat=dd/MM/yyyy hh:mm,
+                                                      StringFormat=dd/MM/yyyy HH:mm,
                                                       Mode=OneWay}" />
             </DataGrid.Columns>
         </DataGrid>
