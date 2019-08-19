@@ -100,7 +100,6 @@ namespace SAPSync.SyncElements
         public virtual JobAggregator HasJob(ISyncJob job)
         {
             Jobs.Add(job);
-            SubscribeToElement(job);
             return this;
         }
 
@@ -130,7 +129,7 @@ namespace SAPSync.SyncElements
             ChangeSyncStatus(SyncProgress.Idle);
             RaiseProgressChanged(0);
         }
-           
+
         protected virtual void SetOnQueue()
         {
             ChangeElementStatus(SyncElementStatus.OnQueue);
@@ -152,20 +151,30 @@ namespace SAPSync.SyncElements
             }
         }
 
-        public virtual void StartSync() => Run();
-
-
-        protected override void Execute()
+        public virtual void StartSync()
         {
-            base.Execute();
             ElementStatus = SyncElementStatus.Running;
-            ExecuteJobStack();
-        }
+            
+            try
+            {
+                Initialize();
+                EnsureInitialized();
+            }
+            catch(Exception e)
+            {
+                SyncFailure(e);
+            }
 
-        protected override void OnCompleting()
-        {
+            try
+            {
+                ExecuteJobStack();
+            }
+            catch (Exception e)
+            {
+                SyncFailure(e);
+            }
+
             FinalizeSync();
-            base.OnCompleting();
         }
 
         protected void Abort(string abortReason)

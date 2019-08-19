@@ -18,7 +18,5 @@ namespace SyncService
         event EventHandler StatusChanged;
 
         event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
-        event EventHandler ElementStarting;
-        event EventHandler ElementCompleted;
     }
 }

@@ -19,7 +19,7 @@ namespace SAPSync.ViewModels
 
         private string ReadLog()
         {
-            FileInfo logFile = new FileInfo(Properties.Settings.Default.GeneralLogPath);
+            FileInfo logFile = new FileInfo(Properties.Settings.Default.LogFilePath);
 
             if (!logFile.Exists)
                 return null;

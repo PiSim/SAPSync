@@ -10,10 +10,6 @@ namespace SAPSync.SyncElements
 {
     public class ConfirmationEvaluator : RecordEvaluator<OrderConfirmation, Tuple<int, int>>
     {
-        public ConfirmationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override IRecordValidator<OrderConfirmation> GetRecordValidator() => new ConfirmationValidator();

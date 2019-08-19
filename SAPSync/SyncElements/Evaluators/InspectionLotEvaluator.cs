@@ -11,10 +11,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionLotEvaluator : RecordEvaluator<InspectionLot, long>
     {
-        public InspectionLotEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override IRecordValidator<InspectionLot> GetRecordValidator() => new InspectionLotValidator();

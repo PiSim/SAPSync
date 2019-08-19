@@ -17,9 +17,7 @@ namespace SAPSync.Functions
                 "AUFNR",
                 "AUFPL",
                 "GAMNG",
-                "PLNBEZ",
-                "IGMNG",
-                "IASMG"
+                "PLNBEZ"
             };
         }
 
@@ -31,9 +29,7 @@ namespace SAPSync.Functions
         {
             if (!int.TryParse(data[0], out int orderNumber)
                 || !long.TryParse(data[1], out long routingNumber)
-                || !double.TryParse(data[2], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." }, out double plannedQuantity)
-                || !double.TryParse(data[4], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." }, out double totalYield)
-                || !double.TryParse(data[5], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." }, out double totalScrap))
+                || !double.TryParse(data[2], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." }, out double plannedQuantity))
                 return null;
 
             OrderData output = new OrderData()
@@ -41,11 +37,9 @@ namespace SAPSync.Functions
                 OrderNumber = orderNumber,
                 RoutingNumber = routingNumber,
                 PlannedQuantity = plannedQuantity,
-                TotalYield = totalYield,
-                TotalScrap = totalScrap,
                 Material = new Material()
                 {
-                    Code = data[3].Trim()
+                    Code = data[3]
                 }
             };
 

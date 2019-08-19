@@ -11,10 +11,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class MaterialFamilyEvaluator : RecordEvaluator<MaterialFamily, string>
     {
-        public MaterialFamilyEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override Query<MaterialFamily, SSMDContext> GetIndexEntriesQuery() => new MaterialFamiliesQuery() { EagerLoadingEnabled = true };

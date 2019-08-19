@@ -10,10 +10,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class OrderComponentEvaluator : RecordEvaluator<OrderComponent, Tuple<int, string>>
     {
-        public OrderComponentEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override IRecordValidator<OrderComponent> GetRecordValidator() => new OrderComponentValidator();

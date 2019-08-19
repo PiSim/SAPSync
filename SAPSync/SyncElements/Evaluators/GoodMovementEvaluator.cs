@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.Evaluators
 {
-    public class GoodMovementEvaluator : RecordEvaluator<GoodMovement, Tuple<long, int>>
+    public class GoodMovementEvaluator : RecordEvaluator<GoodMovement, Tuple<int,string>>
     {
-        public GoodMovementEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
+        protected override Tuple<int, string> GetIndexKey(GoodMovement record) => new Tuple<int,string>(record.OrderNumber, record.Component?.Name);
 
-        }
-        protected override Tuple<long, int> GetIndexKey(GoodMovement record) => record.GetPrimaryKey();
-
-        protected override IRecordValidator<GoodMovement> GetRecordValidator() => new GoodMovementValidator();    }
+        protected override IRecordValidator<GoodMovement> GetRecordValidator() => new GoodMovementValidator();
+        
+    }
 }

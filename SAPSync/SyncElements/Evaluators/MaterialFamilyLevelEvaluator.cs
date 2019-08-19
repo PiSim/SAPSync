@@ -7,10 +7,6 @@ namespace SAPSync.SyncElements
 {
     public class MaterialFamilyLevelEvaluator : RecordEvaluator<MaterialFamilyLevel, Tuple<int, string>>
     {
-        public MaterialFamilyLevelEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override Tuple<int, string> GetIndexKey(MaterialFamilyLevel record) => new Tuple<int, string>(record.Level, record.Code);

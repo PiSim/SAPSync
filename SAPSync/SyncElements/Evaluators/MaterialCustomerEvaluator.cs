@@ -8,11 +8,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class MaterialCustomerEvaluator : RecordEvaluator<MaterialCustomer, Tuple<string, int>>
     {
-        public MaterialCustomerEvaluator(RecordEvaluatorConfiguration configuration) : base(configuration)
-        {
-
-        }
-
         #region Methods
 
         protected override IRecordValidator<MaterialCustomer> GetRecordValidator() => new MaterialCustomerValidator();

@@ -9,14 +9,20 @@ using System.Reflection;
 
 namespace SAPSync.SyncElements.SyncJobs
 {
-    public class XmlReader<T, TDto> : XmlInteraction<T, TDto>, IRecordReader<T> where T : class, new() where TDto : class, IXmlDto<T>, new()
+    public class XmlReader<T, TDto> : SyncElementBase, IRecordReader<T> where T : class, new() where TDto : class, IXmlDto, new()
     {
         #region Constructors
 
-        public XmlReader(XmlInteractionConfiguration configuration) : base(configuration)
+        public XmlReader(FileInfo sourcePath,
+            string sourceRangeName = "MainRange")
         {
+            SourcePath = sourcePath;
+            SourceRangeName = sourceRangeName;
         }
-        
+
+        public FileInfo SourcePath { get; }
+        public string SourceRangeName { get; }
+
         #endregion Constructors
 
         #region Properties
@@ -29,18 +35,30 @@ namespace SAPSync.SyncElements.SyncJobs
         
         protected virtual IEnumerable<T> ConvertDtos(IEnumerable<TDto> importedDtos) => importedDtos.Select(dto => GetEntityFromDto(dto));
         
+        protected virtual IEnumerable<DtoProperty> GetDtoColumns()
+        {
+            return typeof(TDto)
+                .GetProperties()
+                .Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(Column)))
+                .Select(p => new DtoProperty()
+                {
+                    Property = p,
+                    ColumnIndex = p.GetCustomAttributes<Column>().First().ColumnIndex
+                }).ToList();
+        }
+        
         protected virtual TDto GetDtoFromRow(IEnumerable<ExcelRangeBase> xlRow)
         {
             var output = new TDto();
 
-            foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(Value), typeof(Imported) }))
+            foreach (DtoProperty column in GetImportedDtoColumns())
             {
                 try
                 {
-                    var cell = xlRow.FirstOrDefault(ce => ce.Start.Column == column.ColumnIndex);
+                    var cell = xlRow.ElementAt(column.ColumnIndex);
                     Type t = column.Property.PropertyType;
 
-                    if (cell?.Value == null)
+                    if (cell.Value == null)
                         column.Property.SetValue(output, null);
                     else if (column.Property.PropertyType == typeof(int))
                         column.Property.SetValue(output, cell.GetValue<int>());
@@ -65,28 +83,11 @@ namespace SAPSync.SyncElements.SyncJobs
                         errorMessage: e.Message);
                 }
             }
-            foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(FontColor), typeof(Imported) }))
-            {
-                try
-                {
-                    var cell = xlRow.FirstOrDefault(ce => ce.Start.Column == column.ColumnIndex);
-
-                    if (cell == null)
-                        column.Property.SetValue(output, null);
-                    else 
-                        column.Property.SetValue(output, cell.Style.Font.Color);
-                }
-                catch (Exception e)
-                {
-                    RaiseSyncError(e: e,
-                        errorMessage: e.Message);
-                }
-            }
 
             return output;
         }
 
-        protected virtual IEnumerable<TDto> GetDtosFromTable(IEnumerable<ExcelRangeBase> rows)
+        protected virtual IEnumerable<TDto> GetDtosFromTable(IEnumerable<IEnumerable<ExcelRangeBase>> rows)
         {
             var output = rows.Select(row => GetDtoFromRow(row))
                 .ToList();
@@ -107,40 +108,50 @@ namespace SAPSync.SyncElements.SyncJobs
             return output;
         }
 
+        protected virtual IEnumerable<DtoProperty> GetImportedDtoColumns()
+        {
+            return typeof(TDto)
+                .GetProperties()
+                .Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(Column))
+                    && x.CustomAttributes.Any(y => y.AttributeType == typeof(Imported)))
+                .Select(p => new DtoProperty()
+                {
+                    Property = p,
+                    ColumnIndex = p.GetCustomAttributes<Column>().First().ColumnIndex
+                }).ToList();
+        }
 
         protected virtual IEnumerable<TDto> ReadFromOrigin()
         {
             IEnumerable<TDto> output;
 
-            using (ExcelPackage xlPackage = new ExcelPackage(Configuration.TargetPath))
+            using (ExcelPackage xlPackage = new ExcelPackage(SourcePath))
             {
                 if (!xlPackage.File.Exists)
                     throw new InvalidOperationException("File di origine non trovato: " + xlPackage.File.FullName);
 
-                var t = typeof(TDto);
+                try
+                {
+                    ExcelRangeBase sourceRange = xlPackage.Workbook.Names[SourceRangeName];
+                    IEnumerable<IEnumerable<ExcelRangeBase>> rows = sourceRange.GroupBy(cc => cc.Start.Row).OrderBy(ca => ca.Key).Select(cb => cb.ToList());
 
-                IEnumerable<ExcelRangeBase> rows = GetRows(xlPackage.Workbook);
-
-                output = GetDtosFromTable(rows);
+                    output = GetDtosFromTable(rows);
+                }
+                catch ( Exception e)
+                {
+                    RaiseSyncError(e, "Errore di lettura del file", SyncService.SyncErrorEventArgs.ErrorSeverity.Major);
+                    throw new Exception(e.Message, e);
+                }
             }
             return output;
         }
 
         public virtual IEnumerable<T> ReadRecords()
         {
-            try
-            {
-                IEnumerable<TDto> importedDtos = ReadFromOrigin();
+            IEnumerable<TDto> importedDtos = ReadFromOrigin();
 
-                return ConvertDtos(importedDtos);
-            }
-            catch (Exception e)
-            {
-                RaiseSyncError(e, "Errore di lettura del file", SyncService.SyncErrorEventArgs.ErrorSeverity.Major);
-                return null;
-            }
+            return ConvertDtos(importedDtos);
         }
-
         
         #endregion Methods
     }

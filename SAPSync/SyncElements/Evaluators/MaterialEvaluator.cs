@@ -10,10 +10,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class MaterialEvaluator : RecordEvaluator<Material, string>
     {
-        public MaterialEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override IRecordValidator<Material> GetRecordValidator() => new MaterialValidator();

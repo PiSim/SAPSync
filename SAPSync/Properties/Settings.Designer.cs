@@ -23,27 +23,12 @@ namespace SAPSync.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("L:\\temp\\Pietro\\error.log")]
-        public string ErrorLogPath {
+        [global::System.Configuration.DefaultSettingValueAttribute("L:\\temp\\Pietro\\syncLog.txt")]
+        public string LogFilePath {
             get {
-                return ((string)(this["ErrorLogPath"]));
-            }
-            set {
-                this["ErrorLogPath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("L:\\temp\\Pietro\\general.log")]
-        public string GeneralLogPath {
-            get {
-                return ((string)(this["GeneralLogPath"]));
-            }
-            set {
-                this["GeneralLogPath"] = value;
+                return ((string)(this["LogFilePath"]));
             }
         }
     }

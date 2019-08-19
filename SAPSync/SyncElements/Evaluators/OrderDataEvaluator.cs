@@ -9,10 +9,6 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class OrderDataEvaluator : RecordEvaluator<OrderData, int>
     {
-        public OrderDataEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
-        {
-
-        }
         #region Methods
 
         protected override IRecordValidator<OrderData> GetRecordValidator() => new OrderDataValidator();
