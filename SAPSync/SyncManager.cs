@@ -23,6 +23,8 @@ namespace SAPSync
         {
             SyncTaskController = new SyncTaskController();
             SyncTaskController.SyncErrorRaised += OnSyncErrorRaised;
+            SyncTaskController.SyncTaskStarting += OnTaskStarting;
+            SyncTaskController.SyncTaskCompleted += OnTaskCompleted;
             SyncElements = (new SyncElementFactory()).BuildSyncElements();
 
             foreach (ISyncElement element in SyncElements)
@@ -45,17 +47,48 @@ namespace SAPSync
 
         public IEnumerable<DateTime?> GetUpdateSchedule() => SyncElements.Select(sel => sel.NextScheduledUpdate);
 
-        public DateTime? GetTimeForNextUpdate() => SyncElements.Min(sel => sel.NextScheduledUpdate);
-
         public void StartSync(IEnumerable<ISyncElement> syncElements)
         {
             if (syncElements.Count() != 0 && !UpdateRunning)
             {
                 SyncTask newTask = new SyncTask(syncElements);
+                SubscribeToTask(newTask);
                 SyncTaskController.RunTask(newTask);
             }
         }
+
+        protected virtual void SubscribeToTask(ISyncTask task)
+        {
+            task.ElementStarting += OnElementStarting;
+            task.ElementCompleted += OnElementCompleted;
+        }
         
+        protected virtual void OnElementStarting(object sender, EventArgs e)
+        {
+            if (sender is ISyncElement)
+                SyncLogger.LogElementStarting(sender as ISyncElement);
+        }
+
+        protected virtual void OnElementCompleted(object sender, EventArgs e)
+        {
+
+            if (sender is ISyncElement)
+                SyncLogger.LogElementCompleted(sender as ISyncElement);
+        }
+
+        protected virtual void OnTaskStarting(object sender, EventArgs e)
+        {
+            if (sender is ISyncTask)
+                SyncLogger.LogTaskStarting(sender as ISyncTask);
+
+        }
+        protected virtual void OnTaskCompleted(object sender, EventArgs e)
+        {
+
+            if (sender is ISyncTask)
+                SyncLogger.LogTaskCompleted(sender as ISyncTask);
+        }
+
         public void SyncOutdatedElements()
         {
             StartSync(SyncElements.Where(sel => sel.NextScheduledUpdate < DateTime.Now).ToList());

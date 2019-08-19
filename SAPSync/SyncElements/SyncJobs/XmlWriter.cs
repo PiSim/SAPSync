@@ -1,87 +1,74 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace SAPSync.SyncElements.SyncJobs
 {
-    public class Column : System.Attribute
+    public class XlFormatToken
     {
-        #region Constructors
-
-        public Column(int column)
+        public XlFormatToken()
         {
-            ColumnIndex = column;
+
         }
 
-        #endregion Constructors
+        public ExcelAddress RangeAddress { get; set; } = new ExcelAddress(1, 1, 1, 1);
 
-        #region Properties
+        public ExcelBorderStyle LeftBorderStyle { get; set; } = ExcelBorderStyle.None;
+        public ExcelBorderStyle TopBorderStyle { get; set; } = ExcelBorderStyle.None;
+        public ExcelBorderStyle BottomBorderStyle { get; set; } = ExcelBorderStyle.None;
+        public ExcelBorderStyle RightBorderStyle { get; set; } = ExcelBorderStyle.None;
 
-        public int ColumnIndex { get; set; }
-
-        #endregion Properties
     }
 
-    public class DtoProperty
-    {
-        #region Properties
 
-        public int ColumnIndex { get; set; }
-        public PropertyInfo Property { get; set; }
-
-        #endregion Properties
-    }
-
-    public class Imported : Attribute
+    public class XmlInteractionConfiguration
     {
-    }
-    
-    public class XmlWriterConfiguration
-    {
-        public XmlWriterConfiguration(
+        public XmlInteractionConfiguration(
             FileInfo targetPath,
+            string worksheetName,
+            int startRow = 1,
             DirectoryInfo backupFolderPath = null
             )
         {
             TargetPath = targetPath;
             BackupFolderPath = backupFolderPath;
+            WorksheetName = worksheetName;
+            StartRow = startRow;
+            
         }
 
+        public Color ImportedColumnFill { get; set; } = Color.Transparent;
+        
         public FileInfo TargetPath { get; }
         public DirectoryInfo BackupFolderPath { get; }
+        public string WorksheetName { get; }
+        public string UpdateTimeRangeName { get; set; } = "LastUpdateRange";
+        public int StartRow { get; }
     }
 
-    public class XmlWriter<T, TDto> : SyncElementBase, IRecordWriter<T> where T : class where TDto : class, IXmlDto, new()
+    public class XmlWriter<T, TDto> : XmlInteraction<T, TDto>, IRecordWriter<T> where T : class where TDto : class, IXmlDto<T>, new()
     {
-
-        public XmlWriter(XmlWriterConfiguration configuration,
-            string mainRangeName = "MainRange",
-            string lastUpdateRangeName = "LastUpdateRange")
+        public XmlWriter(XmlInteractionConfiguration configuration,
+            string lastUpdateRangeName = "LastUpdateRange") : base(configuration)
         {
             
-            Configuration = configuration;
-            MainRangeName = mainRangeName;
-            LastUpdateRangeName = lastUpdateRangeName;
         }
 
-        public string MainRangeName { get; }
         public string LastUpdateRangeName { get; }
 
-        public XmlWriterConfiguration Configuration {get;}
 
         public override string Name => "XmlWriter";
 
         #region Properties
 
-        public void WriteRecords(IEnumerable<T> records)
-        {
-            throw new NotImplementedException();
-        }
+        public void WriteRecords(IEnumerable<T> records) => Execute(records);
 
         #endregion Properties
 
@@ -113,7 +100,6 @@ namespace SAPSync.SyncElements.SyncJobs
                 }
         }
 
-        protected void ClearRange(ref ExcelRangeBase xlRange) => xlRange.Value = null;
 
         protected virtual void CreateBackup()
         {
@@ -122,7 +108,7 @@ namespace SAPSync.SyncElements.SyncJobs
                 if (Configuration.BackupFolderPath != null)
                     File.Copy(Configuration.TargetPath.FullName, Configuration.BackupFolderPath.FullName + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + Configuration.BackupFolderPath.Name, true);
                 else
-                    File.Copy(Configuration.TargetPath.FullName, Configuration.BackupFolderPath + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + Configuration.TargetPath.Name, true);
+                    File.Copy(Configuration.TargetPath.FullName, Configuration.TargetPath.DirectoryName + "\\" + DateTime.Now.ToString("yyyyMMdd") + "_" + Configuration.TargetPath.Name, true);
             }
             catch (Exception e)
             {
@@ -135,130 +121,73 @@ namespace SAPSync.SyncElements.SyncJobs
 
         protected virtual void Execute(IEnumerable<T> records)
         {
+            CreateBackup();
             IEnumerable<TDto> exportDtos = GetDtosFromEntities(records);
             WriteToOrigin(exportDtos);
         }
 
-        protected virtual IEnumerable<DtoProperty> GetDtoColumns()
-        {
-            return typeof(TDto)
-                .GetProperties()
-                .Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(Column)))
-                .Select(p => new DtoProperty()
-                {
-                    Property = p,
-                    ColumnIndex = p.GetCustomAttributes<Column>().First().ColumnIndex
-                }).ToList();
-        }
+
 
         protected virtual TDto GetDtoFromEntity(T entity)
         {
             TDto output = new TDto();
-            PropertyInfo[] tProperties = typeof(T).GetProperties();
-            PropertyInfo[] dtoProperties = typeof(TDto).GetProperties();
-
-            foreach (PropertyInfo dtoproperty in dtoProperties)
-                if (tProperties.Any(pro => pro.Name == dtoproperty.Name && pro.PropertyType == dtoproperty.PropertyType))
-                    dtoproperty.SetValue(output, tProperties.First(p => p.Name == dtoproperty.Name).GetValue(entity));
-
-            return output;
-        }
-
-        protected virtual TDto GetDtoFromRow(ExcelWorksheet xlWorksheet, int row)
-        {
-            var output = new TDto();
-
-            foreach (DtoProperty column in GetImportedDtoColumns())
-            {
-                try
-                {
-                    var cell = xlWorksheet.Cells[row, column.ColumnIndex];
-                    Type t = column.Property.PropertyType;
-
-                    if (cell.Value == null)
-                        column.Property.SetValue(output, null);
-                    else if (column.Property.PropertyType == typeof(int))
-                        column.Property.SetValue(output, cell.GetValue<int>());
-                    else if (column.Property.PropertyType == typeof(int?))
-                        column.Property.SetValue(output, cell.GetValue<int?>());
-                    else if (column.Property.PropertyType == typeof(double))
-                        column.Property.SetValue(output, cell.GetValue<double>());
-                    else if (column.Property.PropertyType == typeof(double?))
-                        column.Property.SetValue(output, cell.GetValue<double?>());
-                    else if (column.Property.PropertyType == typeof(DateTime))
-                        column.Property.SetValue(output, cell.GetValue<DateTime>());
-                    else if (column.Property.PropertyType == typeof(DateTime?))
-                        column.Property.SetValue(output, cell.GetValue<DateTime?>());
-                    else if (column.Property.PropertyType == typeof(string))
-                        column.Property.SetValue(output, cell.GetValue<string>());
-                    else
-                        throw new InvalidOperationException("Impossibile convertire la riga, tipo non supportato : " + column.Property.PropertyType.ToString());
-                }
-                catch (Exception e)
-                {
-                    RaiseSyncError(e:e,
-                        errorMessage: e.Message);
-                }
-            }
-
+            output.SetValues(entity);
             return output;
         }
 
         protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
-
-        protected virtual IEnumerable<TDto> GetDtosFromTable(ExcelWorksheet xlWorksheet, IEnumerable<int> rows)
-        {
-            var output = rows.Select(
-                row => GetDtoFromRow(xlWorksheet, row))
-                .ToList();
-
-            return output;
-        }
-
-        protected virtual IEnumerable<DtoProperty> GetImportedDtoColumns()
-        {
-            return typeof(TDto)
-                .GetProperties()
-                .Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(Column))
-                    && x.CustomAttributes.Any(y => y.AttributeType == typeof(Imported)))
-                .Select(p => new DtoProperty()
-                {
-                    Property = p,
-                    ColumnIndex = p.GetCustomAttributes<Column>().First().ColumnIndex
-                }).ToList();
-        }
-
+               
         protected virtual IEnumerable<ModifyRangeToken> GetRangesToModify()
         {
             return new List<ModifyRangeToken>();
         }
 
-        
-        protected virtual void SetRowValuesFromDto(ExcelWorksheet xlWorksheet, int row, TDto dto)
+        protected virtual void SetFormats(ExcelWorksheet xlWorksheet)
         {
-            foreach (DtoProperty column in GetDtoColumns())
-            {
-                var cell = xlWorksheet.Cells[row, column.ColumnIndex];
-                cell.Value = column.Property.GetValue(dto);
-            }
         }
 
-        protected virtual ExcelRangeBase GetMainRange(ExcelWorksheet xlWorkSheet) => xlWorkSheet.Cells[MainRangeName];
-        protected virtual ExcelRangeBase GetLastUpdateRange(ExcelWorksheet xlWorkSheet) => xlWorkSheet.Cells[LastUpdateRangeName];
-               
+        protected virtual void WriteLastUpdateTime(ExcelWorkbook xlWorkbook)
+        {
+            if (xlWorkbook.Names.ContainsKey(Configuration.UpdateTimeRangeName))
+                xlWorkbook.Names[Configuration.UpdateTimeRangeName].Value = DateTime.Now;
+        }
+
         protected virtual void WriteToOrigin(IEnumerable<TDto> dtos)
         {
             using (ExcelPackage xlPackage = new ExcelPackage(Configuration.TargetPath))
             {
-                ExcelWorksheet xlWorkSheet = xlPackage.Workbook.Worksheets[1];
-                ExcelRangeBase mainRange = GetMainRange(xlWorkSheet);
-                ClearRange(ref mainRange);
+                ExcelWorksheet xlWorksheet = xlPackage.Workbook.Worksheets[Configuration.WorksheetName] ?? throw new ArgumentException("Il Foglio specificato non esiste");
+                int currentRow = Configuration.StartRow;
+                int maxcol = GetDtoColumns(new Type[] { typeof(Value), typeof(Exported) }).Select(co => co.ColumnIndex).Max();
 
-                int startRow = 0;
+                XlFormatToken format = new XlFormatToken();
+
+                xlWorksheet.DeleteRow(currentRow, xlWorksheet.Dimension.End.Row - currentRow + 1);
 
                 foreach (TDto dto in dtos)
-                    SetRowValuesFromDto(xlWorkSheet, startRow++, dto);
+                {
+                    foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(Value), typeof(Exported) }))
+                        xlWorksheet.Cells[currentRow, column.ColumnIndex].Value = column.Property.GetValue(dto);
 
+
+                    xlWorksheet.Cells[currentRow, 1, currentRow, maxcol].Style.Border.Left.Style = format.LeftBorderStyle;
+                    xlWorksheet.Cells[currentRow, 1, currentRow, maxcol].Style.Border.Right.Style = format.RightBorderStyle;
+                    xlWorksheet.Cells[currentRow, 1, currentRow, maxcol].Style.Border.Top.Style = format.TopBorderStyle;
+                    xlWorksheet.Cells[currentRow, 1, currentRow, maxcol].Style.Border.Bottom.Style = format.BottomBorderStyle;
+
+                    foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(Imported), typeof(Value) }))
+                    {
+                        xlWorksheet.Cells[currentRow, column.ColumnIndex].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        xlWorksheet.Cells[currentRow, column.ColumnIndex].Style.Fill.BackgroundColor.SetColor(Configuration.ImportedColumnFill);
+                    }
+
+                    foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(FontColor), typeof(Exported) }))
+                        xlWorksheet.Cells[currentRow, column.ColumnIndex].Style.Font.Color.SetColor((Color)column.Property.GetValue(dto));
+
+                    currentRow++;
+                }
+
+                WriteLastUpdateTime(xlPackage.Workbook);
                 ApplyModifyRangeTokens(xlPackage.Workbook);
 
                 xlPackage.SaveAs(Configuration.TargetPath);

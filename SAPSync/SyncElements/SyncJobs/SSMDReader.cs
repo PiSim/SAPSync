@@ -25,6 +25,27 @@ namespace SAPSync
 
         protected virtual IQueryable<T> RunQuery() => GetSSMDData().RunQuery(GetQuery());
 
-        public IEnumerable<T> ReadRecords() => RunQuery().ToList();
+        public virtual IEnumerable<T> ReadRecords() => RunQuery().ToList();
     }
+
+    public class SSMDReader<TQueried, TOut> : SyncElementBase, IRecordReader<TOut> where TQueried : class
+    {
+
+        public SSMDReader(Func<IQueryable<TQueried>, IQueryable<TOut>> translatorDelegate,
+            Func<Query<TQueried, SSMDContext>> getQueryDelegate = null)
+        {
+            TranslatorFunc = translatorDelegate;
+            GetQueryFunc = getQueryDelegate;
+        }
+        
+        public override string Name => "SSMDReader";
+
+        protected virtual Func<IQueryable<TQueried>, IQueryable<TOut>> TranslatorFunc { get; }
+        protected virtual Func<Query<TQueried, SSMDContext>> GetQueryFunc { get; } = new Func<Query<TQueried, SSMDContext>>(() => new Query<TQueried, SSMDContext>());
+
+        protected virtual IQueryable<TOut> RunQuery() => TranslatorFunc(GetSSMDData().RunQuery(GetQueryFunc()));
+
+        public virtual IEnumerable<TOut> ReadRecords() => RunQuery().ToList();
+    }
+    
 }

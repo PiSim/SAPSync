@@ -18,7 +18,6 @@ namespace SAPSync.SyncElements
         {
             base.OnStarting();
             ChangeStatus(SyncJobStatus.Running);
-
         }
 
         protected override void OnCompleting()

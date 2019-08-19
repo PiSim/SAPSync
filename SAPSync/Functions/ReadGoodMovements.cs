@@ -20,7 +20,9 @@ namespace SAPSync.Functions
                     "AUFNR",
                     "MATNR",
                     "MENGE",
-                    "MEINS"
+                    "MEINS",
+                    "MBLNR",
+                    "ZEILE"
                 };
         }
 
@@ -41,12 +43,16 @@ namespace SAPSync.Functions
         internal override GoodMovement ConvertDataArray(string[] data)
         {
 
-            if (!int.TryParse(data[0], out int orderNumber) 
+            if (!long.TryParse(data[4], out long docNumber)
+                || !int.TryParse(data[5], out int itemNumber)
+                || !int.TryParse(data[0], out int orderNumber) 
                 || !double.TryParse(data[2], System.Globalization.NumberStyles.Float, new NumberFormatInfo() { NumberDecimalSeparator = "." }, out double movementQuantity) )
                 return null;
 
             GoodMovement output = new GoodMovement()
             {
+                DocumentNumber = docNumber,
+                ItemNumber = itemNumber,
                 OrderNumber  = orderNumber,
                 Component = new Component()
                 {

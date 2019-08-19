@@ -81,6 +81,8 @@ namespace SyncService
             TimeSpan timeToNextUpdate = (timeOfNextUpdate <= DateTime.Now) ? new TimeSpan(0) : new TimeSpan(timeOfNextUpdate.Ticks - DateTime.Now.Ticks);
 
             CurrentTimer.Change(timeToNextUpdate, Timeout.InfiniteTimeSpan);
+
+            SyncLogger.LogTaskScheduled(timeOfNextUpdate);
         }
 
 

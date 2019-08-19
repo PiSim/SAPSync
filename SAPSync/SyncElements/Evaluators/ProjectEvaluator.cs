@@ -6,6 +6,10 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class ProjectEvaluator : RecordEvaluator<Project, int>
     {
+        public ProjectEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
+        {
+
+        }
         #region Methods
 
         protected override int GetIndexKey(Project record) => record.ID;
