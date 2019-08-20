@@ -198,7 +198,7 @@
     <Compile Include="Queries\InspectionCharacteristicsQuery.cs" />
     <Compile Include="Queries\InspectionLotsQuery.cs" />
     <Compile Include="Queries\LoadedTestReportQuery.cs" />
-    <Compile Include="Queries\LoadedOrderScrapCauseConfirmations.cs" />
+    <Compile Include="Queries\LoadedOrderScrapCauseConfirmationsQuery.cs" />
     <Compile Include="Queries\LoadedOrderDataQuery.cs" />
     <Compile Include="Queries\LoadedWorkPhaseLabDataQuery.cs" />
     <Compile Include="Queries\MaterialFamiliesQuery.cs" />

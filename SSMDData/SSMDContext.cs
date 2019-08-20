@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
 using System.Configuration;
 
@@ -46,8 +47,14 @@ namespace SSMD
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(ConfigurationManager.ConnectionStrings["SSMD"].ConnectionString);
+            optionsBuilder.UseMySql(ConfigurationManager.ConnectionStrings["SSMD"].ConnectionString,
+                opt => GetMySqlDbContextOptions(optionsBuilder));
         }
+
+        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(DbContextOptionsBuilder optionsBuilder) =>
+            new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .CommandTimeout(1800);
+            
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

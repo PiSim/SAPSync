@@ -331,7 +331,7 @@ namespace SAPSync
                             .ToList()
                             .AsQueryable()
                             .OrderByDescending(grp => grp.Key.Item1.Number),
-                        () => new LoadedOrderScrapCauseConfirmations()),
+                        () => new LoadedOrderScrapCauseConfirmationsQuery()),
                     new XmlWriter<IGrouping<Tuple<Order, string>, OrderConfirmation>, TrialScrapDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("W:\\Bacheca\\Qualita Pubblica\\Scarti\\ScartoOdp.xlsx"),
