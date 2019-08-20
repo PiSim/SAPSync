@@ -35,7 +35,7 @@
                 Padding="5"
                 VerticalAlignment="Center" />
             <Button
-                Command="{Binding ToggleSyncServiceCommand}"
+                Command="{Binding ToggleSAPSyncCommand}"
                 Grid.Column="2"
                 HorizontalAlignment="Left"
                 Margin="5"

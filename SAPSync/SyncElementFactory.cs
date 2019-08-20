@@ -7,7 +7,7 @@ using SAPSync.SyncElements.SyncJobs;
 using SAPSync.SyncElements.SyncJobs.Dto;
 using SSMD;
 using SSMD.Queries;
-using SyncService;
+using SAPSync;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccessCore.Commands;
 using SSMD;
-using SyncService;
+using SAPSync;
 
 namespace SAPSync.SyncElements
 {

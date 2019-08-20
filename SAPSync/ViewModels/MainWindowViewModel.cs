@@ -23,7 +23,7 @@ namespace SAPSync.ViewModels
         public MainWindowViewModel()
         {
             StartSyncCommand = new DelegateCommand(() => StartSync());
-            ToggleSyncServiceCommand = new DelegateCommand(() => ToggleSyncService());
+            ToggleSAPSyncCommand = new DelegateCommand(() => ToggleSAPSync());
             OpenLogWindowCommand = new DelegateCommand(() => OpenLogWindow());
         }
 
@@ -31,9 +31,9 @@ namespace SAPSync.ViewModels
 
         #region Events
 
-        public event EventHandler SyncServiceStartRequested;
+        public event EventHandler SAPSyncStartRequested;
 
-        public event EventHandler SyncServiceStopRequested;
+        public event EventHandler SAPSyncStopRequested;
 
         #endregion Events
 
@@ -72,8 +72,8 @@ namespace SAPSync.ViewModels
             }
         }
 
-        public SyncService.SyncService SyncService { get; set; }
-        public DelegateCommand ToggleSyncServiceCommand { get; set; }
+        public SAPSync SAPSync { get; set; }
+        public DelegateCommand ToggleSAPSyncCommand { get; set; }
 
         #endregion Properties
 
@@ -91,12 +91,12 @@ namespace SAPSync.ViewModels
             Task.Run(() => _syncManager?.StartSync(SyncElements.Where(sel => sel.IsSelected).Select(sel => sel.SyncElement)));
         }
 
-        private void ToggleSyncService()
+        private void ToggleSAPSync()
         {
             if (ServiceStatus == "Running")
-                SyncServiceStopRequested?.Invoke(this, new EventArgs());
+                SAPSyncStopRequested?.Invoke(this, new EventArgs());
             else if (ServiceStatus == "Stopped")
-                SyncServiceStartRequested?.Invoke(this, new EventArgs());
+                SAPSyncStartRequested?.Invoke(this, new EventArgs());
         }
 
         #endregion Methods

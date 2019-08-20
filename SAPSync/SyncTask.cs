@@ -1,5 +1,5 @@
 ﻿using SAPSync.SyncElements;
-using SyncService;
+using SAPSync;
 using System;
 using System.Collections.Generic;
 using System.Linq;

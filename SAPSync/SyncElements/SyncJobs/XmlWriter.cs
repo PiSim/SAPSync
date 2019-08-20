@@ -114,7 +114,7 @@ namespace SAPSync.SyncElements.SyncJobs
             {
                 RaiseSyncError(e,
                     "Impossibile effettuare Backup",
-                    SyncService.SyncErrorEventArgs.ErrorSeverity.Minor);
+                    SyncErrorEventArgs.ErrorSeverity.Minor);
                 throw new InvalidOperationException("Impossibile accedere al file:" + e.Message, e);
             }
         }

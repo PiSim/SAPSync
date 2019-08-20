@@ -14,7 +14,7 @@ namespace SAPSync
 
         private SSMDData _ssData;
         private SyncManager _syncManager;
-        private SyncService.SyncService _syncService;
+        private SAPSync _SAPSync;
         private bool destinationIsInitialized = false;
 
         #endregion Fields
@@ -29,12 +29,12 @@ namespace SAPSync
             MainWindow = new Views.MainWindow();
             _syncManager = new SyncManager();
             (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncManager = _syncManager;
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncServiceStartRequested += OnSyncServiceStartRequested;
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncServiceStopRequested += OnSyncServiceStopRequested;
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SAPSyncStartRequested += OnSAPSyncStartRequested;
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SAPSyncStopRequested += OnSAPSyncStopRequested;
 
-            _syncService = new SyncService.SyncService(_syncManager);
+            _SAPSync = new SAPSync(_syncManager);
 
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _SAPSync.Status.ToString();
             MainWindow.Show();
         }
 
@@ -88,26 +88,26 @@ namespace SAPSync
             }
         }
 
-        private void OnSyncServiceStartRequested(object sender, EventArgs e)
+        private void OnSAPSyncStartRequested(object sender, EventArgs e)
         {
-            StartSyncService();
+            StartSAPSync();
         }
 
-        private void OnSyncServiceStopRequested(object sender, EventArgs e)
+        private void OnSAPSyncStopRequested(object sender, EventArgs e)
         {
-            StopSyncService();
+            StopSAPSync();
         }
 
-        private void StartSyncService()
+        private void StartSAPSync()
         {
-            _syncService.Start();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
+            _SAPSync.Start();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _SAPSync.Status.ToString();
         }
 
-        private void StopSyncService()
+        private void StopSAPSync()
         {
-            _syncService.Stop();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _syncService.Status.ToString();
+            _SAPSync.Stop();
+            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _SAPSync.Status.ToString();
         }
 
         #endregion Methods

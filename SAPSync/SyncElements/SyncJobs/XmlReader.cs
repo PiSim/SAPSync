@@ -136,7 +136,7 @@ namespace SAPSync.SyncElements.SyncJobs
             }
             catch (Exception e)
             {
-                RaiseSyncError(e, "Errore di lettura del file", SyncService.SyncErrorEventArgs.ErrorSeverity.Major);
+                RaiseSyncError(e, "Errore di lettura del file", SAPSync.SyncErrorEventArgs.ErrorSeverity.Major);
                 return null;
             }
         }

@@ -226,6 +226,11 @@
     <Compile Include="Functions\ReadGoodMovements.cs" />
     <Compile Include="Functions\ReadMaterialCustomers.cs" />
     <Compile Include="Functions\ReadRoutingOperationValues.cs" />
+    <Compile Include="Interfaces\ISyncBase.cs" />
+    <Compile Include="Interfaces\ISyncElement.cs" />
+    <Compile Include="Interfaces\ISyncManager.cs" />
+    <Compile Include="Interfaces\ISyncTask.cs" />
+    <Compile Include="Interfaces\ISyncTaskController.cs" />
     <Compile Include="SyncElementFactory.cs" />
     <Compile Include="SyncElements\Evaluators\TestReportRecordEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\WorkPhaseLabDataEvaluator.cs" />
@@ -260,10 +265,10 @@
     <Compile Include="SyncElements\ExcelWorkbooks\ModifyRangeToken.cs" />
     <Compile Include="SyncElements\SyncJobs\CreateMissingTrialLabData.cs" />
     <Compile Include="SyncElements\SyncJobs\Dto\TrialMasterDataDto.cs" />
-    <Compile Include="SyncElements\IRecordReader.cs" />
-    <Compile Include="SyncElements\IRecordWriter.cs" />
-    <Compile Include="SyncElements\ISyncJob.cs" />
-    <Compile Include="SyncElements\IXmlDto.cs" />
+    <Compile Include="Interfaces\IRecordReader.cs" />
+    <Compile Include="Interfaces\IRecordWriter.cs" />
+    <Compile Include="Interfaces\ISyncJob.cs" />
+    <Compile Include="Interfaces\IXmlDto.cs" />
     <Compile Include="SyncElements\RecordValidator.cs" />
     <Compile Include="SyncElements\Evaluators\ComponentEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\CustomerEvaluator.cs" />
@@ -312,9 +317,14 @@
     <Compile Include="SyncElements\Validators\TestReportRecordValidator.cs" />
     <Compile Include="SyncElements\Validators\TrialMasterRecordValidator.cs" />
     <Compile Include="SyncElements\Validators\WorkPhaseLabDataValidator.cs" />
+    <Compile Include="SyncLogger.cs" />
     <Compile Include="SyncManager.cs" />
+    <Compile Include="SyncService.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SyncTask.cs" />
     <Compile Include="SyncTaskController.cs" />
+    <Compile Include="TaskEventArgs.cs" />
     <Compile Include="ViewModels\LogDialogViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\SyncElementViewModel.cs" />
@@ -360,10 +370,6 @@
     <ProjectReference Include="..\SSMDData\SSMD.csproj">
       <Project>{44f00013-ea6b-464d-be1f-fcf5c30cfb55}</Project>
       <Name>SSMD</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SyncService\SyncService.csproj">
-      <Project>{24f5b96c-f38d-46c7-a894-fef012611a1b}</Project>
-      <Name>SyncService</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

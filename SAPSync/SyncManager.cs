@@ -5,7 +5,7 @@ using SAPSync.SyncElements.ExcelWorkbooks;
 using SAPSync.SyncElements.SAPTables;
 using SAPSync.SyncElements.SyncJobs;
 using SSMD;
-using SyncService;
+using SAPSync;
 using System;
 using System.Collections.Generic;
 using System.IO;
