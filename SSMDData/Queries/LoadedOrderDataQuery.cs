@@ -38,7 +38,9 @@ namespace SSMD.Queries
                                 .ThenInclude(ins => ins.InspectionCharacteristic)
                 .Include(odd => odd.Order)
                     .ThenInclude(ord => ord.OrderComponents)
-                        .ThenInclude(oco => oco.Component);
+                        .ThenInclude(oco => oco.Component)
+                .Where(odd => odd.Order.OrderType[0] == 'Z')
+                .OrderByDescending(odd => odd.OrderNumber);
         }
 
     }
