@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public class SyncTask : SyncElementBase, ISyncTask
+    public class SyncTask : SyncElementBase, IJob
     {
-        public event EventHandler SyncTaskCompleted;
-        public event EventHandler SyncTaskStarting;
-        public event EventHandler SyncTaskStarted;
+        public event EventHandler JobCompleted;
+        public event EventHandler JobStarting;
+        public event EventHandler JobStarted;
         public List<string> SyncLog { get; set; }
         public List<Task> TaskList { get; }
 
@@ -21,14 +21,14 @@ namespace SAPSync
             if (syncElements.Any(se => se.CurrentTask != null))
                 throw new InvalidOperationException("SyncElement is already part of an active Task");
 
-            PendingSyncElements = new HashSet<ISyncElement>(syncElements);
+            SyncElementsStack = new HashSet<ISyncElement>(syncElements);
             ActiveSyncElements = new HashSet<ISyncElement>();
             CompletedSyncElements = new List<ISyncElement>();
             
             ActiveReadTasks = new HashSet<Task>();
             TaskList = new List<Task>();
 
-            foreach (ISyncElement syncElement in PendingSyncElements)
+            foreach (ISyncElement syncElement in SyncElementsStack)
             {
                 syncElement.SetCurrentTask(this);
                 SubscribeToElement(syncElement);
@@ -44,7 +44,7 @@ namespace SAPSync
 
         protected virtual void StartReadyPendingElements()
         {
-            foreach (ISyncElement element in PendingSyncElements.ToList())
+            foreach (ISyncElement element in SyncElementsStack.ToList())
                 if (!element.HasPendingRequirements)
                     StartElement(element);
         }
@@ -55,8 +55,8 @@ namespace SAPSync
             TaskList.Add(elementTask);
 
             ActiveSyncElements.Add(element);
-            if (PendingSyncElements.Contains(element))
-                PendingSyncElements.Remove(element);
+            if (SyncElementsStack.Contains(element))
+                SyncElementsStack.Remove(element);
 
             elementTask.Start();
 
@@ -73,7 +73,7 @@ namespace SAPSync
             ActiveReadTasks.Add(e.ReadingTask);
         }
 
-        public ICollection<ISyncElement> PendingSyncElements { get; }
+        public ICollection<ISyncElement> SyncElementsStack { get; }
         public ICollection<Task> ActiveReadTasks { get; }
 
         protected virtual void OnSyncElementStarting(object sender, EventArgs e)
@@ -106,17 +106,17 @@ namespace SAPSync
             base.OnCompleting();
         }
 
-        protected virtual void RaiseSyncTaskStarted() => SyncTaskStarted?.Invoke(this, new EventArgs());
+        protected virtual void RaiseSyncTaskStarted() => JobStarted?.Invoke(this, new EventArgs());
         
-        protected virtual void RaiseSyncTaskStarting() => SyncTaskStarting?.Invoke(this, new EventArgs());
+        protected virtual void RaiseSyncTaskStarting() => JobStarting?.Invoke(this, new EventArgs());
         
-        protected virtual void RaiseSyncTaskCompleted() => SyncTaskCompleted?.Invoke(this, new EventArgs());
+        protected virtual void RaiseSyncTaskCompleted() => JobCompleted?.Invoke(this, new EventArgs());
         
         public ICollection<ISyncElement> ActiveSyncElements { get; }
         public ICollection<ISyncElement> CompletedSyncElements { get; }
 
         public override string Name => "SyncTask";
 
-        protected virtual bool CheckAllElementsComplete() => ActiveSyncElements.Count == 0 && PendingSyncElements.Count == 0;
+        protected virtual bool CheckAllElementsComplete() => ActiveSyncElements.Count == 0 && SyncElementsStack.Count == 0;
     }
 }

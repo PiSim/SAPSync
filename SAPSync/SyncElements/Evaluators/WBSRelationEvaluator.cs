@@ -1,5 +1,5 @@
 ﻿using DataAccessCore;
-using SAPSync.Functions;
+using SAPSync.RFCFunctions;
 using SSMD;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,9 +1,9 @@
-﻿using SAPSync.Functions;
+﻿using SAPSync.RFCFunctions;
 using SAPSync.SyncElements;
 using SAPSync.SyncElements.Evaluators;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using SAPSync.SyncElements.SAPTables;
-using SAPSync.SyncElements.SyncJobs;
+using SAPSync.SyncElements.SyncOperations;
 using SSMD;
 using SAPSync;
 using System;
@@ -23,12 +23,12 @@ namespace SAPSync
         {
             SyncTaskController = new SyncTaskController();
             SyncTaskController.SyncErrorRaised += OnSyncErrorRaised;
-            SyncTaskController.SyncTaskStarting += OnTaskStarting;
-            SyncTaskController.SyncTaskCompleted += OnTaskCompleted;
+            SyncTaskController.JobStarting += OnTaskStarting;
+            SyncTaskController.JobCompleted += OnTaskCompleted;
             SyncElements = (new SyncElementFactory()).BuildSyncElements();
 
             foreach (ISyncElement element in SyncElements)
-                element.SetTaskController(SyncTaskController);
+                element.SetJobController(SyncTaskController);
         }
 
         #endregion Constructors
@@ -36,10 +36,10 @@ namespace SAPSync
 
         #region Properties
 
-        public ISyncTaskController SyncTaskController { get; }
+        public IJobController SyncTaskController { get; }
         public ICollection<ISyncElement> SyncElements { get; set; }
         
-        public bool UpdateRunning => SyncTaskController.ActiveTasks.Count != 0;
+        public bool UpdateRunning => SyncTaskController.ActiveJobs.Count != 0;
 
         #endregion Properties
 
@@ -53,11 +53,11 @@ namespace SAPSync
             {
                 SyncTask newTask = new SyncTask(syncElements);
                 SubscribeToTask(newTask);
-                SyncTaskController.RunTask(newTask);
+                SyncTaskController.StartJob(newTask);
             }
         }
 
-        protected virtual void SubscribeToTask(ISyncTask task)
+        protected virtual void SubscribeToTask(IJob task)
         {
             task.ElementStarting += OnElementStarting;
             task.ElementCompleted += OnElementCompleted;
@@ -78,15 +78,15 @@ namespace SAPSync
 
         protected virtual void OnTaskStarting(object sender, EventArgs e)
         {
-            if (sender is ISyncTask)
-                SyncLogger.LogTaskStarting(sender as ISyncTask);
+            if (sender is IJob)
+                SyncLogger.LogTaskStarting(sender as IJob);
 
         }
         protected virtual void OnTaskCompleted(object sender, EventArgs e)
         {
 
-            if (sender is ISyncTask)
-                SyncLogger.LogTaskCompleted(sender as ISyncTask);
+            if (sender is IJob)
+                SyncLogger.LogTaskCompleted(sender as IJob);
         }
 
         public void SyncOutdatedElements()

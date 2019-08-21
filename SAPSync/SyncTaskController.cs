@@ -8,40 +8,40 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public class SyncTaskController : ISyncTaskController
+    public class SyncTaskController : IJobController
     {
 
         #region Events
 
         public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
-        public event EventHandler NewSyncTaskStarted;
+        public event EventHandler NewJobStarted;
 
-        public event EventHandler SyncTaskCompleted;
-        public event EventHandler SyncTaskStarting;
+        public event EventHandler JobCompleted;
+        public event EventHandler JobStarting;
 
         #endregion Events
 
         public SyncTaskController()
         {
-            ActiveTasks = new HashSet<ISyncTask>();
-            CompletedTasks = new HashSet<ISyncTask>();
+            ActiveJobs = new HashSet<IJob>();
+            CompletedJobs = new HashSet<IJob>();
         }
 
-        public ICollection<ISyncTask> ActiveTasks { get; }
-        public ICollection<ISyncTask> CompletedTasks { get; }
+        public ICollection<IJob> ActiveJobs { get; }
+        public ICollection<IJob> CompletedJobs { get; }
 
         public Task GetAwaiterForOpenReadTasks()
         {
-            return Task.WhenAll(ActiveTasks.SelectMany(sts => sts.ActiveReadTasks).ToList());
+            return Task.WhenAll(ActiveJobs.SelectMany(sts => sts.ActiveReadTasks).ToList());
         }
 
-        public void RunTask(ISyncTask task)
+        public void StartJob(IJob task)
         {
-            task.SyncTaskCompleted += OnSyncTaskCompleted;
+            task.JobCompleted += OnSyncTaskCompleted;
             task.SyncErrorRaised += OnSyncErrorRaised;
-            task.SyncTaskStarting += OnSyncTaskStarting;
-            task.SyncTaskStarted += OnSyncTaskStarted;
-            ActiveTasks.Add(task);
+            task.JobStarting += OnSyncTaskStarting;
+            task.JobStarted += OnSyncTaskStarted;
+            ActiveJobs.Add(task);
             task.Start();
             
         }
@@ -54,15 +54,15 @@ namespace SAPSync
         protected virtual void OnSyncTaskCompleted(object sender, EventArgs e)
         {
             SyncTask completedTask = sender as SyncTask;
-            if (ActiveTasks.Contains(completedTask))
-                ActiveTasks.Remove(completedTask);
-            CompletedTasks.Add(completedTask);
-            SyncTaskCompleted?.Invoke(sender, e);
+            if (ActiveJobs.Contains(completedTask))
+                ActiveJobs.Remove(completedTask);
+            CompletedJobs.Add(completedTask);
+            JobCompleted?.Invoke(sender, e);
         }
 
-        protected virtual void OnSyncTaskStarting(object sender, EventArgs e) => SyncTaskStarting?.Invoke(sender, e);
+        protected virtual void OnSyncTaskStarting(object sender, EventArgs e) => JobStarting?.Invoke(sender, e);
         
 
-        protected virtual void OnSyncTaskStarted(object sender, EventArgs e) => NewSyncTaskStarted?.Invoke(sender, e);
+        protected virtual void OnSyncTaskStarted(object sender, EventArgs e) => NewJobStarted?.Invoke(sender, e);
     }
 }

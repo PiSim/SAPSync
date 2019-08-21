@@ -1,10 +1,10 @@
-﻿using SAPSync.Functions;
+﻿using SAPSync.RFCFunctions;
 using SAPSync.SyncElements;
 using SAPSync.SyncElements.Evaluators;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using SAPSync.SyncElements.SAPTables;
-using SAPSync.SyncElements.SyncJobs;
-using SAPSync.SyncElements.SyncJobs.Dto;
+using SAPSync.SyncElements.SyncOperations;
+using SAPSync.SyncElements.SyncOperations.Dto;
 using SSMD;
 using SSMD.Queries;
 using SAPSync;

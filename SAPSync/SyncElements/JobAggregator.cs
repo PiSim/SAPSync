@@ -28,28 +28,28 @@ namespace SAPSync.SyncElements
 
         #endregion Constructors
 
-        public void SetTaskController(ISyncTaskController taskController)
+        public void SetJobController(IJobController jobController)
         {
-            if (TaskController != null)
-                UnsubscribeFromTaskController(TaskController);
+            if (JobController != null)
+                UnsubscribeFromjobController(JobController);
 
-            TaskController = taskController;
-            SubscribeToTaskController(TaskController);
+            JobController = jobController;
+            SubscribeToJobController(JobController);
         }
 
-        protected virtual void SubscribeToTaskController(ISyncTaskController taskController)
+        protected virtual void SubscribeToJobController(IJobController jobController)
         {
-            taskController.SyncTaskStarting += OnSyncTaskStarting;
-            taskController.NewSyncTaskStarted += OnSyncTaskStarted;
+            jobController.JobStarting += OnSyncTaskStarting;
+            jobController.NewJobStarted += OnSyncTaskStarted;
         }
 
-        protected virtual void UnsubscribeFromTaskController(ISyncTaskController taskController)
+        protected virtual void UnsubscribeFromjobController(IJobController jobController)
         {
-            taskController.SyncTaskStarting -= OnSyncTaskStarting;
-            taskController.NewSyncTaskStarted -= OnSyncTaskStarted;
+            jobController.JobStarting -= OnSyncTaskStarting;
+            jobController.NewJobStarted -= OnSyncTaskStarted;
         }
 
-        public ISyncTaskController TaskController { get; protected set; }
+        public IJobController JobController { get; protected set; }
         
         #region Events
         
@@ -97,7 +97,7 @@ namespace SAPSync.SyncElements
 
         #region Methods
                 
-        public virtual JobAggregator HasJob(ISyncJob job)
+        public virtual JobAggregator HasJob(ISyncOperation job)
         {
             Jobs.Add(job);
             SubscribeToElement(job);
@@ -136,15 +136,15 @@ namespace SAPSync.SyncElements
             ChangeElementStatus(SyncElementStatus.OnQueue);
         }
 
-        public ICollection<ISyncJob> Jobs { get; } = new List<ISyncJob>();
+        public ICollection<ISyncOperation> Jobs { get; } = new List<ISyncOperation>();
 
         public override string Name { get; }
 
-        public ISyncTask CurrentTask { get; protected set; }
+        public IJob CurrentTask { get; protected set; }
 
         protected virtual void ExecuteJobStack()
         {
-            foreach (ISyncJob job in Jobs)
+            foreach (ISyncOperation job in Jobs)
             {
                 SubscribeToElement(job);
                 job.Run();
@@ -295,7 +295,7 @@ namespace SAPSync.SyncElements
             ChangeSyncStatus(SyncProgress.Idle);
         }
 
-        public void SetCurrentTask(ISyncTask syncTask)
+        public void SetCurrentTask(IJob syncTask)
         {
             CurrentTask = syncTask;
         }

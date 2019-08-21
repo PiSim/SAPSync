@@ -42,9 +42,9 @@ namespace SAPSync
 
         #region Properties
 
-        ISyncTask CurrentTask { get; }
-        ISyncTaskController TaskController { get; }
-        void SetCurrentTask( ISyncTask syncTask);
+        IJob CurrentTask { get; }
+        IJobController JobController { get; }
+        void SetCurrentTask( IJob syncTask);
         bool HasPendingRequirements { get; }
         bool IsFailed { get; set; }
         bool IsUpForScheduledUpdate { get; }
@@ -53,7 +53,7 @@ namespace SAPSync
         int PhaseProgress { get; }
         SyncProgress SyncStatus { get; }
         SyncElementStatus ElementStatus { get; }
-        void SetTaskController(ISyncTaskController controller);
+        void SetJobController(IJobController controller);
 
         #endregion Properties
 

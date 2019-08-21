@@ -1,5 +1,5 @@
 ﻿using DataAccessCore;
-using SAPSync.Functions;
+using SAPSync.RFCFunctions;
 using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;

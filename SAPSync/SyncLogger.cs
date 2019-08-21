@@ -43,7 +43,7 @@ namespace SAPSync
                 });
         }
 
-        public static void LogTaskStarting(ISyncTask task)
+        public static void LogTaskStarting(IJob task)
         {
             NewLogEntry(
                 new string[]
@@ -52,7 +52,7 @@ namespace SAPSync
                 });
         }
 
-        public static void LogTaskCompleted(ISyncTask task)
+        public static void LogTaskCompleted(IJob task)
         {
             NewLogEntry(
                 new string[]
