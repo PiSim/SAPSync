@@ -3,7 +3,7 @@ using SAPSync.SyncElements;
 
 namespace SAPSync.RFCFunctions
 {
-    public class BAPITableFunctionBase : SyncElementBase
+    public class BAPITableFunctionBase
     {
         #region Fields
 

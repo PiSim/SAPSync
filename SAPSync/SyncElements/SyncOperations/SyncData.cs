@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
-    public class SyncData<T> : SyncOperationBase where T : class
+    public class SyncData<T> : SyncOperation where T : class
     {
         public SyncData(IRecordReader<T> recordReader,
             IRecordWriter<T> recordWriter)

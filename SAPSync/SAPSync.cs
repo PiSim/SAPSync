@@ -15,7 +15,7 @@ namespace SAPSync
         public SAPSync(ISyncManager syncManager)
         {
             SyncManager = syncManager;
-            SyncManager.SyncTaskController.JobCompleted += OnSyncCompleted;
+            SyncManager.JobController.JobCompleted += OnSyncCompleted;
         }
 
         #endregion Constructors

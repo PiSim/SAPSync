@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SAPSync.RFCFunctions
 {
-    public abstract class ReadTableBase<T> : SyncElementBase, IRecordReader<T>
+    public abstract class ReadTableBase<T> :  IRecordReader<T>
     {
         #region Fields
 

@@ -17,8 +17,9 @@ namespace SAPSync.Infrastructure
         void StartAsync();
         
         JobStatus Status { get; }
-        event EventHandler SubJobStarted;
-        event EventHandler SubJobCompleted;
+        event EventHandler OnCompleted;
+        event EventHandler OnStarting;
+        event EventHandler OnStarted;
         event EventHandler StatusChanged;
 
         void CheckStatus();

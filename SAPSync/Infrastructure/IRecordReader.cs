@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public interface IRecordReader<T> : ISyncBase, IDisposable
+    public interface IRecordReader<T>
     {
         IEnumerable<T> ReadRecords();     
     }

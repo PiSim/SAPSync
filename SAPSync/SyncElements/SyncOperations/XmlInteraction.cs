@@ -10,7 +10,7 @@ namespace SAPSync.SyncElements.SyncOperations
 {
 
 
-    public abstract class XmlInteraction<T, TDto> : SyncElementBase where T : class where TDto : class, IXmlDto<T>, new()
+    public abstract class XmlInteraction<T, TDto> where T : class where TDto : class, IXmlDto<T>, new()
     {
         public XmlInteraction(XmlInteractionConfiguration configuration)
         {

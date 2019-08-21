@@ -11,12 +11,10 @@ namespace SAPSync
 {
     public class JobController : IJobController
     {
-
         #region Events
 
         public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
         public event EventHandler NewJobStarted;
-
         public event EventHandler JobCompleted;
         public event EventHandler JobStarting;
 
@@ -33,22 +31,10 @@ namespace SAPSync
 
         public Task GetAwaiterForActiveOperations() => Task.WhenAll(
             ActiveJobs.SelectMany(sts => sts.SubJobs)
-                .SelectMany(sjb => sjb.UnitsOfWork)
+                .SelectMany(sjb => sjb.Operations)
                 .Select(uow => uow.CurrentTask)
                 .ToList());
         
-
-        public void StartJob(IJob task)
-        {
-            task.JobCompleted += OnJobCompleted;
-            task.SyncErrorRaised += OnSyncErrorRaised;
-            task.JobStarting += OnSyncTaskStarting;
-            task.JobStarted += OnSyncTaskStarted;
-            ActiveJobs.Add(task);
-            task.Start();
-            
-        }
-
         protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)
         {
             SyncErrorRaised?.Invoke(sender, e);
@@ -63,9 +49,20 @@ namespace SAPSync
             JobCompleted?.Invoke(sender, e);
         }
 
-        protected virtual void OnSyncTaskStarting(object sender, EventArgs e) => JobStarting?.Invoke(sender, e);
+        protected virtual void OnJobStarting(object sender, EventArgs e) => JobStarting?.Invoke(sender, e);
         
+        protected virtual void OnJobStarted(object sender, EventArgs e) => NewJobStarted?.Invoke(sender, e);
 
-        protected virtual void OnSyncTaskStarted(object sender, EventArgs e) => NewJobStarted?.Invoke(sender, e);
+        public IJob StartJob(ICollection<ISyncElement> syncElements)
+        {
+            Job newJob = new Job(syncElements);
+            newJob.OnCompleted += OnJobCompleted;
+            newJob.SyncErrorRaised += OnSyncErrorRaised;
+            newJob.OnStarting += OnJobStarting;
+            newJob.OnStarted += OnJobStarted;
+            ActiveJobs.Add(newJob);
+            newJob.StartAsync();
+            return newJob;
+        }
     }
 }

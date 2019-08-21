@@ -22,14 +22,11 @@ namespace SAPSync
 
         public SyncManager()
         {
-            SyncTaskController = new JobController();
-            SyncTaskController.SyncErrorRaised += OnSyncErrorRaised;
-            SyncTaskController.JobStarting += OnTaskStarting;
-            SyncTaskController.JobCompleted += OnTaskCompleted;
+            JobController = new JobController();
+            JobController.SyncErrorRaised += OnSyncErrorRaised;
+            JobController.JobStarting += OnTaskStarting;
+            JobController.JobCompleted += OnTaskCompleted;
             SyncElements = (new SyncElementFactory()).BuildSyncElements();
-
-            foreach (ISyncElement element in SyncElements)
-                element.SetJobController(SyncTaskController);
         }
 
         #endregion Constructors
@@ -37,10 +34,10 @@ namespace SAPSync
 
         #region Properties
 
-        public IJobController SyncTaskController { get; }
+        public IJobController JobController { get; }
         public ICollection<ISyncElement> SyncElements { get; set; }
         
-        public bool UpdateRunning => SyncTaskController.ActiveJobs.Count != 0;
+        public bool UpdateRunning => JobController.ActiveJobs.Count != 0;
 
         #endregion Properties
 
@@ -52,17 +49,10 @@ namespace SAPSync
         {
             if (syncElements.Count() != 0 && !UpdateRunning)
             {
-                Job newTask = new Job(syncElements);
-                SubscribeToTask(newTask);
-                SyncTaskController.StartJob(newTask);
+                JobController.StartJob(syncElements);
             }
         }
 
-        protected virtual void SubscribeToTask(IJob task)
-        {
-            task.ElementStarting += OnElementStarting;
-            task.ElementCompleted += OnElementCompleted;
-        }
         
         protected virtual void OnElementStarting(object sender, EventArgs e)
         {

@@ -225,11 +225,11 @@
     <Compile Include="Infrastructure\ISubJob.cs" />
     <Compile Include="Infrastructure\JobStatus.cs" />
     <Compile Include="Infrastructure\SyncErrorEventArgs.cs" />
+    <Compile Include="JobBase.cs" />
     <Compile Include="RFCFunctions\ReadCustomers.cs" />
     <Compile Include="RFCFunctions\ReadGoodMovements.cs" />
     <Compile Include="RFCFunctions\ReadMaterialCustomers.cs" />
     <Compile Include="RFCFunctions\ReadRoutingOperationValues.cs" />
-    <Compile Include="Infrastructure\ISyncBase.cs" />
     <Compile Include="Infrastructure\ISyncElement.cs" />
     <Compile Include="Infrastructure\ISyncManager.cs" />
     <Compile Include="Infrastructure\IJob.cs" />
@@ -243,6 +243,7 @@
     <Compile Include="SyncElements\Evaluators\TestReportRecordEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\WorkPhaseLabDataEvaluator.cs" />
     <Compile Include="SyncElements\SyncElementConfiguration.cs" />
+    <Compile Include="SyncElements\SyncOperation.cs" />
     <Compile Include="SyncElements\SyncOperations\Dto\TrialScrapDto.cs" />
     <Compile Include="SyncElements\SyncOperations\Dto\TestReportDto.cs" />
     <Compile Include="SyncElements\SyncOperations\Dto\WorkPhaseLabDataDto.cs" />
@@ -283,7 +284,6 @@
     <Compile Include="SyncElements\JobAggregator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialFamilyLevelEvaluator.cs" />
     <Compile Include="SyncElements\SyncElementBase.cs" />
-    <Compile Include="SyncElements\SyncOperationBase.cs" />
     <Compile Include="SyncElements\SyncOperations\SyncData.cs" />
     <Compile Include="SyncElements\SyncOperations\RecordWriter.cs" />
     <Compile Include="SyncElements\SyncOperations\XmlAttributes.cs" />

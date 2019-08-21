@@ -9,14 +9,11 @@ using SAPSync.Infrastructure;
 
 namespace SAPSync
 {
-    public class Job : SyncElementBase, IJob
+    public class Job : JobBase, IJob
     {
-        public event EventHandler JobCompleted;
-        public event EventHandler JobStarting;
-        public event EventHandler JobStarted;
-
         public Job(IEnumerable<ISyncElement> syncElements)
         {
+            Status = JobStatus.OnQueue;
             SyncElementsStack = new List<ISyncElement>(syncElements);
 
             foreach (ISyncElement syncElement in SyncElementsStack)
@@ -31,11 +28,11 @@ namespace SAPSync
                 }
         }
         
-        public void Start()
+        public override void Start()
         {
-            RaiseJobStarting();
+            RaiseOnStarting();
             ExecuteAsync();
-            RaiseJobStarted();
+            RaiseOnStarted();
         }
 
         protected virtual async void ExecuteAsync()
@@ -72,35 +69,7 @@ namespace SAPSync
                 subJob.StartAsync();
         }
 
-        public ICollection<ISyncElement> SyncElementsStack { get; }
-
-        protected virtual void OnSyncElementStarting(object sender, EventArgs e)
-        {
-
-        }        
-
-        protected virtual void RaiseJobStarted() => JobStarted?.Invoke(this, new EventArgs());
-        
-        protected virtual void RaiseJobStarting() => JobStarting?.Invoke(this, new EventArgs());
-        
-        protected virtual void RaiseJobCompleted() => JobCompleted?.Invoke(this, new EventArgs());
-        
-
-        public override string Name => "Job";
-
-        public Task CurrentTask { get; protected set; }
-
-        public ICollection<ISubJob> SubJobs { get; }
-
-        public JobStatus Status { get; protected set; }
-        
-        public async void StartAsync() => await Task.Run(() => Start());
-
-        protected virtual void SyncFailure(Exception e = null)
-        {
-            RaiseSyncFailed(e);
-            ChangeStatus(JobStatus.Failed);
-        }
-
+        public ICollection<ISyncElement> SyncElementsStack { get; }        
+        public ICollection<ISubJob> SubJobs { get; }        
     }
 }

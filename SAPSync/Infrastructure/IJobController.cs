@@ -16,7 +16,7 @@ namespace SAPSync
         #endregion Events
 
         Task GetAwaiterForActiveOperations();
-        void StartJob(IJob job);
+        IJob StartJob(ICollection<ISyncElement> syncElements);
         event EventHandler NewJobStarted;
 
         event EventHandler JobStarting;

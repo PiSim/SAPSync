@@ -15,9 +15,9 @@ namespace SAPSync.Infrastructure
         void StartAsync();
 
         JobStatus Status { get; }
-        event EventHandler JobCompleted;
-        event EventHandler JobStarting;
-        event EventHandler JobStarted;
+        event EventHandler OnCompleted;
+        event EventHandler OnStarting;
+        event EventHandler OnStarted;
         event EventHandler StatusChanged;
 
         ICollection<ISyncElement> SyncElementsStack { get; }

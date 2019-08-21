@@ -10,7 +10,7 @@ namespace SAPSync
 
         IEnumerable<DateTime?> GetUpdateSchedule();
         void StartSync(IEnumerable<ISyncElement> syncElements);
-        IJobController SyncTaskController { get; }
+        IJobController JobController { get; }
         void SyncOutdatedElements();
 
         #endregion Methods

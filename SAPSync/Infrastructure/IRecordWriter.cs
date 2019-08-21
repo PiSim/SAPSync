@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public interface IRecordWriter<T> : ISyncBase where T : class
+    public interface IRecordWriter<T>  where T : class
     {
         void WriteRecords(IEnumerable<T> records);        
     }

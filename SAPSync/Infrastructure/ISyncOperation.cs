@@ -17,9 +17,9 @@ namespace SAPSync.Infrastructure
         Interrupted
     }
 
-    public interface ISyncOperation : ISyncBase, IDisposable
-    {
-        SyncOperationStatus Status { get; }
+    public interface ISyncOperation :  IDisposable
+    {        
+        Task CurrentTask { get; }
         
         void Open();            
                

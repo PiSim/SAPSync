@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SAPSync.SyncElements.ExcelWorkbooks
 {
-    public class CreateMissingTrialLabData : SyncOperationBase
+    public class CreateMissingTrialLabData : SyncOperation
     {
 
         public override string Name => "Creazione Note Prova mancanti";

@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public class SSMDReader<T> : SyncElementBase, IRecordReader<T> where T:class
+    public class SSMDReader<T> : IRecordReader<T> where T:class
     {
+        protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
         public SSMDReader(Func<Query<T, SSMDContext>> getQueryDelegate = null)
         {
             if (getQueryDelegate != null)
@@ -28,8 +29,10 @@ namespace SAPSync
         public virtual IEnumerable<T> ReadRecords() => RunQuery().ToList();
     }
 
-    public class SSMDReader<TQueried, TOut> : SyncElementBase, IRecordReader<TOut> where TQueried : class
+    public class SSMDReader<TQueried, TOut> : IRecordReader<TOut> where TQueried : class
     {
+
+        protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
 
         public SSMDReader(Func<IQueryable<TQueried>, IQueryable<TOut>> translatorDelegate,
             Func<Query<TQueried, SSMDContext>> getQueryDelegate = null)
