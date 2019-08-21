@@ -72,7 +72,7 @@ namespace SAPSync
 
         protected override void OnExit(ExitEventArgs e)
         {
-            _syncManager.SyncTaskController.GetAwaiterForOpenReadTasks().Wait();
+            _syncManager.SyncTaskController.GetAwaiterForActiveOperations().Wait();
             base.OnExit(e);
         }
 

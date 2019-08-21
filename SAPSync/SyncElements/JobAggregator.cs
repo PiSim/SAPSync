@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements
 {
@@ -20,8 +21,7 @@ namespace SAPSync.SyncElements
             
             Name = name;
             Configuration = configuration ?? new SyncElementConfiguration();
-            ElementStatus = SyncElementStatus.Idle;
-            SyncStatus = SyncProgress.Idle;
+            ElementStatus = JobStatus.Idle;
             ReadElementData();
         }
 
@@ -40,13 +40,13 @@ namespace SAPSync.SyncElements
         protected virtual void SubscribeToJobController(IJobController jobController)
         {
             jobController.JobStarting += OnSyncTaskStarting;
-            jobController.NewJobStarted += OnSyncTaskStarted;
+            jobController.NewJobStarted += OnJobStarted;
         }
 
         protected virtual void UnsubscribeFromjobController(IJobController jobController)
         {
             jobController.JobStarting -= OnSyncTaskStarting;
-            jobController.NewJobStarted -= OnSyncTaskStarted;
+            jobController.NewJobStarted -= OnJobStarted;
         }
 
         public IJobController JobController { get; protected set; }
@@ -63,33 +63,18 @@ namespace SAPSync.SyncElements
 
         #region Properties
 
-        private SyncElementStatus[] PendingStates => new SyncElementStatus[] { SyncElementStatus.Running, SyncElementStatus.OnQueue };
-
-        public AbortToken AbortStatus { get; set; }
         public SyncElementConfiguration Configuration { get; private set; }
-
         public SyncElementData ElementData { get; protected set; }
-
-        public bool HasPendingRequirements => RequiredElements.Count != 0
-            && RequiredElements.Any(rel => PendingStates.Contains(rel.ElementStatus)); 
-
-        public bool IsFailed { get; set; } = false;
-
+        
         public bool IsUpForScheduledUpdate => NextScheduledUpdate <= DateTime.Now;
 
         public DateTime? LastUpdate => ElementData?.LastUpdate;
 
         public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
-
-        public int PhaseProgress { get; set; }
-
+        
         public IList<ISyncElement> RequiredElements { get; } = new List<ISyncElement>();
 
-        public SyncProgress SyncStatus { get; protected set; }
-
-        public SyncElementStatus ElementStatus { get; protected set; }
-
-        protected bool IsSyncRunning { get; set; } = false;
+        public JobStatus ElementStatus { get; protected set; }
 
         protected SSMDData SSMDData => new SSMDData(new SSMDContextFactory());
 
@@ -118,49 +103,19 @@ namespace SAPSync.SyncElements
         {
             if (!IsActive)
             {
-                ResetProgress();
                 if (sender == CurrentTask)
                     SetOnQueue();
             }
         }
 
-        public virtual void ResetProgress()
-        {
-            IsFailed = false;
-            ChangeSyncStatus(SyncProgress.Idle);
-            RaiseProgressChanged(0);
-        }
-           
         protected virtual void SetOnQueue()
         {
-            ChangeElementStatus(SyncElementStatus.OnQueue);
+            ChangeElementStatus(JobStatus.OnQueue);
         }
 
         public ICollection<ISyncOperation> Jobs { get; } = new List<ISyncOperation>();
 
         public override string Name { get; }
-
-        public IJob CurrentTask { get; protected set; }
-
-        protected virtual void ExecuteJobStack()
-        {
-            foreach (ISyncOperation job in Jobs)
-            {
-                SubscribeToElement(job);
-                job.Run();
-                job.Dispose();
-            }
-        }
-
-        public virtual void StartSync() => Run();
-
-
-        protected override void Execute()
-        {
-            base.Execute();
-            ElementStatus = SyncElementStatus.Running;
-            ExecuteJobStack();
-        }
 
         protected override void OnCompleting()
         {
@@ -177,12 +132,6 @@ namespace SAPSync.SyncElements
         protected void ChangeProgress(object sender, ProgressChangedEventArgs e)
         {
             RaiseProgressChanged(e.ProgressPercentage);
-        }
-
-        protected virtual void ChangeSyncStatus(SyncProgress newStatus)
-        {
-            SyncStatus = newStatus;
-            RaiseStatusChanged();
         }
 
         protected override void EnsureInitialized()
@@ -216,8 +165,8 @@ namespace SAPSync.SyncElements
                     errorSeverity: SyncErrorEventArgs.ErrorSeverity.Minor);
             }
 
-            if (ElementStatus != SyncElementStatus.Failed && ElementStatus != SyncElementStatus.Aborted)
-                ChangeElementStatus(SyncElementStatus.Completed);
+            if (ElementStatus != JobStatus.Failed && ElementStatus != JobStatus.Aborted)
+                ChangeElementStatus(JobStatus.Completed);
 
             RaiseSyncCompleted();
         }
@@ -230,7 +179,6 @@ namespace SAPSync.SyncElements
         protected override void Initialize()
         {
             base.Initialize();
-            ChangeSyncStatus(SyncProgress.Initializing);
             RaiseProgressChanged(0);
         }
 
@@ -253,7 +201,6 @@ namespace SAPSync.SyncElements
                 Exception = e,
                 ErrorMessage = "Sincronizzazione fallita",
                 NameOfElement = Name,
-                Progress = SyncStatus,
                 Severity = SyncErrorEventArgs.ErrorSeverity.Critical,
                 TypeOfElement = GetType()
             };
@@ -272,47 +219,13 @@ namespace SAPSync.SyncElements
                 };
         }
 
-        public void OnSyncTaskStarted(object sender, EventArgs e)
-        {
-
-        }
-        
         protected virtual void SaveElementData()
         {
             SSMDData.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
         }
 
-        protected virtual void ChangeElementStatus(SyncElementStatus newStatus)
-        {
-            ElementStatus = newStatus;
-            RaiseStatusChanged();
-        }
-
-        protected virtual void SyncFailure(Exception e = null)
-        {
-            RaiseSyncFailed(e);
-            ChangeElementStatus(SyncElementStatus.Failed);
-            ChangeSyncStatus(SyncProgress.Idle);
-        }
-
-        public void SetCurrentTask(IJob syncTask)
-        {
-            CurrentTask = syncTask;
-        }
 
         #endregion Methods
 
-        #region Classes
-
-        public class AbortToken
-        {
-            #region Properties
-
-            public string AbortReason { get; set; }
-
-            #endregion Properties
-        }
-
-        #endregion Classes
     }
 }

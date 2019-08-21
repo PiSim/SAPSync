@@ -222,20 +222,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Interfaces\ISubJob.cs" />
+    <Compile Include="Infrastructure\ISubJob.cs" />
+    <Compile Include="Infrastructure\JobStatus.cs" />
+    <Compile Include="Infrastructure\SyncErrorEventArgs.cs" />
     <Compile Include="RFCFunctions\ReadCustomers.cs" />
     <Compile Include="RFCFunctions\ReadGoodMovements.cs" />
     <Compile Include="RFCFunctions\ReadMaterialCustomers.cs" />
     <Compile Include="RFCFunctions\ReadRoutingOperationValues.cs" />
-    <Compile Include="Interfaces\ISyncBase.cs" />
-    <Compile Include="Interfaces\ISyncElement.cs" />
-    <Compile Include="Interfaces\ISyncManager.cs" />
-    <Compile Include="Interfaces\IJob.cs" />
-    <Compile Include="Interfaces\IJobController.cs" />
-    <Compile Include="Interfaces\IUnitOfWork.cs" />
+    <Compile Include="Infrastructure\ISyncBase.cs" />
+    <Compile Include="Infrastructure\ISyncElement.cs" />
+    <Compile Include="Infrastructure\ISyncManager.cs" />
+    <Compile Include="Infrastructure\IJob.cs" />
+    <Compile Include="Infrastructure\IJobController.cs" />
+    <Compile Include="Infrastructure\IUnitOfWork.cs" />
     <Compile Include="SAPSync.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SubJob.cs" />
     <Compile Include="SyncElementFactory.cs" />
     <Compile Include="SyncElements\Evaluators\TestReportRecordEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\WorkPhaseLabDataEvaluator.cs" />
@@ -270,10 +273,10 @@
     <Compile Include="SyncElements\ExcelWorkbooks\ModifyRangeToken.cs" />
     <Compile Include="SyncElements\SyncOperations\CreateMissingTrialLabData.cs" />
     <Compile Include="SyncElements\SyncOperations\Dto\TrialMasterDataDto.cs" />
-    <Compile Include="Interfaces\IRecordReader.cs" />
-    <Compile Include="Interfaces\IRecordWriter.cs" />
-    <Compile Include="Interfaces\ISyncOperation.cs" />
-    <Compile Include="Interfaces\IXmlDto.cs" />
+    <Compile Include="Infrastructure\IRecordReader.cs" />
+    <Compile Include="Infrastructure\IRecordWriter.cs" />
+    <Compile Include="Infrastructure\ISyncOperation.cs" />
+    <Compile Include="Infrastructure\IXmlDto.cs" />
     <Compile Include="SyncElements\Validators\RecordValidator.cs" />
     <Compile Include="SyncElements\Evaluators\ComponentEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\CustomerEvaluator.cs" />
@@ -324,8 +327,8 @@
     <Compile Include="SyncElements\Validators\WorkPhaseLabDataValidator.cs" />
     <Compile Include="SyncLogger.cs" />
     <Compile Include="SyncManager.cs" />
-    <Compile Include="SyncTask.cs" />
-    <Compile Include="SyncTaskController.cs" />
+    <Compile Include="Job.cs" />
+    <Compile Include="JobController.cs" />
     <Compile Include="TaskEventArgs.cs" />
     <Compile Include="ViewModels\LogDialogViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
@@ -375,7 +378,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ReadMe.txt" />
+    <Resource Include="RFCConnectorReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">

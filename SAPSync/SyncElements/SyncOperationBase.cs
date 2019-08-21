@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DataAccessCore.Commands;
 using SSMD;
 using SAPSync;
+using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements
 {
@@ -24,11 +25,6 @@ namespace SAPSync.SyncElements
         {
             base.OnCompleting();
             ChangeStatus(SyncOperationStatus.Completed);
-        }
-
-        protected override void OnFailure()
-        {
-            base.OnFailure();
         }
 
         protected virtual void ChangeStatus(SyncOperationStatus newStatus)

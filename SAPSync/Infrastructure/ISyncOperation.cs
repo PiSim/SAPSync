@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAPSync.Interfaces
+namespace SAPSync.Infrastructure
 {
     public enum SyncOperationStatus
     {
@@ -20,14 +20,8 @@ namespace SAPSync.Interfaces
     public interface ISyncOperation : ISyncBase, IDisposable
     {
         SyncOperationStatus Status { get; }
-
-        // Deprecated interface element. Refactored in order to ease batching & async implementation
-        // void Run();
-
-
-        void Open();
-
         
+        void Open();            
                
         void Close();
     }

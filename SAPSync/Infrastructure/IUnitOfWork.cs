@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAPSync.Interfaces
+namespace SAPSync.Infrastructure
 {
     public interface IUnitOfWork : IDisposable
     {
         bool IsFinal { get; }
+
+        Task CurrentTask { get; }
 
         ISyncOperation CurrentOperation { get; }
         

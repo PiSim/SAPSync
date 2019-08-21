@@ -37,14 +37,14 @@ namespace SAPSync.ViewModels
             {SyncProgress.ImportInsert, "Inserimento record" },
             {SyncProgress.ImportUpdate, "Aggiornamento record" }
         };
-        private readonly Dictionary<SyncElementStatus, string> _statusIndex = new Dictionary<SyncElementStatus, string>()
+        private readonly Dictionary<JobStatus, string> _statusIndex = new Dictionary<JobStatus, string>()
         {
-            {SyncElementStatus.Idle, "" },
-            {SyncElementStatus.OnQueue, "In Coda" },
-            {SyncElementStatus.Running, "In Esecuzione" },
-            {SyncElementStatus.Stopped, "Interrotto" },
-            {SyncElementStatus.Completed, "Completato" },
-            {SyncElementStatus.Failed, "Fallito" }
+            {JobStatus.Idle, "" },
+            {JobStatus.OnQueue, "In Coda" },
+            {JobStatus.Running, "In Esecuzione" },
+            {JobStatus.Stopped, "Interrotto" },
+            {JobStatus.Completed, "Completato" },
+            {JobStatus.Failed, "Fallito" }
         };
         public bool IsSelected { get; set; }
         public bool IsUpdateForbidden { get; set; }

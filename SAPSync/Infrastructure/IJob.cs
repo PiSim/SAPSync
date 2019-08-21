@@ -1,25 +1,26 @@
-﻿using System;
+﻿using SAPSync.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SAPSync
+namespace SAPSync.Infrastructure
 {
-    public interface IJob : ISyncBase
-    {
+    public interface IJob
+    {        
         Task CurrentTask { get; }
         
         void Start();
+        void StartAsync();
 
+        JobStatus Status { get; }
         event EventHandler JobCompleted;
-        List<string> SyncLog { get; set; }
-        List<Task> TaskList { get; }
         event EventHandler JobStarting;
         event EventHandler JobStarted;
-        
-        ICollection<ISyncElement> SyncElementsStack { get; }
+        event EventHandler StatusChanged;
 
+        ICollection<ISyncElement> SyncElementsStack { get; }
         ICollection<ISubJob> SubJobs { get; }
     }
 }

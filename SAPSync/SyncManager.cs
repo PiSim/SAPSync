@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SAPSync.Infrastructure;
 
 namespace SAPSync
 {
@@ -21,7 +22,7 @@ namespace SAPSync
 
         public SyncManager()
         {
-            SyncTaskController = new SyncTaskController();
+            SyncTaskController = new JobController();
             SyncTaskController.SyncErrorRaised += OnSyncErrorRaised;
             SyncTaskController.JobStarting += OnTaskStarting;
             SyncTaskController.JobCompleted += OnTaskCompleted;
@@ -51,7 +52,7 @@ namespace SAPSync
         {
             if (syncElements.Count() != 0 && !UpdateRunning)
             {
-                SyncTask newTask = new SyncTask(syncElements);
+                Job newTask = new Job(syncElements);
                 SubscribeToTask(newTask);
                 SyncTaskController.StartJob(newTask);
             }

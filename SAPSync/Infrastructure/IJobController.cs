@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SAPSync.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace SAPSync
 
         #endregion Events
 
-        Task GetAwaiterForOpenReadTasks();
+        Task GetAwaiterForActiveOperations();
         void StartJob(IJob job);
         event EventHandler NewJobStarted;
 
