@@ -10,7 +10,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadGoodMovements : ReadTableBase<GoodMovement>
     {
-        public override string Name => "ReadGoodMovements";
         public ReadGoodMovements()
         {
             _tableName = "MSEG";

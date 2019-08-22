@@ -6,13 +6,13 @@ using System.Threading;
 
 namespace SAPSync
 {
-    public class SAPSync : ServiceBase
+    public class SyncService : ServiceBase
     {
         #region Constructors
 
         public TimeSpan UpdateTimeSlack { get; protected set; } = new TimeSpan(0, 15, 0);
 
-        public SAPSync(ISyncManager syncManager)
+        public SyncService(ISyncManager syncManager)
         {
             SyncManager = syncManager;
             SyncManager.JobController.JobCompleted += OnSyncCompleted;

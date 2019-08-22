@@ -1,4 +1,5 @@
 ﻿using SAP.Middleware.Connector;
+using SAPSync.Infrastructure;
 using SAPSync.SyncElements;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace SAPSync.RFCFunctions
         internal char[] _separator = new char[] { '|' };
         internal string _tableName;
         private readonly string _functionName = "RFC_READ_TABLE";
+
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
 
         #endregion Fields
 

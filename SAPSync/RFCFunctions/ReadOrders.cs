@@ -4,7 +4,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadOrders : ReadTableBase<Order>
     {
-        public override string Name => "ReadOrders";
         #region Constructors
 
         public ReadOrders()

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
@@ -17,53 +18,41 @@ namespace SAPSync.SyncElements.SyncOperations
             RecordEvaluator = recordEvaluator;
         }
 
-        protected virtual IEnumerable<T> Records { get; set; }
-            
         public IRecordEvaluator<T> RecordEvaluator { get; }
 
-        public override string Name => "RecordWriter";
-        
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+
         public void WriteRecords(IEnumerable<T> records)
         {
             try
             {
-                Records = records;
-                Run();
+                var updatePackage = RecordEvaluator.GetUpdatePackage(records);
+                UpdateDatabase(updatePackage);
             }
             catch (Exception e)
             {
-                RaiseSyncError(e: e,
+                RaiseError(e: e,
                     errorMessage: "Errore nell'importazione dei record " + e.Message + "\t\tInnerException : " + e.InnerException.Message,
                     errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
             }
         }
 
-        protected override void Execute()
+        protected SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
+        
+        protected virtual void Clear()
         {
-            base.Execute();
-            var updatePackage = RecordEvaluator.GetUpdatePackage(Records);
-            UpdateDatabase(updatePackage);
-        }
-
-        protected override void Clear()
-        {
-            Records = null;
             RecordEvaluator.Clear();
         }
 
         protected virtual void InsertNewRecords(IEnumerable<T> records)
         {
-            RaiseProgressChanged(0);
             BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(records);
-            insertCommand.ProgressChanged += OnSubscribedProgressChanged;
             GetSSMDData().Execute(insertCommand);
         }
 
         protected virtual void UpdateExistingRecords(IEnumerable<T> records)
         {
-            RaiseProgressChanged(0);
             BatchUpdateEntitiesCommand<SSMDContext> updateCommand = new BatchUpdateEntitiesCommand<SSMDContext>(records);
-            updateCommand.ProgressChanged += OnSubscribedProgressChanged;
             GetSSMDData().Execute(updateCommand);
         }
 
@@ -74,15 +63,13 @@ namespace SAPSync.SyncElements.SyncOperations
             DeleteRecords(updatePackage.RecordsToDelete);
         }
 
-        protected override void Initialize()
+        protected virtual void Initialize()
         {
-            base.Initialize();
             RecordEvaluator.Initialize(GetSSMDData());
         }
 
-        protected override void EnsureInitialized()
+        protected virtual void EnsureInitialized()
         {
-            base.EnsureInitialized();
             if (RecordEvaluator == null)
                 throw new InvalidOperationException("Evaluator non inizializzato");
         }
@@ -90,6 +77,22 @@ namespace SAPSync.SyncElements.SyncOperations
         protected virtual void DeleteRecords(IEnumerable<T> records)
         {
             GetSSMDData().Execute(new DeleteEntitiesCommand<SSMDContext>(records));
+        }
+        protected virtual void RaiseError(
+           Exception e = null,
+           string errorMessage = null,
+           SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
+        {
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                Exception = e,
+                Severity = errorSeverity,
+                ErrorMessage = errorMessage,
+                TimeStamp = DateTime.Now,
+                TypeOfElement = GetType()
+            };
+
+            ErrorRaised?.Invoke(this, args);
         }
     }
 }

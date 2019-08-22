@@ -1,4 +1,5 @@
 ﻿using SAPSync;
+using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace SAPSync
 {
     public interface IRecordReader<T>
     {
-        IEnumerable<T> ReadRecords();     
+        IEnumerable<T> ReadRecords();
+        event EventHandler<SyncErrorEventArgs> ErrorRaised;
     }
 }

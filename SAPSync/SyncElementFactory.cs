@@ -21,9 +21,9 @@ namespace SAPSync
     {
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
-            ISyncElement WorkCentersElement = new JobAggregator(
+            ISyncElement WorkCentersElement = new OperationAggregator(
                 "Centri di Lavoro")
-                .HasJob(
+                .HasOperation(
                     new SyncData<WorkCenter>(
                         new ReadWorkCenters(),
                         new RecordWriter<WorkCenter>(
@@ -33,10 +33,10 @@ namespace SAPSync
                             }))));
 
 
-            ISyncElement MaterialFamiliesElement = new JobAggregator(
+            ISyncElement MaterialFamiliesElement = new OperationAggregator(
                 "Gerarchia Prodotto",
                 new SyncElementConfiguration())
-                .HasJob(new SyncData<MaterialFamilyLevel>(
+                .HasOperation(new SyncData<MaterialFamilyLevel>(
                     new ReadMaterialFamilyLevels(),
                     new RecordWriter<MaterialFamilyLevel>(
                         new MaterialFamilyLevelEvaluator(
@@ -44,7 +44,7 @@ namespace SAPSync
                             {
                                 IgnoreExistingRecords = true
                             }))))
-                .HasJob(new SyncData<MaterialFamily>(
+                .HasOperation(new SyncData<MaterialFamily>(
                     new ReadMaterialFamilies(),
                     new RecordWriter<MaterialFamily>(
                         new MaterialFamilyEvaluator(
@@ -53,9 +53,9 @@ namespace SAPSync
                                 IgnoreExistingRecords = true
                             }))));
 
-            ISyncElement ProjectsElement = new JobAggregator(
+            ISyncElement ProjectsElement = new OperationAggregator(
                 "Progetti")
-                .HasJob(new SyncData<Project>(
+                .HasOperation(new SyncData<Project>(
                     new ReadProjects(),
                     new RecordWriter<Project>(
                         new ProjectEvaluator(
@@ -64,9 +64,9 @@ namespace SAPSync
                                 IgnoreExistingRecords = true
                             }))));
 
-            ISyncElement WBSRelationsElement = new JobAggregator(
+            ISyncElement WBSRelationsElement = new OperationAggregator(
                 "Struttura progetti")
-                .HasJob(new SyncData<WBSRelation>(
+                .HasOperation(new SyncData<WBSRelation>(
                     new ReadWBSRelations(),
                     new RecordWriter<WBSRelation>(
                         new WBSRelationEvaluator())))
@@ -75,9 +75,9 @@ namespace SAPSync
                     ProjectsElement
                 });
 
-            ISyncElement MaterialsElement = new JobAggregator(
+            ISyncElement MaterialsElement = new OperationAggregator(
                 "Materiali")
-                .HasJob(new SyncData<Material>(
+                .HasOperation(new SyncData<Material>(
                     new ReadMaterials(),
                     new RecordWriter<Material>(
                         new MaterialEvaluator())))
@@ -87,13 +87,13 @@ namespace SAPSync
                     ProjectsElement
                 });
 
-            ISyncElement OrdersElement = new JobAggregator(
+            ISyncElement OrdersElement = new OperationAggregator(
                 "Ordini")
-                .HasJob(new SyncData<Order>(
+                .HasOperation(new SyncData<Order>(
                     new ReadOrders(),
                     new RecordWriter<Order>(
                         new OrderEvaluator())))
-                .HasJob(new SyncData<OrderData>(
+                .HasOperation(new SyncData<OrderData>(
                     new ReadOrderData(),
                     new RecordWriter<OrderData>(
                         new OrderDataEvaluator())))
@@ -102,9 +102,9 @@ namespace SAPSync
                     MaterialsElement
                 });
 
-            ISyncElement RoutingOperationsElement = new JobAggregator(
+            ISyncElement RoutingOperationsElement = new OperationAggregator(
                 "Operazioni ordine")
-                .HasJob(new SyncData<RoutingOperation>(
+                .HasOperation(new SyncData<RoutingOperation>(
                     new ReadRoutingOperations(),
                     new RecordWriter<RoutingOperation>(
                         new RoutingOperationEvaluator())))
@@ -113,9 +113,9 @@ namespace SAPSync
                     WorkCentersElement
                 });
 
-            ISyncElement ComponentsElement = new JobAggregator(
+            ISyncElement ComponentsElement = new OperationAggregator(
                 "Componenti")
-                .HasJob(new SyncData<Component>(
+                .HasOperation(new SyncData<Component>(
                     new ReadComponents(),
                     new RecordWriter<Component>(
                         new ComponentEvaluator(
@@ -123,9 +123,9 @@ namespace SAPSync
                             {
                             IgnoreExistingRecords = true}))));
 
-            ISyncElement ConfirmationsElements = new JobAggregator(
+            ISyncElement ConfirmationsElements = new OperationAggregator(
                 "Conferme ordine")
-                .HasJob(new SyncData<OrderConfirmation>(
+                .HasOperation(new SyncData<OrderConfirmation>(
                     new ReadConfirmations(),
                     new RecordWriter<OrderConfirmation>(
                         new ConfirmationEvaluator())))
@@ -135,9 +135,9 @@ namespace SAPSync
                     WorkCentersElement
                 });
 
-            ISyncElement OrderComponentsElement = new JobAggregator(
+            ISyncElement OrderComponentsElement = new OperationAggregator(
                 "Componenti ordine")
-                .HasJob(new SyncData<OrderComponent>(
+                .HasOperation(new SyncData<OrderComponent>(
                     new ReadOrderComponents(),
                     new RecordWriter<OrderComponent>(
                         new OrderComponentEvaluator(
@@ -152,9 +152,9 @@ namespace SAPSync
                     ComponentsElement
                 });
 
-            ISyncElement InspectionCharacteristicsElement = new JobAggregator(
+            ISyncElement InspectionCharacteristicsElement = new OperationAggregator(
                 "Controlli")
-                .HasJob(new SyncData<InspectionCharacteristic>(
+                .HasOperation(new SyncData<InspectionCharacteristic>(
                     new ReadInspectionCharacteristics(),
                     new RecordWriter<InspectionCharacteristic>(
                         new InspectionCharacteristicEvaluator(
@@ -163,7 +163,7 @@ namespace SAPSync
 
                                 IgnoreExistingRecords = true
                             }))))
-                .HasJob(new SyncData<InspectionLot>(
+                .HasOperation(new SyncData<InspectionLot>(
                     new InspLotGetList(),
                     new RecordWriter<InspectionLot>(
                         new InspectionLotEvaluator(
@@ -171,7 +171,7 @@ namespace SAPSync
                             {
                                 IgnoreExistingRecords = true
                             }))))
-                .HasJob(new SyncData<InspectionSpecification>(
+                .HasOperation(new SyncData<InspectionSpecification>(
                     new ReadInspectionSpecifications(),
                     new RecordWriter<InspectionSpecification>(
                         new InspectionSpecificationEvaluator(
@@ -180,7 +180,7 @@ namespace SAPSync
 
                                 IgnoreExistingRecords = true
                             }))))
-                .HasJob(new SyncData<InspectionPoint>(
+                .HasOperation(new SyncData<InspectionPoint>(
                     new ReadInspectionPoints(),
                     new RecordWriter<InspectionPoint>(
                         new InspectionPointEvaluator())))
@@ -190,9 +190,9 @@ namespace SAPSync
                         OrdersElement
                     });
 
-            ISyncElement CustomersElement = new JobAggregator(
+            ISyncElement CustomersElement = new OperationAggregator(
                 "Clienti")
-                .HasJob(new SyncData<Customer>(
+                .HasOperation(new SyncData<Customer>(
                     new ReadCustomers(),
                     new RecordWriter<Customer>(
                         new CustomerEvaluator(
@@ -202,9 +202,9 @@ namespace SAPSync
                                 IgnoreExistingRecords = true
                             }))));
 
-            ISyncElement MaterialCustomerElement = new JobAggregator(
+            ISyncElement MaterialCustomerElement = new OperationAggregator(
                 "Clienti per materiale")
-                .HasJob(new SyncData<MaterialCustomer>(
+                .HasOperation(new SyncData<MaterialCustomer>(
                     new ReadMaterialCustomers(),
                     new RecordWriter<MaterialCustomer>(
                         new MaterialCustomerEvaluator(
@@ -219,9 +219,9 @@ namespace SAPSync
                 });
 
 
-            ISyncElement GoodMovementsElement = new JobAggregator(
+            ISyncElement GoodMovementsElement = new OperationAggregator(
                 "Movimenti Merce")
-                .HasJob(new SyncData<GoodMovement>(
+                .HasOperation(new SyncData<GoodMovement>(
                     new ReadGoodMovements(),
                     new RecordWriter<GoodMovement>(
                         new GoodMovementEvaluator())))
@@ -231,9 +231,9 @@ namespace SAPSync
                     OrdersElement
                 });
 
-            ISyncElement TrialMasterListElement = new JobAggregator(
+            ISyncElement TrialMasterListElement = new OperationAggregator(
                 "Foglio Master Prove")
-                .HasJob(new SyncData<OrderData>(
+                .HasOperation(new SyncData<OrderData>(
                     new XmlReader<OrderData, TrialMasterDataDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("L:\\LABORATORIO\\StatoOdpProva.xlsx"),
@@ -246,7 +246,7 @@ namespace SAPSync
                             {
                                 CheckRemovedRecords = false
                             }))))
-                .HasJob(new SyncData<OrderData>(
+                .HasOperation(new SyncData<OrderData>(
                     new SSMDReader<OrderData>(() => new LoadedOrderDataQuery()),
                     new XmlWriter<OrderData, TrialMasterDataDto>(
                         new XmlInteractionConfiguration(
@@ -263,9 +263,9 @@ namespace SAPSync
                     OrderComponentsElement
                 });
 
-            ISyncElement TrialLabDataElement = new JobAggregator(
+            ISyncElement TrialLabDataElement = new OperationAggregator(
                 "Foglio note fasi di lavorazione")
-                .HasJob(new SyncData<WorkPhaseLabData>(
+                .HasOperation(new SyncData<WorkPhaseLabData>(
                     new XmlReader<WorkPhaseLabData, WorkPhaseLabDataDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
@@ -278,8 +278,8 @@ namespace SAPSync
                             {
                                 CheckRemovedRecords = false
                             }))))
-                .HasJob(new CreateMissingTrialLabData())
-                .HasJob(new SyncData<WorkPhaseLabData>(
+                .HasOperation(new CreateMissingTrialLabData())
+                .HasOperation(new SyncData<WorkPhaseLabData>(
                     new SSMDReader<WorkPhaseLabData>(() => new LoadedWorkPhaseLabDataQuery()),
                     new XmlWriter<WorkPhaseLabData, WorkPhaseLabDataDto>(
                         new XmlInteractionConfiguration(
@@ -296,9 +296,9 @@ namespace SAPSync
                     TrialMasterListElement
                 });
             
-            ISyncElement TestReportElement = new JobAggregator(
+            ISyncElement TestReportElement = new OperationAggregator(
                 "Test Report")
-                .HasJob(new SyncData<TestReport>(
+                .HasOperation(new SyncData<TestReport>(
                     new XmlReader<TestReport, TestReportDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"), 
@@ -306,7 +306,7 @@ namespace SAPSync
                             4)),
                     new RecordWriter<TestReport>(
                         new TestReportRecordEvaluator())))
-                .HasJob(new SyncData<TestReport>(
+                .HasOperation(new SyncData<TestReport>(
                     new SSMDReader<TestReport>( () => new LoadedTestReportQuery()),
                     new XmlWriter<TestReport, TestReportDto>(
                         new XmlInteractionConfiguration(
@@ -323,9 +323,9 @@ namespace SAPSync
                     TrialMasterListElement
                 });
 
-            ISyncElement TrialScrapListElement = new JobAggregator(
+            ISyncElement TrialScrapListElement = new OperationAggregator(
                 "Foglio scarti di prova")
-                .HasJob(new SyncData<IGrouping<Tuple<Order, string>, OrderConfirmation>>(
+                .HasOperation(new SyncData<IGrouping<Tuple<Order, string>, OrderConfirmation>>(
                     new SSMDReader<OrderConfirmation, IGrouping<Tuple<Order, string>, OrderConfirmation>>(
                         qu => qu.GroupBy(con => new Tuple<Order, string>(con.Order, con.ScrapCause))
                             .ToList()

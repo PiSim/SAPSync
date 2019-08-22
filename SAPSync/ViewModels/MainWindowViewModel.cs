@@ -72,7 +72,7 @@ namespace SAPSync.ViewModels
             }
         }
 
-        public SAPSync SAPSync { get; set; }
+        public SyncService SAPSync { get; set; }
         public DelegateCommand ToggleSAPSyncCommand { get; set; }
 
         #endregion Properties

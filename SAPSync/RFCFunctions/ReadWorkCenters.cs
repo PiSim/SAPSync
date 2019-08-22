@@ -5,8 +5,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadWorkCenters : ReadTableBase<WorkCenter>
     {
-        public override string Name => "ReadWorkCenters";
-
         #region Constructors
 
         public ReadWorkCenters()

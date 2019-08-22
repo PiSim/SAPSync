@@ -19,7 +19,6 @@ namespace SAPSync
             {
                 GetTimeStamp() + errorEventArgs.Severity.ToString() + " Error: " + errorEventArgs.ErrorMessage,
                 "Elemento: " + errorEventArgs.NameOfElement + " - " + errorEventArgs.TypeOfElement,
-                "Fase: " + errorEventArgs.Progress,
                 "Eccezione: " + errorEventArgs.Exception?.Message,
             };
 
@@ -40,7 +39,7 @@ namespace SAPSync
             NewLogEntry(
                 new string[]
                 {
-                    GetTimeStamp() + "Elemento completato: " + element.Name + "\tRisultato: " + element.ElementStatus
+                    GetTimeStamp() + "Elemento completato: " + element.Name 
                 });
         }
 

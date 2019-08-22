@@ -1,5 +1,6 @@
 ﻿using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using SAPSync.Infrastructure;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using System;
 using System.Collections.Generic;
@@ -63,15 +64,8 @@ namespace SAPSync.SyncElements.SyncOperations
 
         public string LastUpdateRangeName { get; }
 
-
-        public override string Name => "XmlWriter";
-
-        #region Properties
-
-        public void WriteRecords(IEnumerable<T> records) => Execute(records);
-
-        #endregion Properties
-
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        
         #region Methods
 
         protected virtual void ApplyModifyRangeToken(ExcelWorkbook xlWorkbook, ExcelWorkbooks.ModifyRangeToken token)
@@ -95,7 +89,7 @@ namespace SAPSync.SyncElements.SyncOperations
                 }
                 catch(Exception e)
                 {
-                    RaiseSyncError(e:e,
+                    RaiseError(e:e,
                         errorMessage: "Impossibile applicare token modifica range");
                 }
         }
@@ -112,14 +106,31 @@ namespace SAPSync.SyncElements.SyncOperations
             }
             catch (Exception e)
             {
-                RaiseSyncError(e,
+                RaiseError(e,
                     "Impossibile effettuare Backup",
                     SyncErrorEventArgs.ErrorSeverity.Minor);
                 throw new InvalidOperationException("Impossibile accedere al file:" + e.Message, e);
             }
         }
 
-        protected virtual void Execute(IEnumerable<T> records)
+        protected virtual void RaiseError(
+           Exception e = null,
+           string errorMessage = null,
+           SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
+        {
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                Exception = e,
+                Severity = errorSeverity,
+                ErrorMessage = errorMessage,
+                TimeStamp = DateTime.Now,
+                TypeOfElement = GetType()
+            };
+
+            ErrorRaised?.Invoke(this, args);
+        }
+
+        public virtual void WriteRecords(IEnumerable<T> records)
         {
             CreateBackup();
             IEnumerable<TDto> exportDtos = GetDtosFromEntities(records);

@@ -4,7 +4,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadRoutingOperations : ReadTableBase<RoutingOperation>
     {
-        public override string Name => "ReadRoutingOperations";
         #region Constructors
 
         public ReadRoutingOperations()

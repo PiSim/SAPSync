@@ -6,19 +6,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
-    public class SyncData<T> : SyncOperation where T : class
+    public class SyncData<T> : SyncOperationBase  where T : class
     {
         public SyncData(IRecordReader<T> recordReader,
             IRecordWriter<T> recordWriter)
         {
             RecordWriter = recordWriter;
             RecordReader = recordReader;
+            RecordWriter.ErrorRaised += OnErrorRaised;
+            RecordReader.ErrorRaised += OnErrorRaised;
+        }
 
-            SubscribeToElement(RecordReader);
-            SubscribeToElement(RecordWriter);
+        protected virtual void OnErrorRaised(object sender, SyncErrorEventArgs e)
+        {
+
         }
 
         public override string Name => "SyncData";
@@ -27,17 +32,15 @@ namespace SAPSync.SyncElements.SyncOperations
 
         public IRecordReader<T> RecordReader { get; }
 
-        protected override void Execute()
+        public async override void Start()
         {
-            base.Execute();
+            base.Start();
             IEnumerable<T> records;
             try
             {
                 Task<IEnumerable<T>> getResultsTask = new Task<IEnumerable<T>>(() => RecordReader.ReadRecords());
-                RaiseExternalTaskStarting(getResultsTask);
                 getResultsTask.Start();
-                getResultsTask.Wait();
-                RaiseExternalTaskCompleted(getResultsTask);
+                await getResultsTask;
                 records = getResultsTask.Result ?? throw new Exception("Lettura Record Fallita");
             }
             catch (Exception e)
@@ -51,10 +54,8 @@ namespace SAPSync.SyncElements.SyncOperations
             try
             {
                 Task writeRecordsTask = new Task(() => RecordWriter.WriteRecords(records));
-                RaiseExternalTaskStarting(writeRecordsTask);
                 writeRecordsTask.Start();
                 writeRecordsTask.Wait();
-                RaiseExternalTaskCompleted(writeRecordsTask);
             }
             catch (Exception e)
             {

@@ -14,7 +14,7 @@ namespace SAPSync
 
         private SSMDData _ssData;
         private SyncManager _syncManager;
-        private SAPSync _SAPSync;
+        private SyncService _SAPSync;
         private bool destinationIsInitialized = false;
 
         #endregion Fields
@@ -32,7 +32,7 @@ namespace SAPSync
             (MainWindow.DataContext as ViewModels.MainWindowViewModel).SAPSyncStartRequested += OnSAPSyncStartRequested;
             (MainWindow.DataContext as ViewModels.MainWindowViewModel).SAPSyncStopRequested += OnSAPSyncStopRequested;
 
-            _SAPSync = new SAPSync(_syncManager);
+            _SAPSync = new SyncService(_syncManager);
 
             (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _SAPSync.Status.ToString();
             MainWindow.Show();

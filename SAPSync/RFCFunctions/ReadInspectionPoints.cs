@@ -7,7 +7,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadInspectionPoints : ReadTableBase<InspectionPoint>
     {
-        public override string Name => "ReadInspectionPoints";
         #region Constructors
 
         public ReadInspectionPoints()

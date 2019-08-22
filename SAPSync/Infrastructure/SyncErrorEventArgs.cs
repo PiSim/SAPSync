@@ -20,7 +20,6 @@ namespace SAPSync.Infrastructure
         public Exception Exception { get; set; }
         public string NameOfElement { get; set; }
         public Type TypeOfElement { get; set; }
-        public SyncProgress Progress { get; set; }
         public ErrorSeverity Severity { get; set; }
         public DateTime TimeStamp { get; set; }
 

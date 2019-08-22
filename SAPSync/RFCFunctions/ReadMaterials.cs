@@ -5,7 +5,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadMaterials : ReadTableBase<Material>
     {
-        public override string Name => "ReadMaterials";
         #region Constructors
 
         public ReadMaterials()
@@ -30,8 +29,7 @@ namespace SAPSync.RFCFunctions
         {
             string code = data[0].Trim();
 
-            int pdc;
-            if (!int.TryParse(data[2], out pdc))
+            if (!int.TryParse(data[2], out int pdc))
                 pdc = 0;
 
             MaterialFamily tempFamily;

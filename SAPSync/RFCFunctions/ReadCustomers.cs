@@ -4,7 +4,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadCustomers : ReadTableBase<Customer>
     {
-        public override string Name => "ReadCustomers";
         #region Constructors
 
         public ReadCustomers()

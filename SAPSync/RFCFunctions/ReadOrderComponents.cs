@@ -5,7 +5,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadOrderComponents : ReadTableBase<OrderComponent>
     {
-        public override string Name => "ReadOrderComponents";
         #region Constructors
 
         public ReadOrderComponents()

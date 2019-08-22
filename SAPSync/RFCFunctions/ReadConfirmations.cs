@@ -7,7 +7,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadConfirmations : ReadTableBase<OrderConfirmation>
     {
-        public override string Name => "ReadConfirmations";
         #region Constructors
 
         public ReadConfirmations()

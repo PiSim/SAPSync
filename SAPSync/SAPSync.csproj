@@ -281,7 +281,7 @@
     <Compile Include="SyncElements\Validators\RecordValidator.cs" />
     <Compile Include="SyncElements\Evaluators\ComponentEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\CustomerEvaluator.cs" />
-    <Compile Include="SyncElements\JobAggregator.cs" />
+    <Compile Include="SyncElements\OperationAggregator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialFamilyLevelEvaluator.cs" />
     <Compile Include="SyncElements\SyncElementBase.cs" />
     <Compile Include="SyncElements\SyncOperations\SyncData.cs" />

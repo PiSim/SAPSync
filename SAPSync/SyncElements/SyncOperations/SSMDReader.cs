@@ -1,4 +1,5 @@
 ﻿using DataAccessCore;
+using SAPSync.Infrastructure;
 using SAPSync.SyncElements;
 using SSMD;
 using System;
@@ -11,6 +12,8 @@ namespace SAPSync
 {
     public class SSMDReader<T> : IRecordReader<T> where T:class
     {
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
         public SSMDReader(Func<Query<T, SSMDContext>> getQueryDelegate = null)
         {
@@ -19,8 +22,6 @@ namespace SAPSync
         }
 
         protected virtual Func<Query<T, SSMDContext>> GetQueryFunc { get; } = new Func<Query<T, SSMDContext>>(() => new Query<T, SSMDContext>());
-
-        public override string Name => "SSMDReader";
 
         protected virtual Query<T, SSMDContext> GetQuery() => GetQueryFunc();
 
@@ -31,6 +32,7 @@ namespace SAPSync
 
     public class SSMDReader<TQueried, TOut> : IRecordReader<TOut> where TQueried : class
     {
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
 
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
 
@@ -41,8 +43,6 @@ namespace SAPSync
             GetQueryFunc = getQueryDelegate;
         }
         
-        public override string Name => "SSMDReader";
-
         protected virtual Func<IQueryable<TQueried>, IQueryable<TOut>> TranslatorFunc { get; }
         protected virtual Func<Query<TQueried, SSMDContext>> GetQueryFunc { get; } = new Func<Query<TQueried, SSMDContext>>(() => new Query<TQueried, SSMDContext>());
 

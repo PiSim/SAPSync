@@ -8,21 +8,11 @@ using System.Threading.Tasks;
 
 namespace SAPSync.Infrastructure
 {
-    public enum SyncOperationStatus
-    {
-        Created,
-        Running,
-        Completed,
-        Failed,
-        Interrupted
-    }
-
-    public interface ISyncOperation :  IDisposable
+    public interface ISyncOperation
     {        
+        string Name { get; }
         Task CurrentTask { get; }
-        
-        void Open();            
-               
-        void Close();
+        void SetParent(ISyncElement syncElement);
+            event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
     }
 }

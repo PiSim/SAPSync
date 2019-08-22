@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using SAPSync.Infrastructure;
 using SAPSync.SyncElements.ExcelWorkbooks;
 using System;
 using System.Collections.Generic;
@@ -16,17 +17,13 @@ namespace SAPSync.SyncElements.SyncOperations
         public XmlReader(XmlInteractionConfiguration configuration) : base(configuration)
         {
         }
-        
+
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+
         #endregion Constructors
 
-        #region Properties
-
-        public override string Name => "XmlReader";
-        
-        #endregion Properties
-
         #region Methods
-        
+
         protected virtual IEnumerable<T> ConvertDtos(IEnumerable<TDto> importedDtos) => importedDtos.Select(dto => GetEntityFromDto(dto));
         
         protected virtual TDto GetDtoFromRow(IEnumerable<ExcelRangeBase> xlRow)
@@ -61,8 +58,8 @@ namespace SAPSync.SyncElements.SyncOperations
                 }
                 catch (Exception e)
                 {
-                    RaiseSyncError(e:e,
-                        errorMessage: e.Message);
+                    RaiseReadError(e:e,
+                        message: e.Message);
                 }
             }
             foreach (DtoProperty column in GetDtoColumns(new Type[] { typeof(FontColor), typeof(Imported) }))
@@ -78,8 +75,7 @@ namespace SAPSync.SyncElements.SyncOperations
                 }
                 catch (Exception e)
                 {
-                    RaiseSyncError(e: e,
-                        errorMessage: e.Message);
+                    RaiseReadError(e,e.Message);
                 }
             }
 
@@ -136,12 +132,16 @@ namespace SAPSync.SyncElements.SyncOperations
             }
             catch (Exception e)
             {
-                RaiseSyncError(e, "Errore di lettura del file", SAPSync.SyncErrorEventArgs.ErrorSeverity.Major);
+                RaiseReadError(e, "Errore di lettura del file");
                 return null;
             }
         }
-
         
+        protected virtual void RaiseReadError(Exception e , string message = null)
+        {
+            ErrorRaised?.Invoke(this, new SyncErrorEventArgs());
+        }
+
         #endregion Methods
     }
 }

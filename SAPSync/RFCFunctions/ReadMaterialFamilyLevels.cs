@@ -4,7 +4,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadMaterialFamilyLevels : ReadTableBase<MaterialFamilyLevel>
     {
-        public override string Name => "ReadMaterialFamilyLevels";
         #region Constructors
 
         public ReadMaterialFamilyLevels()

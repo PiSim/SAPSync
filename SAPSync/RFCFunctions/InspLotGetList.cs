@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SAP.Middleware.Connector;
+using SAPSync.Infrastructure;
 using SAPSync.SyncElements;
 using SSMD;
 
@@ -14,6 +16,8 @@ namespace SAPSync.RFCFunctions
             _functionName = "BAPI_INSPLOT_GETLIST";
             _tableName = "insplot_LIST";
         }
+
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
 
         public IEnumerable<InspectionLot> ReadRecords() => ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
         

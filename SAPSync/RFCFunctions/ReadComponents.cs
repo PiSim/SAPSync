@@ -5,7 +5,6 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadComponents : ReadTableBase<Component>
     {
-        public override string Name => "ReadComponents";
         #region Constructors
 
         public ReadComponents() : base()

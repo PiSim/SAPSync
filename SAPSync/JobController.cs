@@ -53,7 +53,7 @@ namespace SAPSync
         
         protected virtual void OnJobStarted(object sender, EventArgs e) => NewJobStarted?.Invoke(sender, e);
 
-        public IJob StartJob(ICollection<ISyncElement> syncElements)
+        public IJob StartJob(IEnumerable<ISyncElement> syncElements)
         {
             Job newJob = new Job(syncElements);
             newJob.OnCompleted += OnJobCompleted;

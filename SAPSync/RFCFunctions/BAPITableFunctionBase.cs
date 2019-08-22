@@ -14,16 +14,6 @@ namespace SAPSync.RFCFunctions
 
         #endregion Fields
 
-        #region Constructors
-
-        public BAPITableFunctionBase()
-        {
-        }
-
-        public override string Name => "BAPITableFunctionBase";
-
-        #endregion Constructors
-
         #region Methods
 
         public IRfcTable Invoke(RfcDestination rfcDestination)

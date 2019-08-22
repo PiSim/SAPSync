@@ -29,5 +29,10 @@ namespace SAPSync
             if (Status == JobStatus.OnQueue && Dependencies.All(dep => dep.Status == JobStatus.Completed))
                 ChangeStatus(JobStatus.Ready);
         }
+
+        public override void Start()
+        {
+            
+        }
     }
 }

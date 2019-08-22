@@ -10,7 +10,7 @@ namespace SAPSync.Infrastructure
     public interface IJob
     {        
         Task CurrentTask { get; }
-        
+
         void Start();
         void StartAsync();
 
