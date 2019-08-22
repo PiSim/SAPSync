@@ -35,37 +35,17 @@ namespace SAPSync.SyncElements.SyncOperations
         public async override void Start()
         {
             base.Start();
-            IEnumerable<T> records;
-            try
-            {
-                Task<IEnumerable<T>> getResultsTask = new Task<IEnumerable<T>>(() => RecordReader.ReadRecords());
-                getResultsTask.Start();
-                await getResultsTask;
-                records = getResultsTask.Result ?? throw new Exception("Lettura Record Fallita");
-            }
-            catch (Exception e)
-            {
-                RaiseSyncError(e: e,
-                    errorMessage: "Errore di lettura: " + e.Message + "\t\tInnerException :" + e.InnerException.Message,
-                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
-                throw new Exception("Lettura Record Fallita: " + e.Message, e);
-            }
-
-            try
-            {
-                Task writeRecordsTask = new Task(() => RecordWriter.WriteRecords(records));
-                writeRecordsTask.Start();
-                writeRecordsTask.Wait();
-            }
-            catch (Exception e)
-            {
-                RaiseSyncError(e: e,
-                    errorMessage: "Errore di scrittura: " + e.Message + "\t\tInnerException :" + e.InnerException.Message,
-                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
-                throw new Exception("Scrittura Record Fallita: " + e.Message, e);
-            }
-
+            await Task.Run(() => RecordReader.StartReadAsync());
         }
 
+        protected async virtual void OnReaderPacketCompleteAsync(object sender, RecordPacketCompletedEventArgs<T> e)
+        {
+            await Task.Run(() => RecordWriter.WriteRecords(e.Packet));
+            if (e.IsFinal)
+            {
+                RecordWriter.Clear();
+                RaiseOperationCompleted();
+            }
+        }        
     }
 }

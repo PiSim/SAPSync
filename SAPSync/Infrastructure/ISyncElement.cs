@@ -17,6 +17,8 @@ namespace SAPSync
         ICollection<ISyncElement> Dependencies { get; }
         ISubJob CurrentJob { get; }
 
+        void Execute(ISubJob newJob);
+
         #endregion Properties
 
     }

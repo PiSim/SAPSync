@@ -11,5 +11,6 @@ namespace SAPSync
     {
         void WriteRecords(IEnumerable<T> records);
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        void Clear();
     }
 }

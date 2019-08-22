@@ -8,9 +8,7 @@ namespace SAPSync.Infrastructure
 {
     public interface ISubJob
     {
-        ISyncElement SyncElement { get;}
-        ICollection<ISyncOperation> Operations { get; }
-
+        ISyncElement TargetElement { get;}
         Task CurrentTask { get; }
 
         void Start();
@@ -21,6 +19,8 @@ namespace SAPSync.Infrastructure
         event EventHandler OnStarting;
         event EventHandler OnStarted;
         event EventHandler StatusChanged;
+
+        void Complete(bool isSuccesful = true);
 
         void CheckStatus();
         

@@ -20,6 +20,7 @@ namespace SAPSync.SyncElements
             Name = name;
             Configuration = configuration ?? new SyncElementConfiguration();
             ReadElementData();
+            Dependencies = new List<ISyncElement>();
         }
 
         protected virtual void ReadElementData()
@@ -59,16 +60,37 @@ namespace SAPSync.SyncElements
 
         protected virtual DateTime GetNextScheduledUpdate() => ((DateTime)LastUpdate).AddHours(ElementData.UpdateInterval);
 
-        public virtual void OpenJob(ISubJob newJob)
+        protected virtual void OpenJob(ISubJob newJob)
         {
+
             if (CurrentJob != null)
                 throw new InvalidOperationException("Another Job is already open");
             CurrentJob = newJob;
         }
 
-        public virtual void CloseJob()
+        protected virtual void CloseJob()
         {
+            CurrentJob.Complete();
             CurrentJob = null;
+        }
+
+        public virtual void Execute(ISubJob newJob)
+        {
+            OpenJob(newJob);
+        }
+
+        protected virtual void FinalizeSync()
+        {
+            CloseJob();
+            ElementData.LastUpdate = DateTime.Now;
+            try
+            {
+                SaveElementData();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Impossibile salvare ElementData: " + e.Message, e);
+            }
         }
     }
 }

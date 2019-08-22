@@ -20,9 +20,9 @@ namespace SAPSync
                 SubJobs.Add(new SubJob(syncElement));
 
             foreach (ISubJob subJob in SubJobs)
-                foreach (ISyncElement dependency in subJob.SyncElement.Dependencies)
+                foreach (ISyncElement dependency in subJob.TargetElement.Dependencies)
                 {
-                    ISubJob dependencyJob = SubJobs.FirstOrDefault(sjb => sjb.SyncElement == dependency);
+                    ISubJob dependencyJob = SubJobs.FirstOrDefault(sjb => sjb.TargetElement == dependency);
                     if (dependencyJob != null)
                         subJob.Dependencies.Add(dependencyJob);
                 }

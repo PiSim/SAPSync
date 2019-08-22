@@ -8,9 +8,24 @@ using System.Threading.Tasks;
 
 namespace SAPSync
 {
+
+    public class RecordPacketCompletedEventArgs<T> : EventArgs
+    {
+        public RecordPacketCompletedEventArgs(IEnumerable<T> records, bool isFinal = false)
+        {
+            Packet = records;
+            IsFinal = isFinal;
+        }
+
+        public IEnumerable<T> Packet { get; }
+        public bool IsFinal { get; }
+    }
+
     public interface IRecordReader<T>
     {
-        IEnumerable<T> ReadRecords();
+        void StartReadAsync();
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+        event EventHandler ReadCompleted;
     }
 }

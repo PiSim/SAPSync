@@ -17,23 +17,7 @@ namespace SAPSync.SyncElements
 
         public OperationAggregator(string name = "", SyncElementConfiguration configuration = null) : base(name, configuration)
         {
-
         }
-
-        #region Constructors
-                
-        public event EventHandler SyncAborted;
-
-        public event EventHandler SyncCompleted;
-
-        public event EventHandler<SyncErrorEventArgs> SyncFailed;
-
-        #endregion Events
-
-        #region Properties
-
-
-        #endregion Properties
 
         #region Methods
 
@@ -56,33 +40,26 @@ namespace SAPSync.SyncElements
         public ICollection<ISyncOperation> Operations { get; } = new List<ISyncOperation>();
 
 
-        protected virtual void FinalizeSync()
+        public override void Execute(ISubJob newJob)
         {
-            ElementData.LastUpdate = DateTime.Now;
-            try
-            {
-                SaveElementData();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Impossibile salvare ElementData: " + e.Message, e);
-            }            
-        }       
-        
-        protected virtual void RaiseSyncFailed(Exception e = null)
-        {
-            SyncErrorEventArgs args = new SyncErrorEventArgs()
-            {
-                Exception = e,
-                ErrorMessage = "Sincronizzazione fallita",
-                NameOfElement = Name,
-                Severity = SyncErrorEventArgs.ErrorSeverity.Critical,
-                TypeOfElement = GetType()
-            };
-
-            SyncFailed?.Invoke(this, args);
+            base.Execute(newJob);
+            OperationEnumerator = Operations.GetEnumerator();
+            StartNextOperation();
         }
 
+        protected IEnumerator<ISyncOperation> OperationEnumerator { get; set; }
+
+        protected virtual void StartNextOperation()
+        {
+            if (OperationEnumerator.Current == null)
+                FinalizeSync();
+
+            else
+            {
+                OperationEnumerator.Current.StartAsync();
+                OperationEnumerator.MoveNext();
+            }
+        }
 
         #endregion Methods
 

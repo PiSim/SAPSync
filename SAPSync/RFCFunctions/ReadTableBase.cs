@@ -19,6 +19,8 @@ namespace SAPSync.RFCFunctions
         private readonly string _functionName = "RFC_READ_TABLE";
 
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+        public event EventHandler ReadCompleted;
 
         #endregion Fields
 
@@ -30,7 +32,15 @@ namespace SAPSync.RFCFunctions
 
         #region Methods
 
-        public IList<T> Invoke(RfcDestination rfcDestination)
+        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+        
+
+        public void Invoke(RfcDestination rfcDestination)
         {
             ConfigureBatchingOptions();
 
@@ -44,18 +54,13 @@ namespace SAPSync.RFCFunctions
             {
                 rfcFunction.Invoke(rfcDestination);
                 IRfcTable output = rfcFunction.GetTable("DATA");
-                results.AddRange(ConvertRfcTable(output));
+                RaisePacketCompleted(ConvertRfcTable(output));
             }
 
-
-            
-            return results;
+            RaiseReadCompleted();       
         }
 
-        public async Task<IList<T>> InvokeAsync(RfcDestination rfcDestination)
-        {
-            return await Task.Run(() => Invoke(rfcDestination));
-        }
+        public async Task InvokeAsync(RfcDestination rfcDestination) => await Task.Run(() => Invoke(rfcDestination));
 
         internal virtual T ConvertDataArray(string[] data) => default(T);
 
@@ -193,7 +198,7 @@ namespace SAPSync.RFCFunctions
             return rfcFunction;
         }
 
-        public IEnumerable<T> ReadRecords() => Invoke((new SAPReader()).GetRfcDestination());
+        public async void StartReadAsync() => await Task.Run(() => Invoke((new SAPReader()).GetRfcDestination()));
 
 
         #endregion Methods

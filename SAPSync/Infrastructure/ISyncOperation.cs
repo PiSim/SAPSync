@@ -13,6 +13,9 @@ namespace SAPSync.Infrastructure
         string Name { get; }
         Task CurrentTask { get; }
         void SetParent(ISyncElement syncElement);
-            event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
+        void Start();
+        void StartAsync();
+        event EventHandler OperationCompleted;
+        event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
     }
 }

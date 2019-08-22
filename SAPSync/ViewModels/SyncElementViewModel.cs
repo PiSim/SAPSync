@@ -31,6 +31,8 @@ namespace SAPSync.ViewModels
         public DateTime? NextScheduledUpdate => SyncElement.NextScheduledUpdate;
         public ISyncElement SyncElement { get; }
 
+        public string Name => SyncElement?.Name;
+
         #endregion Properties
 
         #region Methods

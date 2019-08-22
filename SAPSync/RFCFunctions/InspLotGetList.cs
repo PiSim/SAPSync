@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SAP.Middleware.Connector;
 using SAPSync.Infrastructure;
 using SAPSync.SyncElements;
@@ -18,9 +19,24 @@ namespace SAPSync.RFCFunctions
         }
 
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        public event EventHandler<RecordPacketCompletedEventArgs<InspectionLot>> RecordPacketCompleted;
+        public event EventHandler ReadCompleted;
 
-        public IEnumerable<InspectionLot> ReadRecords() => ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
-        
+        protected void ReadRecords()
+        { 
+            IEnumerable<InspectionLot> records = ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
+            RaisePacketCompleted(records);
+            RaiseReadCompleted();
+        }
+
+        protected virtual void RaisePacketCompleted(IEnumerable<InspectionLot> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<InspectionLot>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+
         private List<InspectionLot> ConvertInspectionLotTable(IRfcTable materialTable)
         {
             List<InspectionLot> output = new List<InspectionLot>();
@@ -59,6 +75,8 @@ namespace SAPSync.RFCFunctions
             base.InitializeParameters();
             _rfcFunction.SetValue("max_rows", 99999999);
         }
+
+        public async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
         #endregion Methods
     }

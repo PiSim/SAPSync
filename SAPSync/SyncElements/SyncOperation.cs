@@ -22,7 +22,6 @@ namespace SAPSync.SyncElements
                 InputBuffer.Remove(nextElement);
             return nextElement;
         }
-
         protected ICollection<TIn> InputBuffer { get; }
     }
 
@@ -67,6 +66,13 @@ namespace SAPSync.SyncElements
         public ISyncElement ParentElement { get; protected set; }
         public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
 
+        public event EventHandler OperationCompleted;
+
+        protected virtual void RaiseOperationCompleted()
+        {
+            OperationCompleted?.Invoke(this, new EventArgs());
+        }
+
         public virtual void SetParent (ISyncElement syncElement)
         {
             ParentElement = syncElement;
@@ -83,6 +89,11 @@ namespace SAPSync.SyncElements
             {
                 throw new Exception("Failed Loading Resources");
             }
+        }
+
+        public virtual async void StartAsync()
+        {
+            await Task.Run(() => Start());
         }
 
         public virtual void LoadResources()
