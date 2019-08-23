@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using Prism.Mvvm;
+using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,7 +73,8 @@ namespace SAPSync.ViewModels
             }
         }
 
-        public SyncService SAPSync { get; set; }
+        public IEnumerable<IJob> ActiveJobs => SyncManager.JobController.ActiveJobs;
+
         public DelegateCommand ToggleSAPSyncCommand { get; set; }
 
         #endregion Properties

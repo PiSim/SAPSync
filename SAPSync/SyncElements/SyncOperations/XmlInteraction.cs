@@ -15,8 +15,18 @@ namespace SAPSync.SyncElements.SyncOperations
         public XmlInteraction(XmlInteractionConfiguration configuration)
         {
             Configuration = configuration;
+            ChildrenTasks = new List<Task>();
         }
 
+
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
         protected virtual IEnumerable<DtoProperty> GetDtoColumns()
         {
             return typeof(TDto)

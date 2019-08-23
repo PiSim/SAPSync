@@ -7,6 +7,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
@@ -156,19 +157,14 @@ namespace SAPSync.SyncElements.SyncOperations
             ErrorRaised?.Invoke(this, new SyncErrorEventArgs());
         }
 
-        public void StartReadAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public void StartReadAsync() => StartChildTask(() => ReadRecords());
 
         public void OpenReader()
         {
-            throw new NotImplementedException();
         }
 
         public void CloseReader()
         {
-            throw new NotImplementedException();
         }
 
         #endregion Methods

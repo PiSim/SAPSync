@@ -16,6 +16,7 @@ namespace SAPSync.RFCFunctions
         {
             _functionName = "BAPI_INSPLOT_GETLIST";
             _tableName = "insplot_LIST";
+            ChildrenTasks = new List<Task>();
         }
 
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
@@ -29,6 +30,14 @@ namespace SAPSync.RFCFunctions
             RaiseReadCompleted();
         }
 
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
         protected virtual void RaisePacketCompleted(IEnumerable<InspectionLot> records)
         {
             RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<InspectionLot>(records));
@@ -80,12 +89,10 @@ namespace SAPSync.RFCFunctions
 
         public void OpenReader()
         {
-            throw new NotImplementedException();
         }
 
         public void CloseReader()
         {
-            throw new NotImplementedException();
         }
 
         #endregion Methods

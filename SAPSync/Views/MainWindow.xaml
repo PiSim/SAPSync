@@ -8,64 +8,74 @@
         mc:Ignorable="d"
         Title="SapSync" Height="600" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="Stato servizio:"
+
+        <Grid Grid.Column="0"
+              Grid.Row="1"
+              Grid.RowSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Stato servizio:"
                        Grid.Column="0"
                        VerticalAlignment="Center" />
-            <TextBlock Text="{Binding ServiceStatus}"
+                <TextBlock Text="{Binding ServiceStatus}"
                        Grid.Column="1"
                        VerticalAlignment="Center" />
-            <Button Content="Sincronizza selezionati"
+                <Button Content="Sincronizza selezionati"
                 Command="{Binding StartSyncCommand}"
                 Grid.Column="3"
                 HorizontalAlignment="Left"
                 Margin="5"
                 Padding="5"
                 VerticalAlignment="Center" />
-            <Button
+                <Button
                 Command="{Binding ToggleSAPSyncCommand}"
                 Grid.Column="2"
                 HorizontalAlignment="Left"
                 Margin="5"
                 Padding="5"
                 VerticalAlignment="Center">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
 
-                            <DataTrigger Binding="{Binding ServiceStatus}"
+                                <DataTrigger Binding="{Binding ServiceStatus}"
                              Value="Running">
-                                <Setter Property="Content"
+                                    <Setter Property="Content"
                             Value="Ferma" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding ServiceStatus}"
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ServiceStatus}"
                              Value="Stopped">
-                                <Setter Property="Content"
+                                    <Setter Property="Content"
                             Value="Avvia" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-            <Button Content="Log"
-                    Command="{Binding OpenLogWindowCommand}"
-                    Grid.Column="4"
-                    Margin="5"/>
-        </Grid>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
 
-        <DataGrid AutoGenerateColumns="false"
+            <DataGrid AutoGenerateColumns="false"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   CanUserResizeColumns="False"
@@ -76,32 +86,78 @@
                   Margin="5"
                   RowHeight="30"
                   VerticalGridLinesBrush="Transparent">
-            <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
-                <DataGridTextColumn Header="Elemento"
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                    <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
-                <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding ElementStatus, Mode=OneWay}"/>
-                <DataGridTextColumn Binding="{Binding SyncStatus, Mode=OneWay}" />
-                <DataGridTemplateColumn>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <ProgressBar Margin="2"
-                                         Cursor="Wait"
-                                         Value="{Binding PhaseProgress, Mode=OneWay}"
-                                         Width="150" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Ultimo Aggiornamento"
+                    <DataGridTextColumn Header="Ultimo Aggiornamento"
                                     Binding="{Binding LastUpdate,
                                                       StringFormat=dd/MM/yyyy HH:mm,
                                                       Mode=OneWay}" />
-                <DataGridTextColumn Header="Prossimo Aggiornamento"
+                    <DataGridTextColumn Header="Prossimo Aggiornamento"
                                     Binding="{Binding NextScheduledUpdate,
                                                       StringFormat=dd/MM/yyyy HH:mm,
-                                                      Mode=OneWay}" />
-            </DataGrid.Columns>
-        </DataGrid>
+                                                      Mode=OneWay}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Column="1"
+              Grid.Row="1">
+            <DataGrid AutoGenerateColumns="false"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="False"
+                  CanUserSortColumns="False"
+                  HorizontalGridLinesBrush="Transparent"
+                  ItemsSource="{Binding ActiveJobs}"
+                  Margin="5"
+                  RowHeight="30"
+                  VerticalGridLinesBrush="Transparent">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Elemento"
+                                    Binding="{Binding Name, Mode=OneWay}" />
+                    <DataGridTextColumn Header="Stato"
+                                    Binding="{Binding ElementStatus, Mode=OneWay}"/>
+                    <DataGridTextColumn Binding="{Binding SyncStatus, Mode=OneWay}" />
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Margin="2"
+                                         Cursor="Wait"
+                                         Value="{Binding PhaseProgress, Mode=OneWay}"
+                                         Width="150" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Column="1"
+              Grid.Row="2">
+            <DataGrid AutoGenerateColumns="false"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="False"
+                  CanUserSortColumns="False"
+                  HorizontalGridLinesBrush="Transparent"
+                  ItemsSource="{Binding ActiveOperations}"
+                  Margin="5"
+                  RowHeight="30"
+                  VerticalGridLinesBrush="Transparent">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Elemento"
+                                    Binding="{Binding Name, Mode=OneWay}" />
+                    <DataGridTextColumn Header="Stato"
+                                    Binding="{Binding Status, Mode=OneWay}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Row="3"
+              Grid.Column="1">
+            <GroupBox Header="Log">
+                <TextBox IsReadOnly="True"
+                         Text="{Binding CurrentLog}"/>
+            </GroupBox>
+        </Grid>
     </Grid>
 </Window>

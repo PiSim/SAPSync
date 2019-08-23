@@ -11,6 +11,8 @@ namespace SAPSync
 {
     public static class SyncLogger
     {
+        public static LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
+
         private static string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
 
         public static void LogSyncError(SyncErrorEventArgs errorEventArgs)
@@ -69,10 +71,12 @@ namespace SAPSync
         public static void NewLogEntry(string[] text)
         {
             CreateLogEntry(text , new FileInfo(Properties.Settings.Default.GeneralLogPath));
+            
         }
 
         private static void CreateLogEntry(IEnumerable<string> lines, FileInfo target)
         {
+            
             try
             {
                 File.AppendAllLines(target.FullName, lines);
@@ -80,6 +84,10 @@ namespace SAPSync
             catch
             {
                 
+            }
+            finally
+            {
+                CurrentLog.AddFirst(string.Concat(lines.Select(l => l + "\n")));
             }
         }
     }

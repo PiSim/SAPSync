@@ -19,11 +19,14 @@ namespace SAPSync
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
         public SSMDReader(Func<Query<T, SSMDContext>> getQueryDelegate = null)
         {
+            ChildrenTasks = new List<Task>();
+
             if (getQueryDelegate != null)
                 GetQueryFunc = getQueryDelegate;
         }
 
         protected virtual Func<Query<T, SSMDContext>> GetQueryFunc { get; } = new Func<Query<T, SSMDContext>>(() => new Query<T, SSMDContext>());
+
 
         protected virtual Query<T, SSMDContext> GetQuery() => GetQueryFunc();
 
@@ -31,6 +34,15 @@ namespace SAPSync
 
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
+
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
         protected virtual void ReadRecords()
         {
             IEnumerable<T> results = RunQuery().ToList();
@@ -65,6 +77,7 @@ namespace SAPSync
         public SSMDReader(Func<IQueryable<TQueried>, IQueryable<TOut>> translatorDelegate,
             Func<Query<TQueried, SSMDContext>> getQueryDelegate = null)
         {
+            ChildrenTasks = new List<Task>();
             TranslatorFunc = translatorDelegate;
             GetQueryFunc = getQueryDelegate;
         }
@@ -74,6 +87,14 @@ namespace SAPSync
 
         protected virtual IQueryable<TOut> RunQuery() => TranslatorFunc(GetSSMDData().RunQuery(GetQueryFunc()));
 
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
         public virtual IEnumerable<TOut> ReadRecords() => RunQuery().ToList();
 
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());

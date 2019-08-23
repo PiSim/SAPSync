@@ -26,6 +26,7 @@ namespace SAPSync
         void OpenReader();
         void StartReadAsync();
         void CloseReader();
+        ICollection<Task> ChildrenTasks { get; }
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
         event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
         event EventHandler ReadCompleted;

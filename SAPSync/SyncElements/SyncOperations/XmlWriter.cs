@@ -60,13 +60,11 @@ namespace SAPSync.SyncElements.SyncOperations
         public XmlWriter(XmlInteractionConfiguration configuration,
             string lastUpdateRangeName = "LastUpdateRange") : base(configuration)
         {
-            
+            Records = new List<T>();
         }
 
         public string LastUpdateRangeName { get; }
-
-        public ICollection<Task> ChildrenTasks => throw new NotImplementedException();
-
+        
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
         
         #region Methods
@@ -133,13 +131,12 @@ namespace SAPSync.SyncElements.SyncOperations
             ErrorRaised?.Invoke(this, args);
         }
 
-        public virtual void WriteRecords(IEnumerable<T> records)
+        public virtual void Commit()
         {
             CreateBackup();
-            IEnumerable<TDto> exportDtos = GetDtosFromEntities(records);
+            IEnumerable<TDto> exportDtos = GetDtosFromEntities(Records);
             WriteToOrigin(exportDtos);
         }
-
 
 
         protected virtual TDto GetDtoFromEntity(T entity)
@@ -151,7 +148,7 @@ namespace SAPSync.SyncElements.SyncOperations
 
         public virtual void Clear()
         {
-
+            Records.Clear();
         }
 
         protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
@@ -170,8 +167,12 @@ namespace SAPSync.SyncElements.SyncOperations
             if (xlWorkbook.Names.ContainsKey(Configuration.UpdateTimeRangeName))
                 xlWorkbook.Names[Configuration.UpdateTimeRangeName].Value = DateTime.Now;
         }
+        
+        public void OpenWriter()
+        {
+        }
 
-        protected virtual void WriteToOrigin(IEnumerable<TDto> dtos)
+        public void WriteToOrigin(IEnumerable<TDto> dtos)
         {
             using (ExcelPackage xlPackage = new ExcelPackage(Configuration.TargetPath))
             {
@@ -213,29 +214,18 @@ namespace SAPSync.SyncElements.SyncOperations
             }
         }
 
-        public void OpenWriter()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Commit()
-        {
-            throw new NotImplementedException();
-        }
-
         public void CloseWriter()
         {
-            throw new NotImplementedException();
+            Clear();
         }
 
-        public void WriteRecordsAsync(IEnumerable<T> records)
-        {
-            throw new NotImplementedException();
-        }
+        protected List<T> Records { get; set; }
+
+        public async void WriteRecordsAsync(IEnumerable<T> records) => await StartChildTask(() => WriteRecords(records));
+        public void WriteRecords(IEnumerable<T> records) => Records.AddRange(records);
 
         public void OpenWriterAsync()
         {
-            throw new NotImplementedException();
         }
 
         #endregion Methods
