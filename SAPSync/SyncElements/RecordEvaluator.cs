@@ -262,6 +262,7 @@ namespace SAPSync.SyncElements
         public IEnumerable<T> RecordsToDelete => _recordsToDelete;
         public IEnumerable<T> RecordsToInsert => _recordsToInsert;
         public IEnumerable<T> RecordsToUpdate => _recordsToUpdate;
+        public bool IsCommitted { get; set; } = false;
 
         #endregion Properties
     }

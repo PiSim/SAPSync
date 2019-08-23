@@ -78,6 +78,16 @@ namespace SAPSync.RFCFunctions
 
         public async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
+        public void OpenReader()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CloseReader()
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion Methods
     }
 }

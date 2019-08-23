@@ -9,7 +9,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadConfirmations()
+        public ReadConfirmations() : base()
         {
             _separator = new char[] { '|' };
             _tableName = "AFRU";

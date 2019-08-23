@@ -7,7 +7,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadOrderComponents()
+        public ReadOrderComponents() : base()
         {
             _tableName = "RESB";
 

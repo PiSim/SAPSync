@@ -1,6 +1,7 @@
 ﻿using DataAccessCore;
 using DataAccessCore.Commands;
 using Microsoft.EntityFrameworkCore;
+using SAPSync.Infrastructure;
 using SSMD;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,9 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 
         private SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
 
-        public override void Start()
+        public override void Start(ISubJob newJob)
         {
+            base.Start(newJob);
             List<Order> trialRecords = GetSSMDData().RunQuery(new Query<Order, SSMDContext>()).Where(ord => ord.OrderType[0] == 'Z').ToList();
             IDictionary<int, WorkPhaseLabData> workPhaseDataIndex = GetSSMDData().RunQuery(new Query<WorkPhaseLabData, SSMDContext>()).ToDictionary(wpld => wpld.OrderNumber, wpld => wpld);
 

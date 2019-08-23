@@ -13,12 +13,14 @@ namespace SAPSync.SyncElements.SyncOperations
     public class SyncData<T> : SyncOperationBase  where T : class
     {
         public SyncData(IRecordReader<T> recordReader,
-            IRecordWriter<T> recordWriter)
+            IRecordWriter<T> recordWriter) : base()
         {
             RecordWriter = recordWriter;
             RecordReader = recordReader;
             RecordWriter.ErrorRaised += OnErrorRaised;
             RecordReader.ErrorRaised += OnErrorRaised;
+            RecordReader.RecordPacketCompleted += OnReaderPacketComplete;
+            RecordReader.ReadCompleted += OnReadCompleteAsync;
         }
 
         protected virtual void OnErrorRaised(object sender, SyncErrorEventArgs e)
@@ -32,20 +34,27 @@ namespace SAPSync.SyncElements.SyncOperations
 
         public IRecordReader<T> RecordReader { get; }
 
-        public async override void Start()
+        public override void Start(ISubJob newJob)
         {
-            base.Start();
-            await Task.Run(() => RecordReader.StartReadAsync());
+            base.Start(newJob);
+            RecordReader.OpenReader();
+            RecordWriter.OpenWriterAsync();
+            RecordReader.StartReadAsync();
         }
 
-        protected async virtual void OnReaderPacketCompleteAsync(object sender, RecordPacketCompletedEventArgs<T> e)
+        protected virtual void OnReaderPacketComplete(object sender, RecordPacketCompletedEventArgs<T> e) => RecordWriter.WriteRecordsAsync(e.Packet);
+        
+        protected async virtual void OnReadCompleteAsync(object sender, EventArgs e)
         {
-            await Task.Run(() => RecordWriter.WriteRecords(e.Packet));
-            if (e.IsFinal)
-            {
-                RecordWriter.Clear();
-                RaiseOperationCompleted();
-            }
-        }        
+            RecordReader.CloseReader();
+            await Task.Run(() => Task.WaitAll(RecordWriter.ChildrenTasks.ToArray()));
+            CloseJob();
+        }
+
+        protected override void CloseJob()
+        {
+            RecordWriter.CloseWriter();
+            base.CloseJob();
+        }
     }
 }

@@ -19,6 +19,8 @@ namespace SAPSync.SyncElements.SyncOperations
         }
 
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+        public event EventHandler ReadCompleted;
 
         #endregion Constructors
 
@@ -89,6 +91,14 @@ namespace SAPSync.SyncElements.SyncOperations
 
             return output;
         }
+        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+
 
         protected virtual T GetEntityFromDto(TDto dto)
         {
@@ -122,24 +132,43 @@ namespace SAPSync.SyncElements.SyncOperations
             return output;
         }
 
-        public virtual IEnumerable<T> ReadRecords()
+        public virtual void ReadRecords()
         {
             try
             {
                 IEnumerable<TDto> importedDtos = ReadFromOrigin();
 
-                return ConvertDtos(importedDtos);
+                IEnumerable<T> records = ConvertDtos(importedDtos);
+                RaisePacketCompleted(records);
             }
             catch (Exception e)
             {
                 RaiseReadError(e, "Errore di lettura del file");
-                return null;
+            }
+            finally
+            {
+                RaiseReadCompleted();
             }
         }
         
         protected virtual void RaiseReadError(Exception e , string message = null)
         {
             ErrorRaised?.Invoke(this, new SyncErrorEventArgs());
+        }
+
+        public void StartReadAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenReader()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CloseReader()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion Methods

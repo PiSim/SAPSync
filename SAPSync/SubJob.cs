@@ -13,6 +13,7 @@ namespace SAPSync
         {
             Status = JobStatus.OnQueue;
             TargetElement = targetElement;
+            Dependencies = new List<ISubJob>();
         }
         
         public IDictionary<Type, object> Resources { get; }

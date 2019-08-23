@@ -7,7 +7,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadMaterials()
+        public ReadMaterials() : base()
         {
             _tableName = "MARA";
             _fields = new string[]

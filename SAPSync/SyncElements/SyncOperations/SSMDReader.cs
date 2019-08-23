@@ -13,6 +13,8 @@ namespace SAPSync
     public class SSMDReader<T> : IRecordReader<T> where T:class
     {
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+        public event EventHandler ReadCompleted;
 
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
         public SSMDReader(Func<Query<T, SSMDContext>> getQueryDelegate = null)
@@ -27,12 +29,36 @@ namespace SAPSync
 
         protected virtual IQueryable<T> RunQuery() => GetSSMDData().RunQuery(GetQuery());
 
-        public virtual IEnumerable<T> ReadRecords() => RunQuery().ToList();
+        public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
+
+        protected virtual void ReadRecords()
+        {
+            IEnumerable<T> results = RunQuery().ToList();
+            RaisePacketCompleted(results);
+            RaiseReadCompleted();
+        }
+
+        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+        public void OpenReader()
+        {
+        }
+
+        public void CloseReader()
+        {
+        }
     }
 
     public class SSMDReader<TQueried, TOut> : IRecordReader<TOut> where TQueried : class
     {
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+        public event EventHandler<RecordPacketCompletedEventArgs<TOut>> RecordPacketCompleted;
+        public event EventHandler ReadCompleted;
 
         protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
 
@@ -49,6 +75,23 @@ namespace SAPSync
         protected virtual IQueryable<TOut> RunQuery() => TranslatorFunc(GetSSMDData().RunQuery(GetQueryFunc()));
 
         public virtual IEnumerable<TOut> ReadRecords() => RunQuery().ToList();
+
+        public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
+
+        protected virtual void RaisePacketCompleted(IEnumerable<TOut> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<TOut>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+        public void OpenReader()
+        {
+        }
+
+        public void CloseReader()
+        {
+        }
     }
-    
+
 }

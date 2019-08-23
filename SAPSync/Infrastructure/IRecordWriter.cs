@@ -9,8 +9,13 @@ namespace SAPSync
 {
     public interface IRecordWriter<T>  where T : class
     {
+        void OpenWriter();
+        void OpenWriterAsync();
         void WriteRecords(IEnumerable<T> records);
+        void WriteRecordsAsync(IEnumerable<T> records);
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
-        void Clear();
+        ICollection<Task> ChildrenTasks { get; }
+        void Commit();
+        void CloseWriter();
     }
 }

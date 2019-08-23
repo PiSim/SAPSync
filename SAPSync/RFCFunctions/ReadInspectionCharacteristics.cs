@@ -7,7 +7,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadInspectionCharacteristics()
+        public ReadInspectionCharacteristics() : base()
         {
             _tableName = "QPMK";
             _fields = new string[]

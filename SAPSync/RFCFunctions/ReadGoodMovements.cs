@@ -10,7 +10,7 @@ namespace SAPSync.RFCFunctions
 {
     public class ReadGoodMovements : ReadTableBase<GoodMovement>
     {
-        public ReadGoodMovements()
+        public ReadGoodMovements() : base()
         {
             _tableName = "MSEG";
 

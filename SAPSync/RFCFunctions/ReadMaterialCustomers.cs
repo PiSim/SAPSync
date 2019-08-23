@@ -6,7 +6,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadMaterialCustomers()
+        public ReadMaterialCustomers() : base()
         {
             _tableName = "KNMT";
             _fields = new string[]

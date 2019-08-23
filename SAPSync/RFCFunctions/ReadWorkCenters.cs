@@ -7,7 +7,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadWorkCenters()
+        public ReadWorkCenters() : base()
         {
             _tableName = "CRHD";
             _fields = new string[]

@@ -9,7 +9,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadInspectionPoints()
+        public ReadInspectionPoints() : base()
         {
             _tableName = "QASR";
             _fields = new string[]

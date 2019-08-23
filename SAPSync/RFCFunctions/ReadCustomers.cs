@@ -6,7 +6,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadCustomers()
+        public ReadCustomers() : base()
         {
             _tableName = "KNA1";
 

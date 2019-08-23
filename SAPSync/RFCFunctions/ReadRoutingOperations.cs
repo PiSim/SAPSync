@@ -6,7 +6,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadRoutingOperations()
+        public ReadRoutingOperations() : base()
         {
             _tableName = "AFVC";
 

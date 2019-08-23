@@ -60,10 +60,18 @@ namespace SAPSync.SyncElements
 
     public abstract class SyncOperationBase : ISyncOperation
     {
+        public SyncOperationBase()
+        {
+            ChildrenTasks = new List<Task>();
+        }
+
         public abstract string Name { get; }
         public Task CurrentTask { get; protected set; }
         public virtual bool ForceProcessCompletion => true;
         public ISyncElement ParentElement { get; protected set; }
+
+        public ISubJob CurrentJob { get; protected set; }
+
         public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
 
         public event EventHandler OperationCompleted;
@@ -73,32 +81,25 @@ namespace SAPSync.SyncElements
             OperationCompleted?.Invoke(this, new EventArgs());
         }
 
+
         public virtual void SetParent (ISyncElement syncElement)
         {
             ParentElement = syncElement;
         }
-
-        public virtual void Start()
+        
+        public virtual void Start(ISubJob newJob)
         {
-            try
-            {
-                LoadResources();
-                CheckResourcesLoaded();
-            }
-            catch
-            {
-                throw new Exception("Failed Loading Resources");
-            }
+            OpenJob(newJob);
         }
 
-        public virtual async void StartAsync()
+        public virtual async void StartAsync(ISubJob newJob)
         {
-            await Task.Run(() => Start());
+            await Task.Run(() => Start(newJob));
         }
 
         public virtual void LoadResources()
         {
-            if (ParentElement.CurrentJob == null)
+            if (CurrentJob == null)
                 throw new InvalidOperationException("No open Job");
         }
 
@@ -106,8 +107,7 @@ namespace SAPSync.SyncElements
         {
 
         }
-
-
+        
         protected virtual void RaiseSyncError(
             Exception e = null,
             string errorMessage = null,
@@ -124,6 +124,41 @@ namespace SAPSync.SyncElements
             };
 
             SyncErrorRaised?.Invoke(this, args);
+        }
+
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
+        protected virtual void OpenJob(ISubJob newJob)
+        {
+            CurrentJob = newJob;
+
+            try
+            {
+                LoadResources();
+                CheckResourcesLoaded();
+            }
+            catch
+            {
+                throw new Exception("Failed Loading Resources");
+            }
+        }
+
+        protected virtual void CloseJob()
+        {
+            CurrentJob = null;
+            RaiseOperationCompleted();
+            Clear();
+        }
+
+        protected virtual void Clear()
+        {
+            ChildrenTasks.Clear();
         }
     }
 

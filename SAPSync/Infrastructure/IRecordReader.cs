@@ -23,7 +23,9 @@ namespace SAPSync
 
     public interface IRecordReader<T>
     {
+        void OpenReader();
         void StartReadAsync();
+        void CloseReader();
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
         event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
         event EventHandler ReadCompleted;

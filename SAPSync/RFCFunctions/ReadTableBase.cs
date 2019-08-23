@@ -24,6 +24,12 @@ namespace SAPSync.RFCFunctions
 
         #endregion Fields
 
+        public ReadTableBase()
+        {
+
+            ChildrenTasks = new List<Task>();
+        }
+
         #region Properties
 
         public ReadTableBatchingOptions BatchingOptions { get; set; }
@@ -31,6 +37,15 @@ namespace SAPSync.RFCFunctions
         #endregion Properties
 
         #region Methods
+
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+        public ICollection<Task> ChildrenTasks { get; }
 
         protected virtual void RaisePacketCompleted(IEnumerable<T> records)
         {
@@ -60,7 +75,7 @@ namespace SAPSync.RFCFunctions
             RaiseReadCompleted();       
         }
 
-        public async Task InvokeAsync(RfcDestination rfcDestination) => await Task.Run(() => Invoke(rfcDestination));
+        public async Task InvokeAsync(RfcDestination rfcDestination) => await StartChildTask(() => Invoke(rfcDestination));
 
         internal virtual T ConvertDataArray(string[] data) => default(T);
 
@@ -199,6 +214,14 @@ namespace SAPSync.RFCFunctions
         }
 
         public async void StartReadAsync() => await Task.Run(() => Invoke((new SAPReader()).GetRfcDestination()));
+
+        public void OpenReader()
+        {
+        }
+
+        public void CloseReader()
+        {
+        }
 
 
         #endregion Methods

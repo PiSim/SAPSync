@@ -31,8 +31,7 @@ namespace SAPSync
 
         public Task GetAwaiterForActiveOperations() => Task.WhenAll(
             ActiveJobs.SelectMany(sts => sts.SubJobs)
-                .SelectMany(sjb => sjb.Operations)
-                .Select(uow => uow.CurrentTask)
+                .Select(sjb => sjb.CurrentTask)
                 .ToList());
         
         protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)

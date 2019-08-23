@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
@@ -63,6 +64,8 @@ namespace SAPSync.SyncElements.SyncOperations
         }
 
         public string LastUpdateRangeName { get; }
+
+        public ICollection<Task> ChildrenTasks => throw new NotImplementedException();
 
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
         
@@ -146,6 +149,11 @@ namespace SAPSync.SyncElements.SyncOperations
             return output;
         }
 
+        public virtual void Clear()
+        {
+
+        }
+
         protected virtual IEnumerable<TDto> GetDtosFromEntities(IEnumerable<T> records) => records.Select(rec => GetDtoFromEntity(rec)).ToList();
                
         protected virtual IEnumerable<ModifyRangeToken> GetRangesToModify()
@@ -203,6 +211,31 @@ namespace SAPSync.SyncElements.SyncOperations
 
                 xlPackage.SaveAs(Configuration.TargetPath);
             }
+        }
+
+        public void OpenWriter()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Commit()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CloseWriter()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteRecordsAsync(IEnumerable<T> records)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenWriterAsync()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion Methods

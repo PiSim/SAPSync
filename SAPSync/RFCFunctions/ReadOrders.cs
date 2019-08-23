@@ -6,7 +6,7 @@ namespace SAPSync.RFCFunctions
     {
         #region Constructors
 
-        public ReadOrders()
+        public ReadOrders() : base()
         {
             _tableName = "AUFK";
 

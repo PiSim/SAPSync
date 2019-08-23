@@ -51,14 +51,12 @@ namespace SAPSync.SyncElements
 
         protected virtual void StartNextOperation()
         {
+            OperationEnumerator.MoveNext();
             if (OperationEnumerator.Current == null)
                 FinalizeSync();
 
             else
-            {
-                OperationEnumerator.Current.StartAsync();
-                OperationEnumerator.MoveNext();
-            }
+                OperationEnumerator.Current.StartAsync(CurrentJob);
         }
 
         #endregion Methods
