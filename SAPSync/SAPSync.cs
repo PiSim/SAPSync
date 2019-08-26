@@ -10,8 +10,6 @@ namespace SAPSync
     {
         #region Constructors
 
-        public TimeSpan UpdateTimeSlack { get; protected set; } = new TimeSpan(0, 15, 0);
-
         public SyncService(ISyncManager syncManager)
         {
             SyncManager = syncManager;
@@ -31,9 +29,9 @@ namespace SAPSync
         #region Properties
 
         public Timer CurrentTimer { get; set; }
-
         public ServiceControllerStatus Status { get; set; } = ServiceControllerStatus.Stopped;
         public ISyncManager SyncManager { get; private set; }
+        public TimeSpan UpdateTimeSlack { get; protected set; } = new TimeSpan(0, 15, 0);
 
         #endregion Properties
 
@@ -42,6 +40,18 @@ namespace SAPSync
         public void Start()
         {
             OnStart(new string[] { });
+        }
+
+        protected virtual DateTime CalculateTimeForNextUpdate(IEnumerable<DateTime?> updateSchedule)
+        {
+            if (updateSchedule.Count() == 0)
+                return DateTime.Now;
+            else
+            {
+                DateTime? baseTime = updateSchedule.Min();
+                DateTime? output = updateSchedule.Where(tmg => tmg <= (baseTime + UpdateTimeSlack)).Max();
+                return output ?? DateTime.Now;
+            }
         }
 
         protected override void OnStart(string[] args)
@@ -75,29 +85,12 @@ namespace SAPSync
         {
             CurrentTimer = new Timer(new TimerCallback(RunUpdate));
 
-
-
             DateTime timeOfNextUpdate = CalculateTimeForNextUpdate(SyncManager.GetUpdateSchedule());
             TimeSpan timeToNextUpdate = (timeOfNextUpdate <= DateTime.Now) ? new TimeSpan(0) : new TimeSpan(timeOfNextUpdate.Ticks - DateTime.Now.Ticks);
 
             CurrentTimer.Change(timeToNextUpdate, Timeout.InfiniteTimeSpan);
 
             SyncLogger.LogTaskScheduled(timeOfNextUpdate);
-        }
-
-
-        protected virtual DateTime CalculateTimeForNextUpdate(IEnumerable<DateTime?> updateSchedule)
-        {
-            if (updateSchedule.Count() == 0)
-                return DateTime.Now;
-
-            else
-            {
-                DateTime? baseTime = updateSchedule.Min();
-                DateTime? output = updateSchedule.Where(tmg => tmg <= (baseTime + UpdateTimeSlack)).Max();
-                return output ?? DateTime.Now;
-            }
-
         }
 
         private void OnSyncCompleted(object sender, EventArgs e)

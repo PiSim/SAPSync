@@ -16,12 +16,11 @@ namespace SSMD
         #region Properties
 
         public string Description { get; set; }
+        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
         public int ID { get; set; }
 
         public string Name { get; set; }
         public virtual ICollection<OrderComponent> OrderComponents { get; set; }
-
-        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
 
         #endregion Properties
     }

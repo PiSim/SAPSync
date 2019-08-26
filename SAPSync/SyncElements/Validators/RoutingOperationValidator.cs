@@ -1,8 +1,8 @@
 ﻿using DataAccessCore;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using System.Collections.Generic;
 using System.Linq;
-using SAPSync.SyncElements.Validators;
 
 namespace SAPSync.SyncElements
 {

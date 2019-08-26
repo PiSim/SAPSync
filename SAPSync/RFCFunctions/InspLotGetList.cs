@@ -1,10 +1,9 @@
-﻿using System;
+﻿using SAP.Middleware.Connector;
+using SAPSync.Infrastructure;
+using SSMD;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SAP.Middleware.Connector;
-using SAPSync.Infrastructure;
-using SAPSync.SyncElements;
-using SSMD;
 
 namespace SAPSync.RFCFunctions
 {
@@ -19,12 +18,51 @@ namespace SAPSync.RFCFunctions
             ChildrenTasks = new List<Task>();
         }
 
+        #endregion Constructors
+
+        #region Events
+
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
-        public event EventHandler<RecordPacketCompletedEventArgs<InspectionLot>> RecordPacketCompleted;
+
         public event EventHandler ReadCompleted;
 
+        public event EventHandler<RecordPacketCompletedEventArgs<InspectionLot>> RecordPacketCompleted;
+
+        #endregion Events
+
+        #region Properties
+
+        public ICollection<Task> ChildrenTasks { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public void CloseReader()
+        {
+        }
+
+        public void OpenReader()
+        {
+        }
+
+        public async void StartReadAsync() => await Task.Run(() => ReadRecords());
+
+        protected override void InitializeParameters()
+        {
+            base.InitializeParameters();
+            _rfcFunction.SetValue("max_rows", 99999999);
+        }
+
+        protected virtual void RaisePacketCompleted(IEnumerable<InspectionLot> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<InspectionLot>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
         protected void ReadRecords()
-        { 
+        {
             IEnumerable<InspectionLot> records = ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
             RaisePacketCompleted(records);
             RaiseReadCompleted();
@@ -37,14 +75,6 @@ namespace SAPSync.RFCFunctions
             newTask.Start();
             return newTask;
         }
-        public ICollection<Task> ChildrenTasks { get; }
-        protected virtual void RaisePacketCompleted(IEnumerable<InspectionLot> records)
-        {
-            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<InspectionLot>(records));
-        }
-
-        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
-
 
         private List<InspectionLot> ConvertInspectionLotTable(IRfcTable materialTable)
         {
@@ -73,26 +103,6 @@ namespace SAPSync.RFCFunctions
             }
 
             return output;
-        }
-
-        #endregion Constructors
-
-        #region Methods
-
-        protected override void InitializeParameters()
-        {
-            base.InitializeParameters();
-            _rfcFunction.SetValue("max_rows", 99999999);
-        }
-
-        public async void StartReadAsync() => await Task.Run(() => ReadRecords());
-
-        public void OpenReader()
-        {
-        }
-
-        public void CloseReader()
-        {
         }
 
         #endregion Methods

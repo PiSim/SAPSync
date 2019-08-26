@@ -4,50 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations.Dto
 {
     public class TestReportDto : DtoBase<TestReport>
     {
+        #region Constructors
+
         public TestReportDto()
         {
-
         }
 
-        public override void SetValues(TestReport testReport)
-        {
-            base.SetValues(testReport);
-            MaterialCode = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
-            OrderType = testReport.Order?.OrderType;
-            PlannedOrderQuantity = testReport.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
-            ColorName = testReport.Order?.OrderData?.FirstOrDefault().Material?.ColorComponent?.Description?.Replace("SKIN", "");
-            Structure = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialFamily?.L1?.Code;
-            TrialScope = testReport.Order?.WorkPhaseLabData?.FirstOrDefault().TrialScope;
-            PCA = testReport.Order?.OrderData?.FirstOrDefault().Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
-            Customer = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
-            ControlPlan = testReport.Order?.OrderData?.FirstOrDefault().Material?.ControlPlan;
-
-            IEnumerable<InspectionPoint> thicknessPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPE"));
-            IEnumerable<InspectionPoint> weightPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
-
-            EmbossingavgThickness = (thicknessPoints != null && thicknessPoints.Count() != 0) ? thicknessPoints.Average(inp => inp.AvgValue) : new double?();
-            EmbossingAvgWeight = (weightPoints != null && weightPoints.Count() != 0) ? weightPoints.Average(inp => inp.AvgValue) : new double?();
-
-        }
-
-        protected Color GetColor(ExcelColor col)
-        {
-            string argb = col.Rgb;
-            return Color.FromArgb(
-                Convert.ToInt32(argb.Substring(0, 2), 16),
-                Convert.ToInt32(argb.Substring(2, 2), 16),
-                Convert.ToInt32(argb.Substring(4, 2), 16),
-                Convert.ToInt32(argb.Substring(6, 2), 16)
-                );
-        }
+        #endregion Constructors
 
         #region Properties
 
@@ -67,7 +36,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => BreakingElongationLFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(28), Imported, Value, Exported]
         public double? BreakingElongationT { get; set; }
 
@@ -83,7 +51,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(BreakingElongationTFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => BreakingElongationTFontColorEX = value ? Color.Black : Color.Red;
         }
-
 
         [Column(25), Imported, Value, Exported]
         public double? BreakingLoadL { get; set; }
@@ -101,7 +68,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => BreakingLoadLFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(26), Imported, Value, Exported]
         public double? BreakingLoadT { get; set; }
 
@@ -118,7 +84,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => BreakingLoadTFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(19), Imported, Value, Exported]
         public string ColorJudgement { get; set; }
 
@@ -134,7 +99,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(ColorJudgementFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => ColorJudgementFontColorEX = (value) ? Color.Black : Color.Red;
         }
-
 
         [Column(7), Value, Exported]
         public string ColorName { get; set; }
@@ -161,7 +125,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => DetachForceLFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(24), Imported, Value, Exported]
         public double? DetachForceT { get; set; }
 
@@ -177,7 +140,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(DetachForceTFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => DetachForceTFontColorEX = (value) ? Color.Black : Color.Red;
         }
-
 
         [Column(16), Value, Exported]
         public double? EmbossingavgThickness { get; set; }
@@ -201,7 +163,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => FlammabilityEvaluationFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(20), Imported, Value, Exported]
         public double? Gloss { get; set; }
 
@@ -218,7 +179,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => GlossFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(21), Imported, Value, Exported]
         public double? GlossZ { get; set; }
 
@@ -234,7 +194,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(GlossZFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => GlossZFontColorEX = (value) ? Color.Black : Color.Red;
         }
-
 
         [Column(3), Value, Exported]
         public string MaterialCode { get; set; }
@@ -272,7 +231,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(OtherTestsFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => OtherTestsFontColorEX = (value) ? Color.Black : Color.Red;
         }
-
 
         [Column(11), Value, Exported]
         public string PCA { get; set; }
@@ -312,7 +270,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => SetTFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(29), Imported, Value, Exported]
         public double? StretchL { get; set; }
 
@@ -329,7 +286,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => StretchLFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(30), Imported, Value, Exported]
         public double? StretchT { get; set; }
 
@@ -345,7 +301,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
                 GetColor(StretchTFontColorIN).ToArgb() == Color.Black.ToArgb();
             set => StretchTFontColorEX = (value) ? Color.Black : Color.Red;
         }
-
 
         [Column(8), Value, Exported]
         public string Structure { get; set; }
@@ -366,7 +321,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => ThicknessFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         [Column(9), Value, Exported]
         public string TrialScope { get; set; }
 
@@ -386,7 +340,41 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
             set => WeightFontColorEX = (value) ? Color.Black : Color.Red;
         }
 
-
         #endregion Properties
+
+        #region Methods
+
+        public override void SetValues(TestReport testReport)
+        {
+            base.SetValues(testReport);
+            MaterialCode = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
+            OrderType = testReport.Order?.OrderType;
+            PlannedOrderQuantity = testReport.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
+            ColorName = testReport.Order?.OrderData?.FirstOrDefault().Material?.ColorComponent?.Description?.Replace("SKIN", "");
+            Structure = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialFamily?.L1?.Code;
+            TrialScope = testReport.Order?.WorkPhaseLabData?.FirstOrDefault().TrialScope;
+            PCA = testReport.Order?.OrderData?.FirstOrDefault().Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
+            Customer = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
+            ControlPlan = testReport.Order?.OrderData?.FirstOrDefault().Material?.ControlPlan;
+
+            IEnumerable<InspectionPoint> thicknessPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPE"));
+            IEnumerable<InspectionPoint> weightPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
+
+            EmbossingavgThickness = (thicknessPoints != null && thicknessPoints.Count() != 0) ? thicknessPoints.Average(inp => inp.AvgValue) : new double?();
+            EmbossingAvgWeight = (weightPoints != null && weightPoints.Count() != 0) ? weightPoints.Average(inp => inp.AvgValue) : new double?();
+        }
+
+        protected Color GetColor(ExcelColor col)
+        {
+            string argb = col.Rgb;
+            return Color.FromArgb(
+                Convert.ToInt32(argb.Substring(0, 2), 16),
+                Convert.ToInt32(argb.Substring(2, 2), 16),
+                Convert.ToInt32(argb.Substring(4, 2), 16),
+                Convert.ToInt32(argb.Substring(6, 2), 16)
+                );
+        }
+
+        #endregion Methods
     }
 }

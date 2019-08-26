@@ -3,30 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
-
-
     public abstract class XmlInteraction<T, TDto> where T : class where TDto : class, IXmlDto<T>, new()
     {
+        #region Constructors
+
         public XmlInteraction(XmlInteractionConfiguration configuration)
         {
             Configuration = configuration;
             ChildrenTasks = new List<Task>();
         }
 
+        #endregion Constructors
 
-        protected virtual Task StartChildTask(Action action)
-        {
-            Task newTask = new Task(action);
-            ChildrenTasks.Add(newTask);
-            newTask.Start();
-            return newTask;
-        }
+        #region Properties
+
         public ICollection<Task> ChildrenTasks { get; }
+
+        public XmlInteractionConfiguration Configuration { get; }
+
+        #endregion Properties
+
+        #region Methods
+
         protected virtual IEnumerable<DtoProperty> GetDtoColumns()
         {
             return typeof(TDto)
@@ -38,6 +40,7 @@ namespace SAPSync.SyncElements.SyncOperations
                     ColumnIndex = p.GetCustomAttributes<Column>().First().ColumnIndex
                 }).ToList();
         }
+
         protected virtual IEnumerable<DtoProperty> GetDtoColumns(Type[] types)
         {
             return typeof(TDto)
@@ -54,7 +57,7 @@ namespace SAPSync.SyncElements.SyncOperations
         protected virtual ExcelRangeBase GetMainRange(ExcelWorkbook xlWorkbook)
         {
             ExcelWorksheet xlWorksheet = xlWorkbook.Worksheets[Configuration.WorksheetName] ?? throw new ArgumentException("Il Foglio specificato non esiste");
-            int maxcol = GetDtoColumns(new Type[] { typeof(Value), typeof(Exported) }).Select(co=> co.ColumnIndex).Max();
+            int maxcol = GetDtoColumns(new Type[] { typeof(Value), typeof(Exported) }).Select(co => co.ColumnIndex).Max();
             return xlWorksheet.Cells[Configuration.StartRow, 1, xlWorksheet.Cells.Rows, maxcol];
         }
 
@@ -71,6 +74,14 @@ namespace SAPSync.SyncElements.SyncOperations
             return output;
         }
 
-        public XmlInteractionConfiguration Configuration { get; }
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
+        }
+
+        #endregion Methods
     }
 }

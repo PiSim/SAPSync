@@ -1,24 +1,27 @@
-﻿using SAPSync.RFCFunctions;
+﻿using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SAPSync.SyncElements.Validators;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionPointEvaluator : RecordEvaluator<InspectionPoint, Tuple<long, int, int, int>>
     {
+        #region Constructors
+
         public InspectionPointEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<InspectionPoint> GetRecordValidator() => new InspectionPointValidator();
-        
         protected override Tuple<long, int, int, int> GetIndexKey(InspectionPoint record) => record.GetPrimaryKey();
+
+        protected override IRecordValidator<InspectionPoint> GetRecordValidator() => new InspectionPointValidator();
 
         #endregion Methods
     }
@@ -46,5 +49,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

@@ -1,26 +1,91 @@
-﻿using SSMD;
-using SAPSync;
+﻿using DataAccessCore;
+using DataAccessCore.Commands;
+using SAPSync.Infrastructure;
+using SSMD;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SAPSync.Infrastructure;
-using DataAccessCore;
-using DataAccessCore.Commands;
 
 namespace SAPSync.SyncElements
 {
-
     public abstract class SyncElementBase : ISyncElement
     {
+        #region Constructors
+
         public SyncElementBase(string name = "", SyncElementConfiguration configuration = null)
         {
             Name = name;
             Configuration = configuration ?? new SyncElementConfiguration();
             ReadElementData();
             Dependencies = new List<ISyncElement>();
+        }
+
+        #endregion Constructors
+
+        #region Events
+
+        public event EventHandler ElementCompleted;
+
+        public event EventHandler ElementStarting;
+
+        #endregion Events
+
+        #region Properties
+
+        public SyncElementConfiguration Configuration { get; private set; }
+
+        public ISubJob CurrentJob { get; protected set; }
+
+        public ICollection<ISyncElement> Dependencies { get; }
+
+        public SyncElementData ElementData { get; protected set; }
+
+        public bool IsUpForScheduledUpdate => NextScheduledUpdate <= DateTime.Now;
+
+        public DateTime? LastUpdate => ElementData?.LastUpdate;
+
+        public virtual string Name { get; }
+
+        public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
+
+        protected SSMDData SSMDData => new SSMDData(new SSMDContextFactory());
+
+        #endregion Properties
+
+        #region Methods
+
+        public virtual void Execute(ISubJob newJob)
+        {
+            OpenJob(newJob);
+        }
+
+        protected virtual void CloseJob()
+        {
+            CurrentJob.Complete();
+            CurrentJob = null;
+        }
+
+        protected virtual void FinalizeSync()
+        {
+            CloseJob();
+            ElementData.LastUpdate = DateTime.Now;
+            try
+            {
+                SaveElementData();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Impossibile salvare ElementData: " + e.Message, e);
+            }
+        }
+
+        protected virtual DateTime GetNextScheduledUpdate() => ((DateTime)LastUpdate).AddHours(ElementData.UpdateInterval);
+
+        protected virtual void OpenJob(ISubJob newJob)
+        {
+            if (CurrentJob != null)
+                throw new InvalidOperationException("Another Job is already open");
+            CurrentJob = newJob;
         }
 
         protected virtual void ReadElementData()
@@ -39,58 +104,6 @@ namespace SAPSync.SyncElements
             SSMDData.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
         }
 
-        protected SSMDData SSMDData => new SSMDData(new SSMDContextFactory());
-
-        public event EventHandler ElementStarting;
-        public event EventHandler ElementCompleted;
-
-        public virtual string Name { get; }
-        public ISubJob CurrentJob { get; protected set; }
-
-        public SyncElementConfiguration Configuration { get; private set; }
-        public SyncElementData ElementData { get; protected set; }
-
-        public bool IsUpForScheduledUpdate => NextScheduledUpdate <= DateTime.Now;
-
-        public DateTime? LastUpdate => ElementData?.LastUpdate;
-
-        public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
-
-        public ICollection<ISyncElement> Dependencies { get; }
-
-        protected virtual DateTime GetNextScheduledUpdate() => ((DateTime)LastUpdate).AddHours(ElementData.UpdateInterval);
-
-        protected virtual void OpenJob(ISubJob newJob)
-        {
-
-            if (CurrentJob != null)
-                throw new InvalidOperationException("Another Job is already open");
-            CurrentJob = newJob;
-        }
-
-        protected virtual void CloseJob()
-        {
-            CurrentJob.Complete();
-            CurrentJob = null;
-        }
-
-        public virtual void Execute(ISubJob newJob)
-        {
-            OpenJob(newJob);
-        }
-
-        protected virtual void FinalizeSync()
-        {
-            CloseJob();
-            ElementData.LastUpdate = DateTime.Now;
-            try
-            {
-                SaveElementData();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Impossibile salvare ElementData: " + e.Message, e);
-            }
-        }
+        #endregion Methods
     }
 }

@@ -1,32 +1,27 @@
-﻿using DataAccessCore;
-using DataAccessCore.Commands;
-using SSMD;
-using SAPSync;
-using System;
+﻿using SAPSync.Infrastructure;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements
 {
     public class OperationAggregator : SyncElementBase
     {
+        #region Constructors
 
         public OperationAggregator(string name = "", SyncElementConfiguration configuration = null) : base(name, configuration)
         {
         }
 
-        #region Methods
+        #endregion Constructors
 
-        public virtual OperationAggregator HasOperation(ISyncOperation newOperation)
-        {
-            Operations.Add(newOperation);
-            newOperation.SetParent(this);
-            return this;
-        }
+        #region Properties
+
+        public ICollection<ISyncOperation> Operations { get; } = new List<ISyncOperation>();
+
+        protected IEnumerator<ISyncOperation> OperationEnumerator { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         public virtual ISyncElement DependsOn(IEnumerable<ISyncElement> parentElements)
         {
@@ -36,10 +31,6 @@ namespace SAPSync.SyncElements
             return this;
         }
 
-
-        public ICollection<ISyncOperation> Operations { get; } = new List<ISyncOperation>();
-
-
         public override void Execute(ISubJob newJob)
         {
             base.Execute(newJob);
@@ -47,19 +38,22 @@ namespace SAPSync.SyncElements
             StartNextOperation();
         }
 
-        protected IEnumerator<ISyncOperation> OperationEnumerator { get; set; }
+        public virtual OperationAggregator HasOperation(ISyncOperation newOperation)
+        {
+            Operations.Add(newOperation);
+            newOperation.SetParent(this);
+            return this;
+        }
 
         protected virtual void StartNextOperation()
         {
             OperationEnumerator.MoveNext();
             if (OperationEnumerator.Current == null)
                 FinalizeSync();
-
             else
                 OperationEnumerator.Current.StartAsync(CurrentJob);
         }
 
         #endregion Methods
-
     }
 }

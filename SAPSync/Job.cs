@@ -1,16 +1,15 @@
-﻿using SAPSync.SyncElements;
-using SAPSync;
+﻿using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using SAPSync.Infrastructure;
 
 namespace SAPSync
 {
     public class Job : JobBase, IJob
     {
+        #region Constructors
+
         public Job(IEnumerable<ISyncElement> syncElements)
         {
             Status = JobStatus.OnQueue;
@@ -33,10 +32,17 @@ namespace SAPSync
             }
         }
 
-        private void OnSubJobCompleted(object sender, EventArgs e)
-        {
-            CycleSubJobs();
-        }
+        #endregion Constructors
+
+        #region Properties
+
+        public ICollection<ISubJob> SubJobs { get; }
+
+        public ICollection<ISyncElement> SyncElementsStack { get; }
+
+        #endregion Properties
+
+        #region Methods
 
         public override void Start()
         {
@@ -45,8 +51,11 @@ namespace SAPSync
             RaiseOnStarted();
         }
 
-        protected virtual async void ExecuteAsync() => await Task.Run(() => CycleSubJobs());
-
+        protected virtual void CheckSubJobReadiness()
+        {
+            foreach (ISubJob subJob in SubJobs.Where(sjb => sjb.Status == JobStatus.OnQueue))
+                subJob.CheckStatus();
+        }
 
         protected virtual void CycleSubJobs()
         {
@@ -61,17 +70,12 @@ namespace SAPSync
             }
         }
 
+        protected virtual async void ExecuteAsync() => await Task.Run(() => CycleSubJobs());
+
         protected virtual void FinalizeJob()
         {
             RaiseCompleted();
         }
-
-        protected virtual void CheckSubJobReadiness()
-        {
-            foreach (ISubJob subJob in SubJobs.Where(sjb => sjb.Status == JobStatus.OnQueue))
-                subJob.CheckStatus();
-        }
-
 
         protected virtual void StartReadySubJobs()
         {
@@ -79,7 +83,11 @@ namespace SAPSync
                 subJob.StartAsync();
         }
 
-        public ICollection<ISyncElement> SyncElementsStack { get; }        
-        public ICollection<ISubJob> SubJobs { get; }        
+        private void OnSubJobCompleted(object sender, EventArgs e)
+        {
+            CycleSubJobs();
+        }
+
+        #endregion Methods
     }
 }

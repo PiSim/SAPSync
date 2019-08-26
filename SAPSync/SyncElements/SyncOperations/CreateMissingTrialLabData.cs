@@ -1,9 +1,7 @@
 ﻿using DataAccessCore;
 using DataAccessCore.Commands;
-using Microsoft.EntityFrameworkCore;
 using SAPSync.Infrastructure;
 using SSMD;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,12 +9,13 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 {
     public class CreateMissingTrialLabData : SyncOperationBase
     {
+        #region Properties
 
         public override string Name => "Creazione Note Prova mancanti";
 
-        #region Methods
+        #endregion Properties
 
-        private SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
+        #region Methods
 
         public override void Start(ISubJob newJob)
         {
@@ -35,6 +34,8 @@ namespace SAPSync.SyncElements.ExcelWorkbooks
 
             GetSSMDData().Execute(new InsertEntitiesCommand<SSMDContext>(newTrials));
         }
+
+        private SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
 
         #endregion Methods
     }

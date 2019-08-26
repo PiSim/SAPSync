@@ -1,5 +1,4 @@
 ﻿using DataAccessCore;
-using SAPSync.RFCFunctions;
 using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
@@ -11,16 +10,19 @@ namespace SAPSync.SyncElements
 {
     public class ConfirmationEvaluator : RecordEvaluator<OrderConfirmation, Tuple<int, int>>
     {
+        #region Constructors
+
         public ConfirmationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<OrderConfirmation> GetRecordValidator() => new ConfirmationValidator();
-        
-
         protected override Tuple<int, int> GetIndexKey(OrderConfirmation record) => new Tuple<int, int>(record.ConfirmationNumber, record.ConfirmationCounter);
+
+        protected override IRecordValidator<OrderConfirmation> GetRecordValidator() => new ConfirmationValidator();
 
         #endregion Methods
     }
@@ -50,5 +52,4 @@ namespace SAPSync.SyncElements
 
         #endregion Methods
     }
-
 }

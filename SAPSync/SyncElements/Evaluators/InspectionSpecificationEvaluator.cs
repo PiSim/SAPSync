@@ -1,26 +1,28 @@
 ﻿using DataAccessCore;
-using SAPSync.RFCFunctions;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SAPSync.SyncElements.Validators;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionSpecificationEvaluator : RecordEvaluator<InspectionSpecification, Tuple<long, int, int>>
     {
+        #region Constructors
+
         public InspectionSpecificationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<InspectionSpecification> GetRecordValidator() => new InspectionSpecificationValidator();
-        
-
         protected override Tuple<long, int, int> GetIndexKey(InspectionSpecification record) => record.GetPrimaryKey();
+
+        protected override IRecordValidator<InspectionSpecification> GetRecordValidator() => new InspectionSpecificationValidator();
 
         #endregion Methods
     }
@@ -57,5 +59,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

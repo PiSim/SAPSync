@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync.Infrastructure
 {
     public interface IUnitOfWork : IDisposable
     {
-        bool IsFinal { get; }
-
-        Task CurrentTask { get; }
+        #region Properties
 
         ISyncOperation CurrentOperation { get; }
-        
+        Task CurrentTask { get; }
+        bool IsFinal { get; }
+        bool MustAwaitCompletion { get; }
         ISubJob ParentSubJob { get; }
 
-        bool MustAwaitCompletion { get; }
+        #endregion Properties
     }
 }

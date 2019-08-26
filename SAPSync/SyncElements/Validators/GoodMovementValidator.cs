@@ -1,17 +1,20 @@
 ﻿using DataAccessCore;
 using SSMD;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.Validators
 {
     public class GoodMovementValidator : IRecordValidator<GoodMovement>
     {
-        private IDictionary<int, Order> _orderIndex;
+        #region Fields
+
         private IDictionary<string, Component> _componentIndex;
+        private IDictionary<int, Order> _orderIndex;
+
+        #endregion Fields
+
+        #region Methods
 
         public bool CheckIndexesInitialized() => _orderIndex != null && _componentIndex != null;
 
@@ -31,5 +34,7 @@ namespace SAPSync.SyncElements.Validators
         public bool IsValid(GoodMovement record) => _orderIndex.ContainsKey(record.OrderNumber)
             && record.Component != null
             && _componentIndex.ContainsKey(record.Component.Name);
+
+        #endregion Methods
     }
 }

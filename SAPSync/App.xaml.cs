@@ -12,9 +12,9 @@ namespace SAPSync
     {
         #region Fields
 
+        private SyncService _SAPSync;
         private SSMDData _ssData;
         private SyncManager _syncManager;
-        private SyncService _SAPSync;
         private bool destinationIsInitialized = false;
 
         #endregion Fields

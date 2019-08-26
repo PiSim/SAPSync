@@ -1,16 +1,18 @@
-﻿using SAPSync.RFCFunctions;
-using SSMD;
+﻿using SSMD;
 using System;
-using System.Collections.Generic;
 
 namespace SAPSync.SyncElements
 {
     public class MaterialFamilyLevelEvaluator : RecordEvaluator<MaterialFamilyLevel, Tuple<int, string>>
     {
+        #region Constructors
+
         public MaterialFamilyLevelEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
         protected override Tuple<int, string> GetIndexKey(MaterialFamilyLevel record) => new Tuple<int, string>(record.Level, record.Code);

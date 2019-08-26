@@ -40,18 +40,14 @@ namespace SAPSync.ViewModels
 
         #region Properties
 
+        public IEnumerable<IJob> ActiveJobs => SyncManager.JobController.ActiveJobs;
+
+        public DelegateCommand OpenLogWindowCommand { get; }
+
         public string ServiceStatus
         { get => _serviceStatus; set { _serviceStatus = value; RaisePropertyChanged("ServiceStatus"); } }
 
         public DelegateCommand StartSyncCommand { get; set; }
-
-        private void OpenLogWindow()
-        {
-            Window logWindow = new Views.LogDialog();
-            logWindow.Show();
-        }
-
-        public DelegateCommand OpenLogWindowCommand { get; }
 
         public List<SyncElementViewModel> SyncElements
         {
@@ -73,8 +69,6 @@ namespace SAPSync.ViewModels
             }
         }
 
-        public IEnumerable<IJob> ActiveJobs => SyncManager.JobController.ActiveJobs;
-
         public DelegateCommand ToggleSAPSyncCommand { get; set; }
 
         #endregion Properties
@@ -86,6 +80,12 @@ namespace SAPSync.ViewModels
         protected virtual void OnServiceToggle(object sender, EventArgs e)
         {
             RaisePropertyChanged("ServiceStatus");
+        }
+
+        private void OpenLogWindow()
+        {
+            Window logWindow = new Views.LogDialog();
+            logWindow.Show();
         }
 
         private void StartSync()

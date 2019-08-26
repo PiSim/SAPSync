@@ -1,8 +1,6 @@
 ﻿using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync
@@ -13,16 +11,28 @@ namespace SAPSync
 
         event EventHandler JobCompleted;
 
-        #endregion Events
+        event EventHandler JobStarting;
 
-        Task GetAwaiterForActiveOperations();
-        IJob StartJob(IEnumerable<ISyncElement> syncElements);
         event EventHandler NewJobStarted;
 
-        event EventHandler JobStarting;
         event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
-                
+
+        #endregion Events
+
+        #region Properties
+
         ICollection<IJob> ActiveJobs { get; }
+
         ICollection<IJob> CompletedJobs { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        Task GetAwaiterForActiveOperations();
+
+        IJob StartJob(IEnumerable<ISyncElement> syncElements);
+
+        #endregion Methods
     }
 }

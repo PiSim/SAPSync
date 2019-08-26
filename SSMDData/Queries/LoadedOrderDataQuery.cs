@@ -1,15 +1,13 @@
 ﻿using DataAccessCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SSMD.Queries
 {
     public class LoadedOrderDataQuery : Query<OrderData, SSMDContext>
     {
+        #region Methods
+
         public override IQueryable<OrderData> Execute(SSMDContext context)
         {
             return base.Execute(context)
@@ -43,5 +41,6 @@ namespace SSMD.Queries
                 .OrderByDescending(odd => odd.OrderNumber);
         }
 
+        #endregion Methods
     }
 }

@@ -7,18 +7,17 @@ using SAPSync.SyncElements.SyncOperations;
 using SAPSync.SyncElements.SyncOperations.Dto;
 using SSMD;
 using SSMD.Queries;
-using SAPSync;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync
 {
     public class SyncElementFactory
     {
+        #region Methods
+
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
             ISyncElement WorkCentersElement = new OperationAggregator(
@@ -31,7 +30,6 @@ namespace SAPSync
                             {
                                 IgnoreExistingRecords = true
                             }))));
-
 
             ISyncElement MaterialFamiliesElement = new OperationAggregator(
                 "Gerarchia Prodotto",
@@ -121,7 +119,8 @@ namespace SAPSync
                         new ComponentEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-                            IgnoreExistingRecords = true}))));
+                                IgnoreExistingRecords = true
+                            }))));
 
             ISyncElement ConfirmationsElements = new OperationAggregator(
                 "Conferme ordine")
@@ -143,7 +142,6 @@ namespace SAPSync
                         new OrderComponentEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-
                                 IgnoreExistingRecords = true
                             }))))
                 .DependsOn(new ISyncElement[]
@@ -160,7 +158,6 @@ namespace SAPSync
                         new InspectionCharacteristicEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-
                                 IgnoreExistingRecords = true
                             }))))
                 .HasOperation(new SyncData<InspectionLot>(
@@ -177,7 +174,6 @@ namespace SAPSync
                         new InspectionSpecificationEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-
                                 IgnoreExistingRecords = true
                             }))))
                 .HasOperation(new SyncData<InspectionPoint>(
@@ -217,7 +213,6 @@ namespace SAPSync
                     MaterialsElement,
                     CustomersElement
                 });
-
 
             ISyncElement GoodMovementsElement = new OperationAggregator(
                 "Movimenti Merce")
@@ -295,19 +290,19 @@ namespace SAPSync
                     OrdersElement,
                     TrialMasterListElement
                 });
-            
+
             ISyncElement TestReportElement = new OperationAggregator(
                 "Test Report")
                 .HasOperation(new SyncData<TestReport>(
                     new XmlReader<TestReport, TestReportDto>(
                         new XmlInteractionConfiguration(
-                            new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"), 
+                            new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"),
                             "Report",
                             4)),
                     new RecordWriter<TestReport>(
                         new TestReportRecordEvaluator())))
                 .HasOperation(new SyncData<TestReport>(
-                    new SSMDReader<TestReport>( () => new LoadedTestReportQuery()),
+                    new SSMDReader<TestReport>(() => new LoadedTestReportQuery()),
                     new XmlWriter<TestReport, TestReportDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"),
@@ -371,5 +366,7 @@ namespace SAPSync
 
             return output;
         }
+
+        #endregion Methods
     }
 }

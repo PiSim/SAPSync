@@ -3,8 +3,6 @@ using SSMD;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.Validators
 {
@@ -44,5 +42,4 @@ namespace SAPSync.SyncElements.Validators
 
         #endregion Methods
     }
-
 }

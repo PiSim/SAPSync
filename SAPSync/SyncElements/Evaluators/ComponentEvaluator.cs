@@ -1,15 +1,17 @@
-﻿using SAPSync.RFCFunctions;
-using SSMD;
-using System.Collections.Generic;
+﻿using SSMD;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class ComponentEvaluator : RecordEvaluator<Component, string>
     {
+        #region Constructors
+
         public ComponentEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
         protected override string GetIndexKey(Component record) => record.Name;
@@ -22,5 +24,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

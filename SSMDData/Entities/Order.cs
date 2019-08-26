@@ -20,6 +20,7 @@ namespace SSMD
         #region Properties
 
         public int ControlPlanNumber { get; set; }
+        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
         public int ID { get; set; }
         public virtual ICollection<InspectionLot> InspectionLots { get; set; }
 
@@ -33,8 +34,6 @@ namespace SSMD
         public long RoutingNumber { get; set; }
         public virtual ICollection<TestReport> TestReports { get; set; }
         public virtual ICollection<WorkPhaseLabData> WorkPhaseLabData { get; set; }
-
-        public virtual ICollection<GoodMovement> GoodMovements { get; set; }
 
         #endregion Properties
     }

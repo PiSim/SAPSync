@@ -1,27 +1,27 @@
 ﻿using DataAccessCore;
-using SAPSync.RFCFunctions;
 using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class MaterialFamilyEvaluator : RecordEvaluator<MaterialFamily, string>
     {
+        #region Constructors
+
         public MaterialFamilyEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
         protected override Query<MaterialFamily, SSMDContext> GetIndexEntriesQuery() => new MaterialFamiliesQuery() { EagerLoadingEnabled = true };
 
-        protected override IRecordValidator<MaterialFamily> GetRecordValidator() => new MaterialFamilyValidator();
-
         protected override string GetIndexKey(MaterialFamily record) => record.FullCode;
+
+        protected override IRecordValidator<MaterialFamily> GetRecordValidator() => new MaterialFamilyValidator();
 
         protected override MaterialFamily SetPrimaryKeyForExistingRecord(MaterialFamily record)
         {
@@ -31,5 +31,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

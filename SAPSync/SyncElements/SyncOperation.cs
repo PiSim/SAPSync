@@ -2,14 +2,45 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements
 {
+    public interface IINOperation<TIn>
+    {
+        #region Methods
+
+        void InputPacket(TIn newPacket);
+
+        #endregion Methods
+    }
+
+    public interface IOUTOperation<TOut>
+    {
+        #region Properties
+
+        IINOperation<TOut> CurrentOutputTarget { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        void SetOutputTarget(IINOperation<TOut> input);
+
+        #endregion Methods
+    }
+
     public abstract class INOperation<TIn> : SyncOperationBase, IINOperation<TIn>
     {
+        #region Properties
+
         public Type InputType => typeof(TIn);
+        protected ICollection<TIn> InputBuffer { get; }
+
+        #endregion Properties
+
+        #region Methods
+
         public virtual void InputPacket(TIn newPacket)
         {
             InputBuffer.Add(newPacket);
@@ -22,28 +53,24 @@ namespace SAPSync.SyncElements
                 InputBuffer.Remove(nextElement);
             return nextElement;
         }
-        protected ICollection<TIn> InputBuffer { get; }
-    }
 
-    public abstract class OUTOperation<TOut> : SyncOperationBase, IOUTOperation<TOut>
-    {
-        public IINOperation<TOut> CurrentOutputTarget { get; protected set; }
-
-        protected virtual void OutputPacket(TOut newPacket)
-        {
-            if (CurrentOutputTarget != null)
-                CurrentOutputTarget.InputPacket(newPacket);
-        }
-
-        public virtual void SetOutputTarget(IINOperation<TOut> input)
-        {
-            CurrentOutputTarget = input;
-        }
+        #endregion Methods
     }
 
     public abstract class INOUTOperation<TIn, TOut> : INOperation<TIn>, IINOperation<TIn>, IOUTOperation<TOut>
     {
+        #region Properties
+
         public IINOperation<TOut> CurrentOutputTarget { get; protected set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public virtual void SetOutputTarget(IINOperation<TOut> input)
+        {
+            CurrentOutputTarget = input;
+        }
 
         protected virtual void OutputPacket(TOut newPacket)
         {
@@ -51,42 +78,80 @@ namespace SAPSync.SyncElements
                 CurrentOutputTarget.InputPacket(newPacket);
         }
 
+        #endregion Methods
+    }
+
+    public abstract class OUTOperation<TOut> : SyncOperationBase, IOUTOperation<TOut>
+    {
+        #region Properties
+
+        public IINOperation<TOut> CurrentOutputTarget { get; protected set; }
+
+        #endregion Properties
+
+        #region Methods
+
         public virtual void SetOutputTarget(IINOperation<TOut> input)
         {
             CurrentOutputTarget = input;
         }
-    }
 
+        protected virtual void OutputPacket(TOut newPacket)
+        {
+            if (CurrentOutputTarget != null)
+                CurrentOutputTarget.InputPacket(newPacket);
+        }
+
+        #endregion Methods
+    }
 
     public abstract class SyncOperationBase : ISyncOperation
     {
+        #region Constructors
+
         public SyncOperationBase()
         {
             ChildrenTasks = new List<Task>();
         }
 
-        public abstract string Name { get; }
-        public Task CurrentTask { get; protected set; }
-        public virtual bool ForceProcessCompletion => true;
-        public ISyncElement ParentElement { get; protected set; }
+        #endregion Constructors
 
-        public ISubJob CurrentJob { get; protected set; }
-
-        public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
+        #region Events
 
         public event EventHandler OperationCompleted;
 
-        protected virtual void RaiseOperationCompleted()
+        public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
+
+        #endregion Events
+
+        #region Properties
+
+        public ICollection<Task> ChildrenTasks { get; }
+        public ISubJob CurrentJob { get; protected set; }
+        public Task CurrentTask { get; protected set; }
+        public virtual bool ForceProcessCompletion => true;
+        public abstract string Name { get; }
+        public ISyncElement ParentElement { get; protected set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public virtual void CheckResourcesLoaded()
         {
-            OperationCompleted?.Invoke(this, new EventArgs());
         }
 
+        public virtual void LoadResources()
+        {
+            if (CurrentJob == null)
+                throw new InvalidOperationException("No open Job");
+        }
 
-        public virtual void SetParent (ISyncElement syncElement)
+        public virtual void SetParent(ISyncElement syncElement)
         {
             ParentElement = syncElement;
         }
-        
+
         public virtual void Start(ISubJob newJob)
         {
             OpenJob(newJob);
@@ -97,17 +162,38 @@ namespace SAPSync.SyncElements
             await Task.Run(() => Start(newJob));
         }
 
-        public virtual void LoadResources()
+        protected virtual void Clear()
         {
-            if (CurrentJob == null)
-                throw new InvalidOperationException("No open Job");
+            ChildrenTasks.Clear();
         }
 
-        public virtual void CheckResourcesLoaded()
+        protected virtual void CloseJob()
         {
-
+            CurrentJob = null;
+            RaiseOperationCompleted();
+            Clear();
         }
-        
+
+        protected virtual void OpenJob(ISubJob newJob)
+        {
+            CurrentJob = newJob;
+
+            try
+            {
+                LoadResources();
+                CheckResourcesLoaded();
+            }
+            catch
+            {
+                throw new Exception("Failed Loading Resources");
+            }
+        }
+
+        protected virtual void RaiseOperationCompleted()
+        {
+            OperationCompleted?.Invoke(this, new EventArgs());
+        }
+
         protected virtual void RaiseSyncError(
             Exception e = null,
             string errorMessage = null,
@@ -133,43 +219,7 @@ namespace SAPSync.SyncElements
             newTask.Start();
             return newTask;
         }
-        public ICollection<Task> ChildrenTasks { get; }
-        protected virtual void OpenJob(ISubJob newJob)
-        {
-            CurrentJob = newJob;
 
-            try
-            {
-                LoadResources();
-                CheckResourcesLoaded();
-            }
-            catch
-            {
-                throw new Exception("Failed Loading Resources");
-            }
-        }
-
-        protected virtual void CloseJob()
-        {
-            CurrentJob = null;
-            RaiseOperationCompleted();
-            Clear();
-        }
-
-        protected virtual void Clear()
-        {
-            ChildrenTasks.Clear();
-        }
-    }
-
-    public interface IINOperation<TIn>
-    {
-        void InputPacket(TIn newPacket);
-    }
-
-    public interface IOUTOperation<TOut>
-    {
-        IINOperation<TOut> CurrentOutputTarget { get; }
-        void SetOutputTarget(IINOperation<TOut> input);
+        #endregion Methods
     }
 }

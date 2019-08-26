@@ -1,24 +1,27 @@
 ﻿using DataAccessCore;
-using SAPSync.RFCFunctions;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
 using System.Collections.Generic;
 using System.Linq;
-using SAPSync.SyncElements.Validators;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class OrderDataEvaluator : RecordEvaluator<OrderData, int>
     {
+        #region Constructors
+
         public OrderDataEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<OrderData> GetRecordValidator() => new OrderDataValidator();
-
         protected override int GetIndexKey(OrderData record) => record.OrderNumber;
+
+        protected override IRecordValidator<OrderData> GetRecordValidator() => new OrderDataValidator();
 
         #endregion Methods
     }
@@ -53,5 +56,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

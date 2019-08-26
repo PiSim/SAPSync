@@ -2,25 +2,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync
 {
     public class SubJob : JobBase, ISubJob
     {
+        #region Constructors
+
         public SubJob(ISyncElement targetElement)
         {
             Status = JobStatus.OnQueue;
             TargetElement = targetElement;
             Dependencies = new List<ISubJob>();
         }
-        
-        public IDictionary<Type, object> Resources { get; }
+
+        #endregion Constructors
+
+        #region Properties
 
         public ICollection<ISubJob> Dependencies { get; }
-
+        public IDictionary<Type, object> Resources { get; }
         public ISyncElement TargetElement { get; }
+
+        #endregion Properties
+
+        #region Methods
 
         public void CheckStatus()
         {
@@ -46,6 +52,7 @@ namespace SAPSync
             ChangeStatus(JobStatus.Running);
             TargetElement.Execute(this);
         }
-               
+
+        #endregion Methods
     }
 }

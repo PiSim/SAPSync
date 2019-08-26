@@ -1,8 +1,6 @@
 ﻿using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace SAPSync
 {
@@ -10,16 +8,19 @@ namespace SAPSync
     {
         #region Properties
 
-        string Name { get; }
+        ISubJob CurrentJob { get; }
+        ICollection<ISyncElement> Dependencies { get; }
         bool IsUpForScheduledUpdate { get; }
         DateTime? LastUpdate { get; }
+        string Name { get; }
         DateTime? NextScheduledUpdate { get; }
-        ICollection<ISyncElement> Dependencies { get; }
-        ISubJob CurrentJob { get; }
-
-        void Execute(ISubJob newJob);
 
         #endregion Properties
 
+        #region Methods
+
+        void Execute(ISubJob newJob);
+
+        #endregion Methods
     }
 }

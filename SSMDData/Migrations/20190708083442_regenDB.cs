@@ -1,11 +1,85 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace SSMD.Migrations
 {
     public partial class regenDB : Migration
     {
+        #region Methods
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "GoodMovements");
+
+            migrationBuilder.DropTable(
+                name: "InspectionPoints");
+
+            migrationBuilder.DropTable(
+                name: "MaterialCustomers");
+
+            migrationBuilder.DropTable(
+                name: "OrderComponents");
+
+            migrationBuilder.DropTable(
+                name: "OrderConfirmations");
+
+            migrationBuilder.DropTable(
+                name: "RoutingOperations");
+
+            migrationBuilder.DropTable(
+                name: "ScrapCauses");
+
+            migrationBuilder.DropTable(
+                name: "SyncElementData");
+
+            migrationBuilder.DropTable(
+                name: "TestReports");
+
+            migrationBuilder.DropTable(
+                name: "WBSRelations");
+
+            migrationBuilder.DropTable(
+                name: "WorkPhaseLabData");
+
+            migrationBuilder.DropTable(
+                name: "InspectionSpecifications");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "OrderData");
+
+            migrationBuilder.DropTable(
+                name: "WorkCenters");
+
+            migrationBuilder.DropTable(
+                name: "InspectionCharacteristics");
+
+            migrationBuilder.DropTable(
+                name: "InspectionLots");
+
+            migrationBuilder.DropTable(
+                name: "Materials");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Components");
+
+            migrationBuilder.DropTable(
+                name: "MaterialFamilies");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "MaterialFamilyLevels");
+        }
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -744,76 +818,6 @@ namespace SSMD.Migrations
                 column: "ShortName");
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "GoodMovements");
-
-            migrationBuilder.DropTable(
-                name: "InspectionPoints");
-
-            migrationBuilder.DropTable(
-                name: "MaterialCustomers");
-
-            migrationBuilder.DropTable(
-                name: "OrderComponents");
-
-            migrationBuilder.DropTable(
-                name: "OrderConfirmations");
-
-            migrationBuilder.DropTable(
-                name: "RoutingOperations");
-
-            migrationBuilder.DropTable(
-                name: "ScrapCauses");
-
-            migrationBuilder.DropTable(
-                name: "SyncElementData");
-
-            migrationBuilder.DropTable(
-                name: "TestReports");
-
-            migrationBuilder.DropTable(
-                name: "WBSRelations");
-
-            migrationBuilder.DropTable(
-                name: "WorkPhaseLabData");
-
-            migrationBuilder.DropTable(
-                name: "InspectionSpecifications");
-
-            migrationBuilder.DropTable(
-                name: "Customers");
-
-            migrationBuilder.DropTable(
-                name: "OrderData");
-
-            migrationBuilder.DropTable(
-                name: "WorkCenters");
-
-            migrationBuilder.DropTable(
-                name: "InspectionCharacteristics");
-
-            migrationBuilder.DropTable(
-                name: "InspectionLots");
-
-            migrationBuilder.DropTable(
-                name: "Materials");
-
-            migrationBuilder.DropTable(
-                name: "Orders");
-
-            migrationBuilder.DropTable(
-                name: "Components");
-
-            migrationBuilder.DropTable(
-                name: "MaterialFamilies");
-
-            migrationBuilder.DropTable(
-                name: "Projects");
-
-            migrationBuilder.DropTable(
-                name: "MaterialFamilyLevels");
-        }
+        #endregion Methods
     }
 }

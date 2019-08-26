@@ -1,5 +1,4 @@
 ﻿using SAP.Middleware.Connector;
-using SAPSync.SyncElements;
 
 namespace SAPSync.RFCFunctions
 {

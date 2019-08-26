@@ -1,21 +1,38 @@
 ﻿using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync
 {
-    public interface IRecordWriter<T>  where T : class
+    public interface IRecordWriter<T> where T : class
     {
-        void OpenWriter();
-        void OpenWriterAsync();
-        void WriteRecords(IEnumerable<T> records);
-        void WriteRecordsAsync(IEnumerable<T> records);
+        #region Events
+
         event EventHandler<SyncErrorEventArgs> ErrorRaised;
+
+        #endregion Events
+
+        #region Properties
+
         ICollection<Task> ChildrenTasks { get; }
-        void Commit();
+
+        #endregion Properties
+
+        #region Methods
+
         void CloseWriter();
+
+        void Commit();
+
+        void OpenWriter();
+
+        void OpenWriterAsync();
+
+        void WriteRecords(IEnumerable<T> records);
+
+        void WriteRecordsAsync(IEnumerable<T> records);
+
+        #endregion Methods
     }
 }

@@ -10,12 +10,11 @@
         Title="LogDialog" Height="450" Width="800">
     <Grid>
         <ScrollViewer>
-            <TextBox Text="{Binding LogText, Mode=OneWay}" 
+            <TextBox Text="{Binding LogText, Mode=OneWay}"
 
                      Margin="5"
                      IsReadOnly="True">
             </TextBox>
-
         </ScrollViewer>
     </Grid>
 </Window>

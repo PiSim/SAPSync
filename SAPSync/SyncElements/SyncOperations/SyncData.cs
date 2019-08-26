@@ -1,17 +1,14 @@
-﻿using DataAccessCore.Commands;
-using SSMD;
-using SAPSync;
+﻿using SAPSync.Infrastructure;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using SAPSync.Infrastructure;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
-    public class SyncData<T> : SyncOperationBase  where T : class
+    public class SyncData<T> : SyncOperationBase where T : class
     {
+        #region Constructors
+
         public SyncData(IRecordReader<T> recordReader,
             IRecordWriter<T> recordWriter) : base()
         {
@@ -23,16 +20,19 @@ namespace SAPSync.SyncElements.SyncOperations
             RecordReader.ReadCompleted += OnReadCompleteAsync;
         }
 
-        protected virtual void OnErrorRaised(object sender, SyncErrorEventArgs e)
-        {
+        #endregion Constructors
 
-        }
+        #region Properties
 
         public override string Name => "SyncData";
-        
-        public IRecordWriter<T> RecordWriter { get; }
 
         public IRecordReader<T> RecordReader { get; }
+
+        public IRecordWriter<T> RecordWriter { get; }
+
+        #endregion Properties
+
+        #region Methods
 
         public override void Start(ISubJob newJob)
         {
@@ -42,8 +42,16 @@ namespace SAPSync.SyncElements.SyncOperations
             RecordReader.StartReadAsync();
         }
 
-        protected virtual void OnReaderPacketComplete(object sender, RecordPacketCompletedEventArgs<T> e) => RecordWriter.WriteRecordsAsync(e.Packet);
-        
+        protected override void CloseJob()
+        {
+            RecordWriter.CloseWriter();
+            base.CloseJob();
+        }
+
+        protected virtual void OnErrorRaised(object sender, SyncErrorEventArgs e)
+        {
+        }
+
         protected async virtual void OnReadCompleteAsync(object sender, EventArgs e)
         {
             RecordReader.CloseReader();
@@ -51,10 +59,8 @@ namespace SAPSync.SyncElements.SyncOperations
             CloseJob();
         }
 
-        protected override void CloseJob()
-        {
-            RecordWriter.CloseWriter();
-            base.CloseJob();
-        }
+        protected virtual void OnReaderPacketComplete(object sender, RecordPacketCompletedEventArgs<T> e) => RecordWriter.WriteRecordsAsync(e.Packet);
+
+        #endregion Methods
     }
 }

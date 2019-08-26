@@ -1,21 +1,25 @@
 ﻿using Prism.Mvvm;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync.ViewModels
 {
-    public  class LogDialogViewModel : BindableBase 
+    public class LogDialogViewModel : BindableBase
     {
+        #region Constructors
+
         public LogDialogViewModel()
         {
-
         }
 
+        #endregion Constructors
+
+        #region Properties
+
         public string LogText => ReadLog();
+
+        #endregion Properties
+
+        #region Methods
 
         private string ReadLog()
         {
@@ -30,5 +34,7 @@ namespace SAPSync.ViewModels
 
             return output;
         }
+
+        #endregion Methods
     }
 }

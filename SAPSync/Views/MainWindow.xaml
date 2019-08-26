@@ -9,14 +9,14 @@
         Title="SapSync" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
 
         <Grid Grid.Column="0"
@@ -97,7 +97,7 @@
                     <DataGridTextColumn Header="Prossimo Aggiornamento"
                                     Binding="{Binding NextScheduledUpdate,
                                                       StringFormat=dd/MM/yyyy HH:mm,
-                                                      Mode=OneWay}"/>
+                                                      Mode=OneWay}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
@@ -117,7 +117,7 @@
                     <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
                     <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding ElementStatus, Mode=OneWay}"/>
+                                    Binding="{Binding ElementStatus, Mode=OneWay}" />
                     <DataGridTextColumn Binding="{Binding SyncStatus, Mode=OneWay}" />
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>
@@ -148,7 +148,7 @@
                     <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
                     <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding Status, Mode=OneWay}"/>
+                                    Binding="{Binding Status, Mode=OneWay}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
@@ -156,7 +156,7 @@
               Grid.Column="1">
             <GroupBox Header="Log">
                 <TextBox IsReadOnly="True"
-                         Text="{Binding CurrentLog}"/>
+                         Text="{Binding CurrentLog}" />
             </GroupBox>
         </Grid>
     </Grid>

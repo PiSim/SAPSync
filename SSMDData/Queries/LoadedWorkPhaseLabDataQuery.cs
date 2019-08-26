@@ -1,15 +1,13 @@
 ﻿using DataAccessCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SSMD.Queries
 {
     public class LoadedWorkPhaseLabDataQuery : Query<WorkPhaseLabData, SSMDContext>
     {
+        #region Methods
+
         public override IQueryable<WorkPhaseLabData> Execute(SSMDContext context)
         {
             return base.Execute(context)
@@ -19,5 +17,6 @@ namespace SSMD.Queries
                     .ThenInclude(mat => mat.ColorComponent);
         }
 
+        #endregion Methods
     }
 }

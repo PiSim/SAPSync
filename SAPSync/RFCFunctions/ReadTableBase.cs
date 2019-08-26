@@ -1,13 +1,12 @@
 ﻿using SAP.Middleware.Connector;
 using SAPSync.Infrastructure;
-using SAPSync.SyncElements;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SAPSync.RFCFunctions
 {
-    public abstract class ReadTableBase<T> :  IRecordReader<T>
+    public abstract class ReadTableBase<T> : IRecordReader<T>
     {
         #region Fields
 
@@ -18,42 +17,40 @@ namespace SAPSync.RFCFunctions
         internal string _tableName;
         private readonly string _functionName = "RFC_READ_TABLE";
 
-        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
-        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
-        public event EventHandler ReadCompleted;
-
         #endregion Fields
+
+        #region Constructors
 
         public ReadTableBase()
         {
-
             ChildrenTasks = new List<Task>();
         }
+
+        #endregion Constructors
+
+        #region Events
+
+        public event EventHandler<SyncErrorEventArgs> ErrorRaised;
+
+        public event EventHandler ReadCompleted;
+
+        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+
+        #endregion Events
 
         #region Properties
 
         public ReadTableBatchingOptions BatchingOptions { get; set; }
 
+        public ICollection<Task> ChildrenTasks { get; }
+
         #endregion Properties
 
         #region Methods
 
-        protected virtual Task StartChildTask(Action action)
+        public void CloseReader()
         {
-            Task newTask = new Task(action);
-            ChildrenTasks.Add(newTask);
-            newTask.Start();
-            return newTask;
         }
-        public ICollection<Task> ChildrenTasks { get; }
-
-        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
-        {
-            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
-        }
-
-        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
-        
 
         public void Invoke(RfcDestination rfcDestination)
         {
@@ -72,10 +69,16 @@ namespace SAPSync.RFCFunctions
                 RaisePacketCompleted(ConvertRfcTable(output));
             }
 
-            RaiseReadCompleted();       
+            RaiseReadCompleted();
         }
 
         public async Task InvokeAsync(RfcDestination rfcDestination) => await StartChildTask(() => Invoke(rfcDestination));
+
+        public void OpenReader()
+        {
+        }
+
+        public async void StartReadAsync() => await Task.Run(() => Invoke((new SAPReader()).GetRfcDestination()));
 
         internal virtual T ConvertDataArray(string[] data) => default(T);
 
@@ -138,6 +141,21 @@ namespace SAPSync.RFCFunctions
 
         protected virtual void ConfigureBatchingOptions()
         {
+        }
+
+        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+        protected virtual Task StartChildTask(Action action)
+        {
+            Task newTask = new Task(action);
+            ChildrenTasks.Add(newTask);
+            newTask.Start();
+            return newTask;
         }
 
         private IList<T> ConvertRfcTable(IRfcTable rfcTable)
@@ -213,17 +231,6 @@ namespace SAPSync.RFCFunctions
             return rfcFunction;
         }
 
-        public async void StartReadAsync() => await Task.Run(() => Invoke((new SAPReader()).GetRfcDestination()));
-
-        public void OpenReader()
-        {
-        }
-
-        public void CloseReader()
-        {
-        }
-
-
         #endregion Methods
     }
 
@@ -238,6 +245,8 @@ namespace SAPSync.RFCFunctions
         public string StringFormat { get; set; } = "";
 
         #endregion Properties
+
+        #region Methods
 
         public IEnumerable<string> GetSelectionStrings()
         {
@@ -258,5 +267,7 @@ namespace SAPSync.RFCFunctions
 
             return output;
         }
+
+        #endregion Methods
     }
 }

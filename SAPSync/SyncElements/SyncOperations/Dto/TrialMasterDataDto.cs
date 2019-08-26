@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SSMD;
+﻿using SSMD;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -9,67 +7,6 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
 {
     public class TrialMasterDataDto : DtoBase<OrderData>
     {
-        public override void SetValues(OrderData entity)
-        {
-            base.SetValues(entity);
-
-            ColorName = entity.Material?.ColorComponent?.Description;
-            TrialScope = entity.Order.WorkPhaseLabData?.FirstOrDefault()?.TrialScope;
-            MaterialFamilyL1Code = entity.Material?.MaterialFamily?.L1?.Code;
-
-            var mainConfirmations = entity.Order.OrderConfirmations?
-                .Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'C' || orc.WorkCenter.ShortName[0] == 'S'));
-
-            var laqueringConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'P'));
-            var embossingConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'G'));
-            var rollingConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'R'));
-
-            if (mainConfirmations != null && mainConfirmations.Count() != 0)
-                MainProcessingDate = mainConfirmations.Max(con => con.EndTime);
-            else
-                MainProcessingDate = null;
-
-            if (laqueringConfirmations != null && laqueringConfirmations.Count() != 0)
-                LaqueringDate = laqueringConfirmations.Max(con => con.EndTime);
-            else
-                LaqueringDate = null;
-
-            if (embossingConfirmations != null && embossingConfirmations.Count() != 0)
-                EmbossingDate = embossingConfirmations.Max(con => con.EndTime);
-            else
-                EmbossingDate = null;
-
-            if (rollingConfirmations != null && rollingConfirmations.Count() != 0)
-                RollingDate = rollingConfirmations.Max(con => con.EndTime);
-            else
-                RollingDate = null;
-
-            IsWithdrawal = (MainProcessingDate == null) && (LaqueringDate != null || EmbossingDate != null || RollingDate != null);
-            PCA = entity.Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
-            CustomerName = entity.Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
-            PartName = entity.Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Description2;
-
-            ControlPlanNumber = entity.Material?.ControlPlan;
-            MaterialCode = entity.Material?.Code;
-            TestReportNumber = entity.Order.TestReports?.FirstOrDefault()?.Number;
-
-            var embossingThicknessControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPES"));
-            var embossingWeightControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
-
-            if (embossingThicknessControlPoints != null && embossingThicknessControlPoints.Count() != 0)
-                EmbossingThicknessValue = embossingThicknessControlPoints.Sum(inp => inp.AvgValue);
-            else
-                EmbossingThicknessValue = 0;
-
-            if (embossingWeightControlPoints != null && embossingWeightControlPoints.Count() != 0)
-                EmbossingWeightValue = embossingWeightControlPoints.Sum(inp => inp.AvgValue);
-            else
-                EmbossingWeightValue = 0;
-
-            FabricCode = entity.Order.OrderComponents?.FirstOrDefault(com => Regex.IsMatch(com.Component.Name, "^P01T"))?.Component?.Name;
-
-        }
-
         #region Properties
 
         [Column(7), Value, Exported]
@@ -154,5 +91,69 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
         public string TrialScope { get; set; }
 
         #endregion Properties
+
+        #region Methods
+
+        public override void SetValues(OrderData entity)
+        {
+            base.SetValues(entity);
+
+            ColorName = entity.Material?.ColorComponent?.Description;
+            TrialScope = entity.Order.WorkPhaseLabData?.FirstOrDefault()?.TrialScope;
+            MaterialFamilyL1Code = entity.Material?.MaterialFamily?.L1?.Code;
+
+            var mainConfirmations = entity.Order.OrderConfirmations?
+                .Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'C' || orc.WorkCenter.ShortName[0] == 'S'));
+
+            var laqueringConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'P'));
+            var embossingConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'G'));
+            var rollingConfirmations = entity.Order.OrderConfirmations?.Where(orc => orc.DeletionFlag == false && (orc.WorkCenter.ShortName[0] == 'R'));
+
+            if (mainConfirmations != null && mainConfirmations.Count() != 0)
+                MainProcessingDate = mainConfirmations.Max(con => con.EndTime);
+            else
+                MainProcessingDate = null;
+
+            if (laqueringConfirmations != null && laqueringConfirmations.Count() != 0)
+                LaqueringDate = laqueringConfirmations.Max(con => con.EndTime);
+            else
+                LaqueringDate = null;
+
+            if (embossingConfirmations != null && embossingConfirmations.Count() != 0)
+                EmbossingDate = embossingConfirmations.Max(con => con.EndTime);
+            else
+                EmbossingDate = null;
+
+            if (rollingConfirmations != null && rollingConfirmations.Count() != 0)
+                RollingDate = rollingConfirmations.Max(con => con.EndTime);
+            else
+                RollingDate = null;
+
+            IsWithdrawal = (MainProcessingDate == null) && (LaqueringDate != null || EmbossingDate != null || RollingDate != null);
+            PCA = entity.Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
+            CustomerName = entity.Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
+            PartName = entity.Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Description2;
+
+            ControlPlanNumber = entity.Material?.ControlPlan;
+            MaterialCode = entity.Material?.Code;
+            TestReportNumber = entity.Order.TestReports?.FirstOrDefault()?.Number;
+
+            var embossingThicknessControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPES"));
+            var embossingWeightControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
+
+            if (embossingThicknessControlPoints != null && embossingThicknessControlPoints.Count() != 0)
+                EmbossingThicknessValue = embossingThicknessControlPoints.Sum(inp => inp.AvgValue);
+            else
+                EmbossingThicknessValue = 0;
+
+            if (embossingWeightControlPoints != null && embossingWeightControlPoints.Count() != 0)
+                EmbossingWeightValue = embossingWeightControlPoints.Sum(inp => inp.AvgValue);
+            else
+                EmbossingWeightValue = 0;
+
+            FabricCode = entity.Order.OrderComponents?.FirstOrDefault(com => Regex.IsMatch(com.Component.Name, "^P01T"))?.Component?.Name;
+        }
+
+        #endregion Methods
     }
 }

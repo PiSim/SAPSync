@@ -1,30 +1,28 @@
-﻿using SAPSync;
-using SAPSync.Infrastructure;
+﻿using SAPSync.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync
 {
     public static class SyncLogger
     {
+        #region Properties
+
         public static LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
 
-        private static string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
+        #endregion Properties
 
-        public static void LogSyncError(SyncErrorEventArgs errorEventArgs)
+        #region Methods
+
+        public static void LogElementCompleted(ISyncElement element)
         {
-            string[] logLines = new string[]
-            {
-                GetTimeStamp() + errorEventArgs.Severity.ToString() + " Error: " + errorEventArgs.ErrorMessage,
-                "Elemento: " + errorEventArgs.NameOfElement + " - " + errorEventArgs.TypeOfElement,
-                "Eccezione: " + errorEventArgs.Exception?.Message,
-            };
-
-            CreateLogEntry(logLines, new FileInfo(Properties.Settings.Default.ErrorLogPath));
+            NewLogEntry(
+                new string[]
+                {
+                    GetTimeStamp() + "Elemento completato: " + element.Name
+                });
         }
 
         public static void LogElementStarting(ISyncElement element)
@@ -36,22 +34,16 @@ namespace SAPSync
                 });
         }
 
-        public static void LogElementCompleted(ISyncElement element)
+        public static void LogSyncError(SyncErrorEventArgs errorEventArgs)
         {
-            NewLogEntry(
-                new string[]
-                {
-                    GetTimeStamp() + "Elemento completato: " + element.Name 
-                });
-        }
+            string[] logLines = new string[]
+            {
+                GetTimeStamp() + errorEventArgs.Severity.ToString() + " Error: " + errorEventArgs.ErrorMessage,
+                "Elemento: " + errorEventArgs.NameOfElement + " - " + errorEventArgs.TypeOfElement,
+                "Eccezione: " + errorEventArgs.Exception?.Message,
+            };
 
-        public static void LogTaskStarting(IJob task)
-        {
-            NewLogEntry(
-                new string[]
-                {
-                    GetTimeStamp() + "Inizio nuova sincronizzazione: "            
-                });
+            CreateLogEntry(logLines, new FileInfo(Properties.Settings.Default.ErrorLogPath));
         }
 
         public static void LogTaskCompleted(IJob task)
@@ -68,27 +60,37 @@ namespace SAPSync
             NewLogEntry(new string[] { GetTimeStamp() + "Schedulata sincronizzazione: " + time.ToString("dd/MM/yyyy HH:mm") });
         }
 
+        public static void LogTaskStarting(IJob task)
+        {
+            NewLogEntry(
+                new string[]
+                {
+                    GetTimeStamp() + "Inizio nuova sincronizzazione: "
+                });
+        }
+
         public static void NewLogEntry(string[] text)
         {
-            CreateLogEntry(text , new FileInfo(Properties.Settings.Default.GeneralLogPath));
-            
+            CreateLogEntry(text, new FileInfo(Properties.Settings.Default.GeneralLogPath));
         }
 
         private static void CreateLogEntry(IEnumerable<string> lines, FileInfo target)
         {
-            
             try
             {
                 File.AppendAllLines(target.FullName, lines);
             }
             catch
             {
-                
             }
             finally
             {
                 CurrentLog.AddFirst(string.Concat(lines.Select(l => l + "\n")));
             }
         }
+
+        private static string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
+
+        #endregion Methods
     }
 }

@@ -1,13 +1,10 @@
 ﻿using OfficeOpenXml;
 using SAPSync.Infrastructure;
-using SAPSync.SyncElements.ExcelWorkbooks;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations
 {
@@ -19,16 +16,51 @@ namespace SAPSync.SyncElements.SyncOperations
         {
         }
 
+        #endregion Constructors
+
+        #region Events
+
         public event EventHandler<SyncErrorEventArgs> ErrorRaised;
-        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+
         public event EventHandler ReadCompleted;
 
-        #endregion Constructors
+        public event EventHandler<RecordPacketCompletedEventArgs<T>> RecordPacketCompleted;
+
+        #endregion Events
 
         #region Methods
 
+        public void CloseReader()
+        {
+        }
+
+        public void OpenReader()
+        {
+        }
+
+        public virtual void ReadRecords()
+        {
+            try
+            {
+                IEnumerable<TDto> importedDtos = ReadFromOrigin();
+
+                IEnumerable<T> records = ConvertDtos(importedDtos);
+                RaisePacketCompleted(records);
+            }
+            catch (Exception e)
+            {
+                RaiseReadError(e, "Errore di lettura del file");
+            }
+            finally
+            {
+                RaiseReadCompleted();
+            }
+        }
+
+        public void StartReadAsync() => StartChildTask(() => ReadRecords());
+
         protected virtual IEnumerable<T> ConvertDtos(IEnumerable<TDto> importedDtos) => importedDtos.Select(dto => GetEntityFromDto(dto));
-        
+
         protected virtual TDto GetDtoFromRow(IEnumerable<ExcelRangeBase> xlRow)
         {
             var output = new TDto();
@@ -61,7 +93,7 @@ namespace SAPSync.SyncElements.SyncOperations
                 }
                 catch (Exception e)
                 {
-                    RaiseReadError(e:e,
+                    RaiseReadError(e: e,
                         message: e.Message);
                 }
             }
@@ -73,12 +105,12 @@ namespace SAPSync.SyncElements.SyncOperations
 
                     if (cell == null)
                         column.Property.SetValue(output, null);
-                    else 
+                    else
                         column.Property.SetValue(output, cell.Style.Font.Color);
                 }
                 catch (Exception e)
                 {
-                    RaiseReadError(e,e.Message);
+                    RaiseReadError(e, e.Message);
                 }
             }
 
@@ -92,14 +124,6 @@ namespace SAPSync.SyncElements.SyncOperations
 
             return output;
         }
-        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
-        {
-            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
-        }
-
-        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
-
-
 
         protected virtual T GetEntityFromDto(TDto dto)
         {
@@ -114,6 +138,17 @@ namespace SAPSync.SyncElements.SyncOperations
             return output;
         }
 
+        protected virtual void RaisePacketCompleted(IEnumerable<T> records)
+        {
+            RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
+        }
+
+        protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
+
+        protected virtual void RaiseReadError(Exception e, string message = null)
+        {
+            ErrorRaised?.Invoke(this, new SyncErrorEventArgs());
+        }
 
         protected virtual IEnumerable<TDto> ReadFromOrigin()
         {
@@ -131,40 +166,6 @@ namespace SAPSync.SyncElements.SyncOperations
                 output = GetDtosFromTable(rows);
             }
             return output;
-        }
-
-        public virtual void ReadRecords()
-        {
-            try
-            {
-                IEnumerable<TDto> importedDtos = ReadFromOrigin();
-
-                IEnumerable<T> records = ConvertDtos(importedDtos);
-                RaisePacketCompleted(records);
-            }
-            catch (Exception e)
-            {
-                RaiseReadError(e, "Errore di lettura del file");
-            }
-            finally
-            {
-                RaiseReadCompleted();
-            }
-        }
-        
-        protected virtual void RaiseReadError(Exception e , string message = null)
-        {
-            ErrorRaised?.Invoke(this, new SyncErrorEventArgs());
-        }
-
-        public void StartReadAsync() => StartChildTask(() => ReadRecords());
-
-        public void OpenReader()
-        {
-        }
-
-        public void CloseReader()
-        {
         }
 
         #endregion Methods

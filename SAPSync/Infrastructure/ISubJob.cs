@@ -1,31 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SAPSync.Infrastructure
 {
     public interface ISubJob
     {
-        ISyncElement TargetElement { get;}
-        Task CurrentTask { get; }
+        #region Events
 
-        void Start();
-        void StartAsync();
-        
-        JobStatus Status { get; }
         event EventHandler OnCompleted;
-        event EventHandler OnStarting;
+
         event EventHandler OnStarted;
+
+        event EventHandler OnStarting;
+
         event EventHandler StatusChanged;
+
+        #endregion Events
+
+        #region Properties
+
+        Task CurrentTask { get; }
+        ICollection<ISubJob> Dependencies { get; }
+        IDictionary<Type, object> Resources { get; }
+        JobStatus Status { get; }
+        ISyncElement TargetElement { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        void CheckStatus();
 
         void Complete(bool isSuccesful = true);
 
-        void CheckStatus();
-        
-        IDictionary<Type, object> Resources { get; }
+        void Start();
 
-        ICollection<ISubJob> Dependencies { get; }        
+        void StartAsync();
+
+        #endregion Methods
     }
 }

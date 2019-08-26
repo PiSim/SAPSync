@@ -1,26 +1,10 @@
 ﻿using SSMD;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements.SyncOperations.Dto
 {
     public class WorkPhaseLabDataDto : DtoBase<WorkPhaseLabData>
     {
-        public override void SetValues(WorkPhaseLabData entity)
-        {
-            base.SetValues(entity);
-            MaterialCode = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
-            OrderType = entity.Order?.OrderType;
-            Structure = entity.Order?.OrderData?.FirstOrDefault()?.Material?.MaterialFamily?.L1?.Code;
-            Aspect = entity.Order?.OrderData?.FirstOrDefault()?.Material?.ColorComponent?.Description.Replace("SKIN", "");
-            PCA = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Code;
-            ProjectDescription = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Description2;
-            OrderAmount = entity.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
-        }
-
         #region Properties
 
         [Column(16), Imported, Value, Exported]
@@ -69,5 +53,21 @@ namespace SAPSync.SyncElements.SyncOperations.Dto
         public string TrialScope { get; set; }
 
         #endregion Properties
+
+        #region Methods
+
+        public override void SetValues(WorkPhaseLabData entity)
+        {
+            base.SetValues(entity);
+            MaterialCode = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
+            OrderType = entity.Order?.OrderType;
+            Structure = entity.Order?.OrderData?.FirstOrDefault()?.Material?.MaterialFamily?.L1?.Code;
+            Aspect = entity.Order?.OrderData?.FirstOrDefault()?.Material?.ColorComponent?.Description.Replace("SKIN", "");
+            PCA = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Code;
+            ProjectDescription = entity.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSUpRelations?.FirstOrDefault()?.Up?.Description2;
+            OrderAmount = entity.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
+        }
+
+        #endregion Methods
     }
 }
