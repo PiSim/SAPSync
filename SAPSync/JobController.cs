@@ -12,8 +12,7 @@ namespace SAPSync
 
         public JobController()
         {
-            ActiveJobs = new HashSet<IJob>();
-            CompletedJobs = new HashSet<IJob>();
+            Jobs = new HashSet<IJob>();
         }
 
         #endregion Constructors
@@ -32,17 +31,23 @@ namespace SAPSync
 
         #region Properties
 
-        public ICollection<IJob> ActiveJobs { get; }
-        public ICollection<IJob> CompletedJobs { get; }
+        public DateTime EndTime { get; }
+        public ICollection<IJob> Jobs { get; }
+        public DateTime StartTime { get; }
 
         #endregion Properties
 
         #region Methods
 
         public Task GetAwaiterForActiveOperations() => Task.WhenAll(
-            ActiveJobs.SelectMany(sts => sts.SubJobs)
+            GetJobs()
+                .SelectMany(sts => sts.SubJobs)
                 .Select(sjb => sjb.CurrentTask)
                 .ToList());
+
+        public ICollection<IJob> GetJobs(bool includeCompleted = false)
+                    => Jobs.Where(job => includeCompleted || ((job.Status != JobStatus.Completed) || (job.Status != JobStatus.Completed)))
+                .ToList();
 
         public IJob StartJob(IEnumerable<ISyncElement> syncElements)
         {
@@ -51,17 +56,13 @@ namespace SAPSync
             newJob.SyncErrorRaised += OnSyncErrorRaised;
             newJob.OnStarting += OnJobStarting;
             newJob.OnStarted += OnJobStarted;
-            ActiveJobs.Add(newJob);
+            Jobs.Add(newJob);
             newJob.StartAsync();
             return newJob;
         }
 
         protected virtual void OnJobCompleted(object sender, EventArgs e)
         {
-            Job completedTask = sender as Job;
-            if (ActiveJobs.Contains(completedTask))
-                ActiveJobs.Remove(completedTask);
-            CompletedJobs.Add(completedTask);
             JobCompleted?.Invoke(sender, e);
         }
 

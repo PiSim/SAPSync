@@ -32,9 +32,12 @@ namespace SAPSync.Infrastructure
 
         void CheckStatus();
 
-        void Complete(bool isSuccesful = true);
+        void CloseJob();
 
         void Start();
+
+        DateTime StartTime { get; }
+        DateTime EndTime { get; }
 
         void StartAsync();
 

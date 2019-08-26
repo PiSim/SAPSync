@@ -25,8 +25,6 @@ namespace SAPSync
         public IJobController JobController { get; }
         public ICollection<ISyncElement> SyncElements { get; set; }
 
-        public bool UpdateRunning => JobController.ActiveJobs.Count != 0;
-
         #endregion Properties
 
         #region Methods
@@ -35,7 +33,7 @@ namespace SAPSync
 
         public void StartSync(IEnumerable<ISyncElement> syncElements)
         {
-            if (syncElements.Count() != 0 && !UpdateRunning)
+            if (syncElements.Count() != 0)
             {
                 JobController.StartJob(syncElements);
             }

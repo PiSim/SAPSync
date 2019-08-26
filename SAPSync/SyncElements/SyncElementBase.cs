@@ -61,7 +61,7 @@ namespace SAPSync.SyncElements
 
         protected virtual void CloseJob()
         {
-            CurrentJob.Complete();
+            CurrentJob.CloseJob();
             CurrentJob = null;
         }
 

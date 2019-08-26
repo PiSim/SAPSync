@@ -32,6 +32,7 @@ namespace SAPSync.SyncElements.SyncOperations
 
         public ICollection<Task> ChildrenTasks { get; }
         public IRecordEvaluator<T> RecordEvaluator { get; }
+        protected Task LoadTask { get; set; }
         protected ICollection<UpdatePackage<T>> Packages { get; }
 
         #endregion Properties
@@ -66,10 +67,17 @@ namespace SAPSync.SyncElements.SyncOperations
             EnsureInitialized();
         }
 
-        public async void OpenWriterAsync() => await StartChildTask(OpenWriter);
+        public async void OpenWriterAsync()
+        {
+            LoadTask = StartChildTask(OpenWriter);
+            await LoadTask;
+        }
 
         public void WriteRecords(IEnumerable<T> records)
         {
+            // Ensure initialization has been completed before attempting to write
+            LoadTask.Wait();
+
             try
             {
                 Packages.Add(RecordEvaluator.GetUpdatePackage(records));
@@ -77,7 +85,7 @@ namespace SAPSync.SyncElements.SyncOperations
             catch (Exception e)
             {
                 RaiseError(e: e,
-                    errorMessage: "Errore nell'importazione dei record " + e.Message + "\t\tInnerException : " + e.InnerException.Message,
+                    errorMessage: "Errore nell'importazione dei record " + e.Message + "\t\tInnerException : " + e.InnerException?.Message,
                     errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
             }
         }

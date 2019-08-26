@@ -46,6 +46,7 @@ namespace SAPSync
 
         public override void Start()
         {
+            base.Start();
             RaiseOnStarting();
             ExecuteAsync();
             RaiseOnStarted();
@@ -59,23 +60,25 @@ namespace SAPSync
 
         protected virtual void CycleSubJobs()
         {
-            if (SubJobs.All(sjb => sjb.Status == JobStatus.Completed || sjb.Status == JobStatus.Failed))
-                FinalizeJob();
-            else
+            try
             {
-                CheckSubJobReadiness();
-                if (!SubJobs.Any(sjb => sjb.Status == JobStatus.Ready))
-                    throw new Exception("No ready subjobs, check for circular dependencies.");
-                StartReadySubJobs();
+                if (SubJobs.All(sjb => sjb.Status == JobStatus.Completed || sjb.Status == JobStatus.Failed))
+                    Complete();
+                else
+                {
+                    CheckSubJobReadiness();
+                    if (!SubJobs.Any(sjb => sjb.Status == JobStatus.Ready || sjb.Status == JobStatus.Running))
+                        throw new Exception("No ready subjobs, check for circular dependencies.");
+                    StartReadySubJobs();
+                }
+            }
+            catch (Exception e)
+            {
+                RaiseSyncError(e);
             }
         }
 
         protected virtual async void ExecuteAsync() => await Task.Run(() => CycleSubJobs());
-
-        protected virtual void FinalizeJob()
-        {
-            RaiseCompleted();
-        }
 
         protected virtual void StartReadySubJobs()
         {
@@ -83,10 +86,7 @@ namespace SAPSync
                 subJob.StartAsync();
         }
 
-        private void OnSubJobCompleted(object sender, EventArgs e)
-        {
-            CycleSubJobs();
-        }
+        private void OnSubJobCompleted(object sender, EventArgs e) => CycleSubJobs();
 
         #endregion Methods
     }

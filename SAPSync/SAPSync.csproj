@@ -305,10 +305,6 @@
     <Compile Include="SyncElements\Evaluators\InspectionPointEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\InspectionLotEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialEvaluator.cs" />
-    <Page Include="Views\LogDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -330,12 +326,9 @@
     <Compile Include="Job.cs" />
     <Compile Include="JobController.cs" />
     <Compile Include="TaskEventArgs.cs" />
-    <Compile Include="ViewModels\LogDialogViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\SubJobViewModel.cs" />
     <Compile Include="ViewModels\SyncElementViewModel.cs" />
-    <Compile Include="Views\LogDialog.xaml.cs">
-      <DependentUpon>LogDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

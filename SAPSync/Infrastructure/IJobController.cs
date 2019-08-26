@@ -21,15 +21,15 @@ namespace SAPSync
 
         #region Properties
 
-        ICollection<IJob> ActiveJobs { get; }
-
-        ICollection<IJob> CompletedJobs { get; }
+        ICollection<IJob> Jobs { get; }
 
         #endregion Properties
 
         #region Methods
 
         Task GetAwaiterForActiveOperations();
+
+        ICollection<IJob> GetJobs(bool includeCompleted = false);
 
         IJob StartJob(IEnumerable<ISyncElement> syncElements);
 

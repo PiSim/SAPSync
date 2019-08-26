@@ -22,6 +22,8 @@ namespace SAPSync.Infrastructure
 
         Task CurrentTask { get; }
 
+        DateTime EndTime { get; }
+        DateTime StartTime { get; }
         JobStatus Status { get; }
 
         ICollection<ISubJob> SubJobs { get; }

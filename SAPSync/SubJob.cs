@@ -28,24 +28,20 @@ namespace SAPSync
 
         #region Methods
 
+        public virtual void CloseJob()
+        {
+            Complete();
+        }
+
         public void CheckStatus()
         {
             if (Status == JobStatus.OnQueue && Dependencies.All(dep => dep.Status == JobStatus.Completed))
                 ChangeStatus(JobStatus.Ready);
         }
 
-        public void Complete(bool isSuccesful = true)
-        {
-            if (isSuccesful)
-                ChangeStatus(JobStatus.Completed);
-            else
-                ChangeStatus(JobStatus.Failed);
-
-            RaiseOnCompleted();
-        }
-
         public override void Start()
         {
+            base.Start();
             if (Status != JobStatus.Ready)
                 throw new InvalidOperationException("Job is not in Ready state");
 

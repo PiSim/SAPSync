@@ -101,8 +101,26 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        <Grid Grid.Column="1"
-              Grid.Row="1">
+        <GroupBox Grid.Column="1"
+              Grid.Row="1"
+              Grid.RowSpan="2">
+            <GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Operazioni"
+                               Grid.Column="0"
+                               Margin="0,2,15,0"
+                               VerticalAlignment="Center" />
+                    <CheckBox Content="Mostra completate"
+                              Grid.Column="1"
+                              IsChecked="{Binding ShowCompleteJobs}"
+                              Margin="5,2,0,0"
+                              VerticalAlignment="Center" />
+                </Grid>
+            </GroupBox.Header>
             <DataGrid AutoGenerateColumns="false"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -114,49 +132,34 @@
                   RowHeight="30"
                   VerticalGridLinesBrush="Transparent">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Elemento"
-                                    Binding="{Binding Name, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding ElementStatus, Mode=OneWay}" />
-                    <DataGridTextColumn Binding="{Binding SyncStatus, Mode=OneWay}" />
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ProgressBar Margin="2"
-                                         Cursor="Wait"
-                                         Value="{Binding PhaseProgress, Mode=OneWay}"
-                                         Width="150" />
+                                
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
-        <Grid Grid.Column="1"
-              Grid.Row="2">
-            <DataGrid AutoGenerateColumns="false"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  CanUserResizeColumns="False"
-                  CanUserSortColumns="False"
-                  HorizontalGridLinesBrush="Transparent"
-                  ItemsSource="{Binding ActiveOperations}"
-                  Margin="5"
-                  RowHeight="30"
-                  VerticalGridLinesBrush="Transparent">
-                <DataGrid.Columns>
                     <DataGridTextColumn Header="Elemento"
                                     Binding="{Binding Name, Mode=OneWay}" />
                     <DataGridTextColumn Header="Stato"
-                                    Binding="{Binding Status, Mode=OneWay}" />
+                                    Binding="{Binding JobStatus, Mode=OneWay}" />
+                    <DataGridTextColumn Header="Inizio"
+                                    Binding="{Binding StartTime,
+                                                      Mode=OneWay,
+                                                      StringFormat=mm:hh yyyy/MM/dd}" />
+                    <DataGridTextColumn Header="Fine"
+                                    Binding="{Binding EndTime,
+                                                      Mode=OneWay,
+                                                      StringFormat=mm:hh yyyy/MM/dd}" />
                 </DataGrid.Columns>
             </DataGrid>
-        </Grid>
+        </GroupBox>
         <Grid Grid.Row="3"
               Grid.Column="1">
             <GroupBox Header="Log">
                 <TextBox IsReadOnly="True"
-                         Text="{Binding CurrentLog}" />
+                         Text="{Binding CurrentLog, 
+                                        Mode=OneWay}" />
             </GroupBox>
         </Grid>
     </Grid>

@@ -1,4 +1,5 @@
 ﻿using SAPSync.Infrastructure;
+using System;
 using System.Collections.Generic;
 
 namespace SAPSync.SyncElements
@@ -42,6 +43,7 @@ namespace SAPSync.SyncElements
         {
             Operations.Add(newOperation);
             newOperation.SetParent(this);
+            newOperation.OperationCompleted += OnOperationCompleted;
             return this;
         }
 
@@ -53,6 +55,8 @@ namespace SAPSync.SyncElements
             else
                 OperationEnumerator.Current.StartAsync(CurrentJob);
         }
+
+        private void OnOperationCompleted(object sender, EventArgs e) => StartNextOperation();
 
         #endregion Methods
     }

@@ -11,6 +11,7 @@ namespace SAPSync
         #region Properties
 
         public static LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
+        public static event EventHandler LogEntryCreated;
 
         #endregion Properties
 
@@ -24,6 +25,8 @@ namespace SAPSync
                     GetTimeStamp() + "Elemento completato: " + element.Name
                 });
         }
+
+        public static void RaiseLogEntryCreated() => LogEntryCreated?.Invoke(null, new EventArgs());
 
         public static void LogElementStarting(ISyncElement element)
         {
@@ -86,6 +89,7 @@ namespace SAPSync
             finally
             {
                 CurrentLog.AddFirst(string.Concat(lines.Select(l => l + "\n")));
+                RaiseLogEntryCreated();
             }
         }
 

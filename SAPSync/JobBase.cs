@@ -24,13 +24,18 @@ namespace SAPSync
 
         public Task CurrentTask { get; protected set; }
 
+        public DateTime EndTime { get; protected set; }
+        public DateTime StartTime { get; protected set; }
         public JobStatus Status { get; protected set; }
 
         #endregion Properties
 
         #region Methods
 
-        public abstract void Start();
+        public virtual void Start()
+        {
+            StartTime = DateTime.Now;
+        }
 
         public virtual async void StartAsync() => await Task.Run(() => Start());
 
@@ -38,6 +43,16 @@ namespace SAPSync
         {
             Status = newStatus;
             RaiseStatusChanged();
+        }
+
+        protected virtual void Complete(bool isSuccesful = true)
+        {
+            if (isSuccesful)
+                ChangeStatus(JobStatus.Completed);
+            else
+                ChangeStatus(JobStatus.Failed);
+            RaiseCompleted();
+            EndTime = DateTime.Now;
         }
 
         protected virtual void RaiseCompleted() => OnCompleted?.Invoke(this, new EventArgs());
@@ -49,6 +64,24 @@ namespace SAPSync
         protected virtual void RaiseOnStarting() => OnStarting?.Invoke(this, new EventArgs());
 
         protected virtual void RaiseStatusChanged() => StatusChanged?.Invoke(this, new EventArgs());
+
+        protected virtual void RaiseSyncError(
+                                                            Exception e = null,
+            string errorMessage = null,
+            SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
+        {
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                Exception = e,
+                NameOfElement = ToString(),
+                Severity = errorSeverity,
+                ErrorMessage = errorMessage,
+                TimeStamp = DateTime.Now,
+                TypeOfElement = GetType()
+            };
+
+            SyncErrorRaised?.Invoke(this, args);
+        }
 
         #endregion Methods
     }
