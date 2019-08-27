@@ -1,24 +1,25 @@
-﻿using SAPSync.Functions;
+﻿using SAPSync.SyncElements.Validators;
 using SSMD;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class RoutingOperationEvaluator : RecordEvaluator<RoutingOperation, Tuple<long, int>>
     {
+        #region Constructors
+
         public RoutingOperationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
-        #region Methods
 
-        protected override IRecordValidator<RoutingOperation> GetRecordValidator() => new RoutingOperationValidator();
+        #endregion Constructors
+
+        #region Methods
 
         protected override Tuple<long, int> GetIndexKey(RoutingOperation record) => new Tuple<long, int>(record.RoutingNumber, record.RoutingCounter);
 
+        protected override IRecordValidator<RoutingOperation> GetRecordValidator() => new RoutingOperationValidator();
+
         #endregion Methods
     }
-
 }

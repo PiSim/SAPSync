@@ -1,10 +1,10 @@
-﻿using Prism.Commands;
+﻿using Microsoft.EntityFrameworkCore.Internal;
+using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace SAPSync.ViewModels
 {
@@ -15,6 +15,7 @@ namespace SAPSync.ViewModels
         private string _serviceStatus;
         private List<SyncElementViewModel> _syncElements;
         private SyncManager _syncManager;
+        private bool _showCompleteJobs;
 
         #endregion Fields
 
@@ -22,35 +23,55 @@ namespace SAPSync.ViewModels
 
         public MainWindowViewModel()
         {
+            _showCompleteJobs = true;
+            SyncLogger.LogEntryCreated += OnLogEntryCreated;
             StartSyncCommand = new DelegateCommand(() => StartSync());
-            ToggleSyncServiceCommand = new DelegateCommand(() => ToggleSyncService());
-            OpenLogWindowCommand = new DelegateCommand(() => OpenLogWindow());
+            ToggleSAPSyncCommand = new DelegateCommand(() => ToggleSAPSync());
+        }
+
+        private void OnLogEntryCreated(object sender, EventArgs e)
+        {
+            RaisePropertyChanged("CurrentLog");
         }
 
         #endregion Constructors
 
         #region Events
 
-        public event EventHandler SyncServiceStartRequested;
+        public event EventHandler SAPSyncStartRequested;
 
-        public event EventHandler SyncServiceStopRequested;
+        public event EventHandler SAPSyncStopRequested;
 
         #endregion Events
 
         #region Properties
 
+        public IEnumerable<SubJobViewModel> ActiveJobs
+            => SyncManager?
+            .JobController?
+            .GetJobs(ShowCompleteJobs)?
+            .OrderByDescending(job => job.StartTime)
+            .SelectMany(job => job.SubJobs)
+            .Select(sjb => new SubJobViewModel(sjb));
+
+        public string CurrentLog => SyncLogger.CurrentLog.Join(Environment.NewLine);
+
+        public DelegateCommand OpenLogWindowCommand { get; }
+
         public string ServiceStatus
         { get => _serviceStatus; set { _serviceStatus = value; RaisePropertyChanged("ServiceStatus"); } }
 
-        public DelegateCommand StartSyncCommand { get; set; }
-
-        private void OpenLogWindow()
+        public bool ShowCompleteJobs
         {
-            Window logWindow = new Views.LogDialog();
-            logWindow.Show();
+            get => _showCompleteJobs;
+            set
+            {
+                _showCompleteJobs = value;
+                RaisePropertyChanged("ActiveJobs");
+            }
         }
 
-        public DelegateCommand OpenLogWindowCommand { get; }
+        public DelegateCommand StartSyncCommand { get; set; }
 
         public List<SyncElementViewModel> SyncElements
         {
@@ -69,11 +90,16 @@ namespace SAPSync.ViewModels
             {
                 _syncManager = value;
                 SyncElements = GetSyncElements(_syncManager);
+
+                if (_syncManager != null)
+                {
+                    _syncManager.JobController.NewJobStarted += OnJobStarted;
+                    _syncManager.JobController.JobCompleted += OnJobCompleted;
+                }
             }
         }
 
-        public SyncService.SyncService SyncService { get; set; }
-        public DelegateCommand ToggleSyncServiceCommand { get; set; }
+        public DelegateCommand ToggleSAPSyncCommand { get; set; }
 
         #endregion Properties
 
@@ -81,22 +107,21 @@ namespace SAPSync.ViewModels
 
         public List<SyncElementViewModel> GetSyncElements(SyncManager syncManager) => syncManager.SyncElements.Select(sel => new SyncElementViewModel(sel)).ToList();
 
-        protected virtual void OnServiceToggle(object sender, EventArgs e)
-        {
-            RaisePropertyChanged("ServiceStatus");
-        }
+        protected virtual void OnJobCompleted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
+
+        protected virtual void OnJobStarted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
 
         private void StartSync()
         {
             Task.Run(() => _syncManager?.StartSync(SyncElements.Where(sel => sel.IsSelected).Select(sel => sel.SyncElement)));
         }
 
-        private void ToggleSyncService()
+        private void ToggleSAPSync()
         {
             if (ServiceStatus == "Running")
-                SyncServiceStopRequested?.Invoke(this, new EventArgs());
+                SAPSyncStopRequested?.Invoke(this, new EventArgs());
             else if (ServiceStatus == "Stopped")
-                SyncServiceStartRequested?.Invoke(this, new EventArgs());
+                SAPSyncStartRequested?.Invoke(this, new EventArgs());
         }
 
         #endregion Methods

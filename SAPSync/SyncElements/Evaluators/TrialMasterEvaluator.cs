@@ -1,18 +1,23 @@
-﻿using SSMD;
+﻿using SAPSync.SyncElements.Validators;
+using SSMD;
 
 namespace SAPSync.SyncElements
 {
     public class TrialMasterEvaluator : RecordEvaluator<OrderData, int>
     {
+        #region Constructors
+
         public TrialMasterEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<OrderData> GetRecordValidator() => new TrialMasterRecordValidator();
-
         protected override int GetIndexKey(OrderData record) => record.OrderNumber;
+
+        protected override IRecordValidator<OrderData> GetRecordValidator() => new TrialMasterRecordValidator();
 
         #endregion Methods
     }

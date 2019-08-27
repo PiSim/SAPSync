@@ -4,10 +4,14 @@ namespace SSMD
 {
     public class SyncElementData
     {
+        #region Constructors
+
         public SyncElementData()
         {
             UpdateInterval = 4;
         }
+
+        #endregion Constructors
 
         #region Properties
 

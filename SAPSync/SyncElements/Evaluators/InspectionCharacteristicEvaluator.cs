@@ -1,15 +1,17 @@
-﻿using SAPSync.Functions;
-using SSMD;
-using System.Collections.Generic;
+﻿using SSMD;
 
 namespace SAPSync.SyncElements.Evaluators
 {
     public class InspectionCharacteristicEvaluator : RecordEvaluator<InspectionCharacteristic, string>
     {
+        #region Constructors
+
         public InspectionCharacteristicEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
         protected override string GetIndexKey(InspectionCharacteristic record) => record.Name;
@@ -22,5 +24,4 @@ namespace SAPSync.SyncElements.Evaluators
 
         #endregion Methods
     }
-
 }

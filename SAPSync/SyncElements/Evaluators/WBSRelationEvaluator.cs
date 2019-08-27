@@ -1,5 +1,5 @@
 ﻿using DataAccessCore;
-using SAPSync.Functions;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +8,19 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class WBSRelationEvaluator : RecordEvaluator<WBSRelation, int>
     {
+        #region Constructors
+
         public WBSRelationEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
+
+        #endregion Constructors
+
         #region Methods
 
-        protected override IRecordValidator<WBSRelation> GetRecordValidator() => new WBSRelationValidator();
-        
-
         protected override int GetIndexKey(WBSRelation record) => record.ID;
+
+        protected override IRecordValidator<WBSRelation> GetRecordValidator() => new WBSRelationValidator();
 
         #endregion Methods
     }

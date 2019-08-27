@@ -222,61 +222,74 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Functions\ReadCustomers.cs" />
-    <Compile Include="Functions\ReadGoodMovements.cs" />
-    <Compile Include="Functions\ReadMaterialCustomers.cs" />
-    <Compile Include="Functions\ReadRoutingOperationValues.cs" />
+    <Compile Include="Infrastructure\ISubJob.cs" />
+    <Compile Include="Infrastructure\JobStatus.cs" />
+    <Compile Include="Infrastructure\SyncErrorEventArgs.cs" />
+    <Compile Include="JobBase.cs" />
+    <Compile Include="RFCFunctions\ReadCustomers.cs" />
+    <Compile Include="RFCFunctions\ReadGoodMovements.cs" />
+    <Compile Include="RFCFunctions\ReadMaterialCustomers.cs" />
+    <Compile Include="RFCFunctions\ReadRoutingOperationValues.cs" />
+    <Compile Include="Infrastructure\ISyncElement.cs" />
+    <Compile Include="Infrastructure\ISyncManager.cs" />
+    <Compile Include="Infrastructure\IJob.cs" />
+    <Compile Include="Infrastructure\IJobController.cs" />
+    <Compile Include="Infrastructure\IUnitOfWork.cs" />
+    <Compile Include="SAPSync.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SubJob.cs" />
     <Compile Include="SyncElementFactory.cs" />
     <Compile Include="SyncElements\Evaluators\TestReportRecordEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\WorkPhaseLabDataEvaluator.cs" />
     <Compile Include="SyncElements\SyncElementConfiguration.cs" />
-    <Compile Include="SyncElements\SyncJobs\Dto\TrialScrapDto.cs" />
-    <Compile Include="SyncElements\SyncJobs\Dto\TestReportDto.cs" />
-    <Compile Include="SyncElements\SyncJobs\Dto\WorkPhaseLabDataDto.cs" />
-    <Compile Include="SyncElements\SyncJobs\SSMDReader.cs" />
+    <Compile Include="SyncElements\SyncOperation.cs" />
+    <Compile Include="SyncElements\SyncOperations\Dto\TrialScrapDto.cs" />
+    <Compile Include="SyncElements\SyncOperations\Dto\TestReportDto.cs" />
+    <Compile Include="SyncElements\SyncOperations\Dto\WorkPhaseLabDataDto.cs" />
+    <Compile Include="SyncElements\SyncOperations\SSMDReader.cs" />
     <Compile Include="SyncElements\Evaluators\GoodMovementEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialCustomerEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\TrialMasterEvaluator.cs" />
-    <Compile Include="Functions\BAPITableFunctionBase.cs" />
-    <Compile Include="Functions\InspLotGetList.cs" />
-    <Compile Include="Functions\ReadComponents.cs" />
-    <Compile Include="Functions\ReadConfirmations.cs" />
-    <Compile Include="Functions\ReadInspectionCharacteristics.cs" />
-    <Compile Include="Functions\ReadMaterials.cs" />
-    <Compile Include="Functions\ReadMaterialFamilies.cs" />
-    <Compile Include="Functions\ReadMaterialFamilyLevels.cs" />
-    <Compile Include="Functions\ReadOrderComponents.cs" />
-    <Compile Include="Functions\ReadOrderData.cs" />
-    <Compile Include="Functions\ReadWBSRelations.cs" />
-    <Compile Include="Functions\ReadProjects.cs" />
-    <Compile Include="Functions\ReadRoutingOperations.cs" />
-    <Compile Include="Functions\ReadOrders.cs" />
-    <Compile Include="Functions\ReadWorkCenters.cs" />
-    <Compile Include="Functions\ReadInspectionPoints.cs" />
-    <Compile Include="Functions\ReadInspectionSpecifications.cs" />
-    <Compile Include="Functions\ReadTableBase.cs" />
+    <Compile Include="RFCFunctions\BAPITableFunctionBase.cs" />
+    <Compile Include="RFCFunctions\InspLotGetList.cs" />
+    <Compile Include="RFCFunctions\ReadComponents.cs" />
+    <Compile Include="RFCFunctions\ReadConfirmations.cs" />
+    <Compile Include="RFCFunctions\ReadInspectionCharacteristics.cs" />
+    <Compile Include="RFCFunctions\ReadMaterials.cs" />
+    <Compile Include="RFCFunctions\ReadMaterialFamilies.cs" />
+    <Compile Include="RFCFunctions\ReadMaterialFamilyLevels.cs" />
+    <Compile Include="RFCFunctions\ReadOrderComponents.cs" />
+    <Compile Include="RFCFunctions\ReadOrderData.cs" />
+    <Compile Include="RFCFunctions\ReadWBSRelations.cs" />
+    <Compile Include="RFCFunctions\ReadProjects.cs" />
+    <Compile Include="RFCFunctions\ReadRoutingOperations.cs" />
+    <Compile Include="RFCFunctions\ReadOrders.cs" />
+    <Compile Include="RFCFunctions\ReadWorkCenters.cs" />
+    <Compile Include="RFCFunctions\ReadInspectionPoints.cs" />
+    <Compile Include="RFCFunctions\ReadInspectionSpecifications.cs" />
+    <Compile Include="RFCFunctions\ReadTableBase.cs" />
     <Compile Include="SAPDestinationConfig.cs" />
     <Compile Include="SAPReader.cs" />
     <Compile Include="SyncElements\ExcelWorkbooks\ModifyRangeToken.cs" />
-    <Compile Include="SyncElements\SyncJobs\CreateMissingTrialLabData.cs" />
-    <Compile Include="SyncElements\SyncJobs\Dto\TrialMasterDataDto.cs" />
-    <Compile Include="SyncElements\IRecordReader.cs" />
-    <Compile Include="SyncElements\IRecordWriter.cs" />
-    <Compile Include="SyncElements\ISyncJob.cs" />
-    <Compile Include="SyncElements\IXmlDto.cs" />
-    <Compile Include="SyncElements\RecordValidator.cs" />
+    <Compile Include="SyncElements\SyncOperations\CreateMissingTrialLabData.cs" />
+    <Compile Include="SyncElements\SyncOperations\Dto\TrialMasterDataDto.cs" />
+    <Compile Include="Infrastructure\IRecordReader.cs" />
+    <Compile Include="Infrastructure\IRecordWriter.cs" />
+    <Compile Include="Infrastructure\ISyncOperation.cs" />
+    <Compile Include="Infrastructure\IXmlDto.cs" />
+    <Compile Include="SyncElements\Validators\RecordValidator.cs" />
     <Compile Include="SyncElements\Evaluators\ComponentEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\CustomerEvaluator.cs" />
-    <Compile Include="SyncElements\JobAggregator.cs" />
+    <Compile Include="SyncElements\OperationAggregator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialFamilyLevelEvaluator.cs" />
     <Compile Include="SyncElements\SyncElementBase.cs" />
-    <Compile Include="SyncElements\SyncJobBase.cs" />
-    <Compile Include="SyncElements\SyncJobs\SyncData.cs" />
-    <Compile Include="SyncElements\SyncJobs\RecordWriter.cs" />
-    <Compile Include="SyncElements\SyncJobs\XmlAttributes.cs" />
-    <Compile Include="SyncElements\SyncJobs\XmlInteraction.cs" />
-    <Compile Include="SyncElements\SyncJobs\XmlReader.cs" />
-    <Compile Include="SyncElements\SyncJobs\XmlWriter.cs" />
+    <Compile Include="SyncElements\SyncOperations\SyncData.cs" />
+    <Compile Include="SyncElements\SyncOperations\RecordWriter.cs" />
+    <Compile Include="SyncElements\SyncOperations\XmlAttributes.cs" />
+    <Compile Include="SyncElements\SyncOperations\XmlInteraction.cs" />
+    <Compile Include="SyncElements\SyncOperations\XmlReader.cs" />
+    <Compile Include="SyncElements\SyncOperations\XmlWriter.cs" />
     <Compile Include="SyncElements\Evaluators\ConfirmationEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\InspectionCharacteristicEvaluator.cs" />
     <Compile Include="SyncElements\RecordEvaluator.cs" />
@@ -292,10 +305,6 @@
     <Compile Include="SyncElements\Evaluators\InspectionPointEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\InspectionLotEvaluator.cs" />
     <Compile Include="SyncElements\Evaluators\MaterialEvaluator.cs" />
-    <Page Include="Views\LogDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -312,15 +321,14 @@
     <Compile Include="SyncElements\Validators\TestReportRecordValidator.cs" />
     <Compile Include="SyncElements\Validators\TrialMasterRecordValidator.cs" />
     <Compile Include="SyncElements\Validators\WorkPhaseLabDataValidator.cs" />
+    <Compile Include="SyncLogger.cs" />
     <Compile Include="SyncManager.cs" />
-    <Compile Include="SyncTask.cs" />
-    <Compile Include="SyncTaskController.cs" />
-    <Compile Include="ViewModels\LogDialogViewModel.cs" />
+    <Compile Include="Job.cs" />
+    <Compile Include="JobController.cs" />
+    <Compile Include="TaskEventArgs.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\SubJobViewModel.cs" />
     <Compile Include="ViewModels\SyncElementViewModel.cs" />
-    <Compile Include="Views\LogDialog.xaml.cs">
-      <DependentUpon>LogDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -361,13 +369,9 @@
       <Project>{44f00013-ea6b-464d-be1f-fcf5c30cfb55}</Project>
       <Name>SSMD</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SyncService\SyncService.csproj">
-      <Project>{24f5b96c-f38d-46c7-a894-fef012611a1b}</Project>
-      <Name>SyncService</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ReadMe.txt" />
+    <Resource Include="RFCConnectorReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">

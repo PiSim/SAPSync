@@ -1,193 +1,109 @@
-﻿using SSMD;
-using SyncService;
+﻿using DataAccessCore;
+using DataAccessCore.Commands;
+using SAPSync.Infrastructure;
+using SSMD;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SAPSync.SyncElements
 {
-
-    public abstract class SyncElementBase : ISyncBase, IDisposable
+    public abstract class SyncElementBase : ISyncElement
     {
-        public event EventHandler ElementStarting;
+        #region Constructors
+
+        public SyncElementBase(string name = "", SyncElementConfiguration configuration = null)
+        {
+            Name = name;
+            Configuration = configuration ?? new SyncElementConfiguration();
+            ReadElementData();
+            Dependencies = new List<ISyncElement>();
+        }
+
+        #endregion Constructors
+
+        #region Events
+
         public event EventHandler ElementCompleted;
 
-        public abstract string Name { get; }
+        public event EventHandler ElementStarting;
 
-        protected virtual void Initialize()
+        #endregion Events
+
+        #region Properties
+
+        public SyncElementConfiguration Configuration { get; private set; }
+
+        public ISubJob CurrentJob { get; protected set; }
+
+        public ICollection<ISyncElement> Dependencies { get; }
+
+        public SyncElementData ElementData { get; protected set; }
+
+        public bool IsUpForScheduledUpdate => NextScheduledUpdate <= DateTime.Now;
+
+        public DateTime? LastUpdate => ElementData?.LastUpdate;
+
+        public virtual string Name { get; }
+
+        public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
+
+        protected SSMDData SSMDData => new SSMDData(new SSMDContextFactory());
+
+        #endregion Properties
+
+        #region Methods
+
+        public virtual void Execute(ISubJob newJob)
         {
-
-        }
-        protected virtual void EnsureInitialized()
-        {
-
-        }
-
-        public void Dispose()
-        {
-            Clear();
-        }
-
-        protected virtual void Clear()
-        {
-        }
-
-        public event ProgressChangedEventHandler ProgressChanged;
-        public event EventHandler<TaskEventArgs> ExternalTaskCompleted;
-        public event EventHandler<TaskEventArgs> ExternalTaskStarting;
-        public event EventHandler StatusChanged;
-        public event EventHandler<SyncErrorEventArgs> SyncErrorRaised;
-
-        protected virtual void RaiseExternalTaskStarting(Task t)
-        {
-            ExternalTaskStarting?.Invoke(this, new TaskEventArgs(t));
-        }
-        protected virtual void RaiseExternalTaskCompleted(Task t)
-        {
-            ExternalTaskCompleted?.Invoke(this, new TaskEventArgs(t));
+            OpenJob(newJob);
         }
 
-        protected virtual void RaiseElementStarting()
+        protected virtual void CloseJob()
         {
-            ElementStarting?.Invoke(this, new EventArgs());
+            CurrentJob.CloseJob();
+            CurrentJob = null;
         }
 
-        protected virtual void RaiseElementComplete()
+        protected virtual void FinalizeSync()
         {
-            ElementCompleted?.Invoke(this, new EventArgs());
-        }
-
-        protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
-               
-        public virtual void Run()
-        {
+            CloseJob();
+            ElementData.LastUpdate = DateTime.Now;
             try
             {
-                OnStarting();
-                Initialize();
-                EnsureInitialized();
-                Execute();
+                SaveElementData();
             }
             catch (Exception e)
             {
-                OnFailure();
-                RaiseSyncError(e: e,
-                    errorMessage: "Errore: " + e.Message + "\t\tInnerException :" + e.InnerException.Message,
-                    errorSeverity: SyncErrorEventArgs.ErrorSeverity.Major);
-            }
-            finally
-            {
-                OnCompleting();
+                throw new Exception("Impossibile salvare ElementData: " + e.Message, e);
             }
         }
 
-        protected virtual void OnFailure()
-        {
+        protected virtual DateTime GetNextScheduledUpdate() => ((DateTime)LastUpdate).AddHours(ElementData.UpdateInterval);
 
+        protected virtual void OpenJob(ISubJob newJob)
+        {
+            if (CurrentJob != null)
+                throw new InvalidOperationException("Another Job is already open");
+            CurrentJob = newJob;
         }
 
-        protected virtual void OnStarting()
+        protected virtual void ReadElementData()
         {
-            RaiseElementStarting();
+            ElementData = SSMDData.RunQuery(new Query<SyncElementData, SSMDContext>()).FirstOrDefault(sed => sed.ElementType == this.Name);
+            if (ElementData == null)
+                ElementData = new SyncElementData()
+                {
+                    LastUpdate = new DateTime(0),
+                    ElementType = Name
+                };
         }
 
-        protected virtual void OnCompleting()
+        protected virtual void SaveElementData()
         {
-            RaiseElementComplete();
-            Clear();
+            SSMDData.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
         }
 
-        protected virtual void Execute()
-        {
-        }
-
-        protected virtual void RaiseSyncError(
-            Exception e = null,
-            string errorMessage = null,
-            SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
-        {
-            SyncErrorEventArgs args = new SyncErrorEventArgs()
-            {
-                Exception = e,
-                NameOfElement = Name,
-                Severity = errorSeverity,
-                ErrorMessage = errorMessage,
-                TimeStamp = DateTime.Now,
-                TypeOfElement = GetType()
-            };
-
-            SyncErrorRaised?.Invoke(this, args);
-        }
-
-        protected virtual void RaiseProgressChanged(int newProgress)
-        {
-            ProgressChangedEventArgs e = new ProgressChangedEventArgs(newProgress, null);
-
-            ProgressChanged?.Invoke(this, e);
-        }
-        protected void RaiseStatusChanged()
-        {
-            EventArgs e = new EventArgs();
-            StatusChanged?.Invoke(this, e);
-        }
-
-        protected virtual void OnSubscribedExternalTaskCompleted(object sender, TaskEventArgs e)
-        {
-            ExternalTaskCompleted?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedExternalTaskStarting(object sender, TaskEventArgs e)
-        {
-            ExternalTaskStarting?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            ProgressChanged?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedElementCompleted(object sender, EventArgs e)
-        {
-            ElementCompleted?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedElementStarting(object sender, EventArgs e)
-        {
-            ElementStarting?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedStatusChanged(object sender, EventArgs e)
-        {
-            StatusChanged?.Invoke(sender, e);
-        }
-
-        protected virtual void OnSubscribedSyncErrorRaised(object sender, SyncErrorEventArgs e)
-        {
-            SyncErrorRaised?.Invoke(sender, e);
-        }
-
-        protected virtual void SubscribeToElement(ISyncBase syncBase)
-        {
-            syncBase.ExternalTaskCompleted += OnSubscribedExternalTaskCompleted;
-            syncBase.ExternalTaskStarting += OnSubscribedExternalTaskStarting;
-            syncBase.ProgressChanged += OnSubscribedProgressChanged;
-            syncBase.StatusChanged += OnSubscribedStatusChanged;
-            syncBase.SyncErrorRaised += OnSubscribedSyncErrorRaised;
-            syncBase.ElementStarting += OnSubscribedElementStarting;
-            syncBase.ElementCompleted += OnSubscribedElementCompleted;
-        }
-        protected virtual void UnsubscribeFromElement(ISyncBase syncBase)
-        {
-            syncBase.ExternalTaskCompleted -= OnSubscribedExternalTaskCompleted;
-            syncBase.ExternalTaskStarting -= OnSubscribedExternalTaskStarting;
-            syncBase.ProgressChanged -= OnSubscribedProgressChanged;
-            syncBase.StatusChanged -= OnSubscribedStatusChanged;
-            syncBase.SyncErrorRaised -= OnSubscribedSyncErrorRaised;
-            syncBase.ElementStarting -= OnSubscribedElementStarting;
-            syncBase.ElementCompleted -= OnSubscribedElementCompleted;
-        }
+        #endregion Methods
     }
 }

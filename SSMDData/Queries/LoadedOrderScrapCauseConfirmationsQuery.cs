@@ -1,15 +1,13 @@
 ﻿using DataAccessCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SSMD.Queries
 {
     public class LoadedOrderScrapCauseConfirmationsQuery : Query<OrderConfirmation, SSMDContext>
     {
+        #region Methods
+
         public override IQueryable<OrderConfirmation> Execute(SSMDContext context)
         {
             return base.Execute(context)
@@ -24,5 +22,6 @@ namespace SSMD.Queries
                                 .ThenInclude(mfa => mfa.L1);
         }
 
+        #endregion Methods
     }
 }

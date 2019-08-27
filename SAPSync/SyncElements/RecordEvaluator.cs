@@ -1,4 +1,5 @@
 ﻿using DataAccessCore;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,26 +11,20 @@ namespace SAPSync.SyncElements
         #region Properties
 
         RecordEvaluatorConfiguration Configuration { get; }
+
         #endregion Properties
 
         #region Methods
 
-        void Clear();
-
         bool CheckInitialized();
+
+        void Clear();
 
         UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records);
 
         void Initialize(SSMDData sSMDData);
 
         #endregion Methods
-    }
-
-    public class RecordEvaluatorConfiguration
-    {
-        public bool CheckRemovedRecords { get; set; } = true;
-
-        public bool IgnoreExistingRecords { get; set; } = false;
     }
 
     public abstract class RecordEvaluator<T, TKey> : IRecordEvaluator<T> where T : class
@@ -43,13 +38,6 @@ namespace SAPSync.SyncElements
         #endregion Fields
 
         #region Constructors
-
-        public void Clear()
-        {
-            RecordValidator = null;
-            _recordIndex = null;            
-            _trackedRecordIndex = null;
-        }
 
         public RecordEvaluator(RecordEvaluatorConfiguration configuration = null)
         {
@@ -72,19 +60,26 @@ namespace SAPSync.SyncElements
 
         #region Properties
 
+        public RecordEvaluatorConfiguration Configuration { get; }
+
         public IDictionary<TKey, T> RecordIndex => _recordIndex;
 
         public IDictionary<TKey, T> TrackedRecordIndex => _trackedRecordIndex;
 
         protected IRecordValidator<T> RecordValidator { get; set; }
 
-        public RecordEvaluatorConfiguration Configuration { get; }
-
         #endregion Properties
 
         #region Methods
 
         public bool CheckInitialized() => _recordIndex != null;
+
+        public void Clear()
+        {
+            RecordValidator = null;
+            _recordIndex = null;
+            _trackedRecordIndex = null;
+        }
 
         public virtual T GetIndexedEntry(TKey key)
         {
@@ -137,8 +132,6 @@ namespace SAPSync.SyncElements
 
         protected virtual void AddToTrackedRecordIndex(T record) => _trackedRecordIndex.Add(GetIndexKey(record), record);
 
-        protected virtual IRecordValidator<T> GetRecordValidator() =>  new RecordValidator<T>();
-
         protected virtual IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
         {
             List<SyncItem<T>> retrievedItems = records.Select(rec => new SyncItem<T>(rec)).ToList();
@@ -188,6 +181,8 @@ namespace SAPSync.SyncElements
             return SyncAction.Ignore;
         }
 
+        protected virtual IRecordValidator<T> GetRecordValidator() => new RecordValidator<T>();
+
         protected virtual void InitializeRecordValidator(SSMDData sSMDData)
         {
             RecordValidator.InitializeIndexes(sSMDData);
@@ -233,6 +228,17 @@ namespace SAPSync.SyncElements
         #endregion Classes
     }
 
+    public class RecordEvaluatorConfiguration
+    {
+        #region Properties
+
+        public bool CheckRemovedRecords { get; set; } = true;
+
+        public bool IgnoreExistingRecords { get; set; } = false;
+
+        #endregion Properties
+    }
+
     public class UpdatePackage<T>
     {
         #region Fields
@@ -258,6 +264,7 @@ namespace SAPSync.SyncElements
 
         #region Properties
 
+        public bool IsCommitted { get; set; } = false;
         public IEnumerable<T> RecordsToDelete => _recordsToDelete;
         public IEnumerable<T> RecordsToInsert => _recordsToInsert;
         public IEnumerable<T> RecordsToUpdate => _recordsToUpdate;

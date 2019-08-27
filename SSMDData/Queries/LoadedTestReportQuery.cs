@@ -1,15 +1,13 @@
 ﻿using DataAccessCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SSMD.Queries
 {
     public class LoadedTestReportQuery : Query<TestReport, SSMDContext>
     {
+        #region Methods
+
         public override IQueryable<TestReport> Execute(SSMDContext context) => base.Execute(context)
             .Include(trp => trp.Order)
                 .ThenInclude(ord => ord.OrderData)
@@ -39,5 +37,7 @@ namespace SSMD.Queries
                         .ThenInclude(inp => inp.InspectionSpecification)
                             .ThenInclude(ins => ins.InspectionCharacteristic)
             .OrderByDescending(rep => rep.Number);
+
+        #endregion Methods
     }
 }

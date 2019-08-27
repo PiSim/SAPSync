@@ -45,16 +45,15 @@ namespace SSMD
 
         #region Methods
 
+        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(DbContextOptionsBuilder optionsBuilder) =>
+            new MySqlDbContextOptionsBuilder(optionsBuilder)
+                .CommandTimeout(1800);
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseMySql(ConfigurationManager.ConnectionStrings["SSMD"].ConnectionString,
                 opt => GetMySqlDbContextOptions(optionsBuilder));
         }
-
-        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(DbContextOptionsBuilder optionsBuilder) =>
-            new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .CommandTimeout(1800);
-            
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -227,7 +226,6 @@ namespace SSMD
 
             modelBuilder.Entity<WorkPhaseLabData>()
                 .HasKey(wpld => wpld.OrderNumber);
-                
         }
 
         #endregion Methods

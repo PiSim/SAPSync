@@ -1,5 +1,5 @@
 ﻿using DataAccessCore;
-using SAPSync.Functions;
+using SAPSync.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
 using System;
@@ -10,17 +10,21 @@ namespace SAPSync.SyncElements.Evaluators
 {
     public class OrderComponentEvaluator : RecordEvaluator<OrderComponent, Tuple<int, string>>
     {
+        #region Constructors
+
         public OrderComponentEvaluator(RecordEvaluatorConfiguration configuration = null) : base(configuration)
         {
-
         }
-        #region Methods
 
-        protected override IRecordValidator<OrderComponent> GetRecordValidator() => new OrderComponentValidator();
+        #endregion Constructors
+
+        #region Methods
 
         protected override Query<OrderComponent, SSMDContext> GetIndexEntriesQuery() => new OrderComponentsQuery() { EagerLoadingEnabled = true };
 
         protected override Tuple<int, string> GetIndexKey(OrderComponent record) => new Tuple<int, string>(record.OrderNumber, record.Component.Name);
+
+        protected override IRecordValidator<OrderComponent> GetRecordValidator() => new OrderComponentValidator();
 
         protected override OrderComponent SetPrimaryKeyForExistingRecord(OrderComponent record)
         {
