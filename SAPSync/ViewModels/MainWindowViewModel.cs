@@ -1,4 +1,5 @@
-﻿using Prism.Commands;
+﻿using Microsoft.EntityFrameworkCore.Internal;
+using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -53,7 +54,7 @@ namespace SAPSync.ViewModels
             .SelectMany(job => job.SubJobs)
             .Select(sjb => new SubJobViewModel(sjb));
 
-        public IEnumerable<string> CurrentLog => SyncLogger.CurrentLog;
+        public string CurrentLog => SyncLogger.CurrentLog.Join(Environment.NewLine);
 
         public DelegateCommand OpenLogWindowCommand { get; }
 

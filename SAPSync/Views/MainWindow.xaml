@@ -146,11 +146,13 @@
                     <DataGridTextColumn Header="Inizio"
                                     Binding="{Binding StartTime,
                                                       Mode=OneWay,
-                                                      StringFormat=mm:hh yyyy/MM/dd}" />
+                                                      StringFormat=HH:mm yyyy/MM/dd,
+                                                      FallbackValue= }" />
                     <DataGridTextColumn Header="Fine"
                                     Binding="{Binding EndTime,
                                                       Mode=OneWay,
-                                                      StringFormat=mm:hh yyyy/MM/dd}" />
+                                                      StringFormat=HH:mm yyyy/MM/dd,
+                                                      FallbackValue=} />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
