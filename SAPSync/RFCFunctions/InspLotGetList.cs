@@ -1,11 +1,11 @@
 ﻿using SAP.Middleware.Connector;
-using SAPSync.Infrastructure;
+using DMTAgent.Infrastructure;
 using SSMD;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class InspLotGetList : BAPITableFunctionBase, IRecordReader<InspectionLot>
     {

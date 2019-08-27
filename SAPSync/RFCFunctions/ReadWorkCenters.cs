@@ -1,7 +1,7 @@
 ﻿using SAP.Middleware.Connector;
 using SSMD;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadWorkCenters : ReadTableBase<WorkCenter>
     {

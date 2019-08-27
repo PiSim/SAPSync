@@ -1,7 +1,7 @@
 ﻿using SSMD;
 using System.Collections.Generic;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadMaterials : ReadTableBase<Material>
     {

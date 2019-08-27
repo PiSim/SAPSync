@@ -1,7 +1,7 @@
 ﻿using SSMD;
 using System.Globalization;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadRoutingOperationValues : ReadTableBase<RoutingOperation>
     {

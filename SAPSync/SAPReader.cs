@@ -1,7 +1,7 @@
 ﻿using SAP.Middleware.Connector;
 using System;
 
-namespace SAPSync
+namespace DMTAgent.SAP
 {
     public class SAPReader
     {
@@ -9,6 +9,7 @@ namespace SAPSync
 
         private string _destinationName = "PRD";
 
+        private bool destinationIsInitialized = false;
         #endregion Fields
 
         #region Constructors
@@ -23,6 +24,7 @@ namespace SAPSync
 
         public RfcDestination GetRfcDestination()
         {
+            InitSAP();
             RfcDestination rfcDestination = RfcDestinationManager.GetDestination(_destinationName);
             TestConnection(rfcDestination);
             return rfcDestination;
@@ -49,6 +51,34 @@ namespace SAPSync
             return result;
         }
 
+        public void InitSAP()
+        {
+            if (!destinationIsInitialized)
+            {
+                string destinationConfigName = "PRD";
+                IDestinationConfiguration destinationConfig = null;
+
+                destinationConfig = new SAPDestinationConfig();
+                destinationConfig.GetParameters(destinationConfigName);
+
+                bool destinationFound = false;
+
+                try
+                {
+                    destinationFound = (RfcDestinationManager.GetDestination(destinationConfigName) != null);
+                }
+                catch
+                {
+                    destinationFound = false;
+                }
+
+                if (!destinationFound)
+                {
+                    RfcDestinationManager.RegisterDestinationConfiguration(destinationConfig);
+                    destinationIsInitialized = true;
+                }
+            }
+        }
         #endregion Methods
     }
 }

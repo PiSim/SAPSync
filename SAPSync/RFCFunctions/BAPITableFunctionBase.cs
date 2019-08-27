@@ -1,6 +1,6 @@
 ﻿using SAP.Middleware.Connector;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class BAPITableFunctionBase
     {

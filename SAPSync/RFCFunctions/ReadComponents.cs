@@ -1,8 +1,8 @@
 ﻿using SSMD;
 using System.Collections.Generic;
 
-namespace SAPSync.RFCFunctions
-{
+namespace DMTAgent.SAP
+{ 
     public class ReadComponents : ReadTableBase<Component>
     {
         #region Constructors

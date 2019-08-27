@@ -3,7 +3,7 @@ using SSMD;
 using System;
 using System.Globalization;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadConfirmations : ReadTableBase<OrderConfirmation>
     {

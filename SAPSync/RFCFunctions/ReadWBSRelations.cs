@@ -1,6 +1,6 @@
 ﻿using SSMD;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadWBSRelations : ReadTableBase<WBSRelation>
     {

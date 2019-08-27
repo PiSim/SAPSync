@@ -1,7 +1,7 @@
 ﻿using SAP.Middleware.Connector;
 using System.Configuration;
 
-namespace SAPSync
+namespace DMTAgent.SAP
 {
     public class SAPDestinationConfig : IDestinationConfiguration
     {

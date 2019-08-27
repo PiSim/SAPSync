@@ -2,7 +2,7 @@
 using SSMD;
 using System.Globalization;
 
-namespace SAPSync.RFCFunctions
+namespace DMTAgent.SAP
 {
     public class ReadInspectionSpecifications : ReadTableBase<InspectionSpecification>
     {
