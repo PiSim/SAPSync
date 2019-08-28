@@ -1,5 +1,6 @@
 ﻿
 using DMTAgent.Infrastructure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,11 @@ namespace DMTAgent
     {
         #region Constructors
 
-        public SyncManager()
+        private readonly ILogger _logger;
+
+        public SyncManager(ILogger logger)
         {
+            _logger = logger;
             JobController = new JobController();
             JobController.SyncErrorRaised += OnSyncErrorRaised;
             JobController.JobStarting += OnTaskStarting;
@@ -45,30 +49,19 @@ namespace DMTAgent
             StartSync(SyncElements.Where(sel => sel.NextScheduledUpdate < DateTime.Now).ToList());
         }
 
-        protected virtual void OnElementCompleted(object sender, EventArgs e)
-        {
-            if (sender is ISyncElement)
-                SyncLogger.LogElementCompleted(sender as ISyncElement);
-        }
-
-        protected virtual void OnElementStarting(object sender, EventArgs e)
-        {
-            if (sender is ISyncElement)
-                SyncLogger.LogElementStarting(sender as ISyncElement);
-        }
-
-        protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e) => SyncLogger.LogSyncError(e);
+        protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)
+            => _logger.LogError(e.Exception, "Errore di sincronizzazione", new object[] { });
 
         protected virtual void OnTaskCompleted(object sender, EventArgs e)
         {
             if (sender is IJob)
-                SyncLogger.LogTaskCompleted(sender as IJob);
+                _logger.LogInformation("Task completato", new object[] { (sender as IJob) });
         }
 
         protected virtual void OnTaskStarting(object sender, EventArgs e)
         {
             if (sender is IJob)
-                SyncLogger.LogTaskStarting(sender as IJob);
+                _logger.LogInformation("Avvio nuovo task", new object[] { (sender as IJob) });
         }
 
         #endregion Methods

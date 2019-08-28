@@ -5,15 +5,16 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace DMTAgent
 {
-    public class SyncLogger
+    public class SyncLogger : ILogger
     {
         #region Properties
 
-        public static LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
-        public static event EventHandler LogEntryCreated;
+        public  LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
+        public  event EventHandler LogEntryCreated;
         private readonly AppSettings _settings;
 
         #endregion Properties
@@ -25,7 +26,7 @@ namespace DMTAgent
 
         #region Methods
 
-        public static void LogElementCompleted(ISyncElement element)
+        public void LogElementCompleted(ISyncElement element)
         {
             NewLogEntry(
                 new string[]
@@ -34,9 +35,9 @@ namespace DMTAgent
                 });
         }
 
-        public static void RaiseLogEntryCreated() => LogEntryCreated?.Invoke(null, new EventArgs());
+        public void RaiseLogEntryCreated() => LogEntryCreated?.Invoke(null, new EventArgs());
 
-        public static void LogElementStarting(ISyncElement element)
+        public void LogElementStarting(ISyncElement element)
         {
             NewLogEntry(
                 new string[]
@@ -45,7 +46,7 @@ namespace DMTAgent
                 });
         }
 
-        public static void LogSyncError(SyncErrorEventArgs errorEventArgs)
+        public void LogSyncError(SyncErrorEventArgs errorEventArgs)
         {
             string[] logLines = new string[]
             {
@@ -54,11 +55,11 @@ namespace DMTAgent
                 "Eccezione: " + errorEventArgs.Exception?.Message,
             };
 
-            CreateLogEntry(logLines, new FileInfo(Properties.Settings.Default.ErrorLogPath));
+            CreateLogEntry(logLines, new FileInfo(_settings.ErrorLogPath));
             
         }
 
-        public static void LogTaskCompleted(IJob task)
+        public void LogTaskCompleted(IJob task)
         {
             NewLogEntry(
                 new string[]
@@ -67,12 +68,12 @@ namespace DMTAgent
                 });
         }
 
-        public static void LogTaskScheduled(DateTime time)
+        public void LogTaskScheduled(DateTime time)
         {
             NewLogEntry(new string[] { GetTimeStamp() + "Schedulata sincronizzazione: " + time.ToString("dd/MM/yyyy HH:mm") });
         }
 
-        public static void LogTaskStarting(IJob task)
+        public void LogTaskStarting(IJob task)
         {
             NewLogEntry(
                 new string[]
@@ -81,12 +82,12 @@ namespace DMTAgent
                 });
         }
 
-        public static void NewLogEntry(string[] text)
+        public void NewLogEntry(string[] text)
         {
-            CreateLogEntry(text, new FileInfo(Properties.Settings.Default.GeneralLogPath));
+            CreateLogEntry(text, new FileInfo(_settings.GeneralLogPath));
         }
 
-        private static void CreateLogEntry(IEnumerable<string> lines, FileInfo target)
+        private void CreateLogEntry(IEnumerable<string> lines, FileInfo target)
         {
             try
             {
@@ -102,7 +103,22 @@ namespace DMTAgent
             }
         }
 
-        private static string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
+        private string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion Methods
     }

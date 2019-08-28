@@ -9,6 +9,8 @@ using System.Windows;
 using DMTAgent.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using SSMD;
 
 namespace DMTAgent
@@ -68,6 +70,7 @@ namespace DMTAgent
 
         private void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(cfg => cfg.AddNLog());
             services.AddSingleton(typeof(SyncManager));
             services.AddSingleton(typeof(SyncAgent));
             services.AddTransient(typeof(Views.MainWindow));

@@ -1,4 +1,5 @@
 ﻿using DMTAgent.Infrastructure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace DMTAgent
 {
     public class SyncAgent
     {
+        private readonly ILogger _logger;
         public enum AgentStatus
         {
             Running,
@@ -16,8 +18,10 @@ namespace DMTAgent
             Idle
         }
 
-        public SyncAgent(ISyncManager syncManager)
+        public SyncAgent(ISyncManager syncManager,
+            ILogger logger)
         {
+            _logger = logger;
             SyncManager = syncManager;
             SyncManager.JobController.JobCompleted += OnSyncCompleted;
         }
@@ -89,7 +93,7 @@ namespace DMTAgent
 
             CurrentTimer.Change(timeToNextUpdate, Timeout.InfiniteTimeSpan);
 
-            SyncLogger.LogTaskScheduled(timeOfNextUpdate);
+            _logger.LogInformation("Schedulato nuovo task : {0}", new object[] { timeOfNextUpdate });
         }
 
         private void OnSyncCompleted(object sender, EventArgs e)

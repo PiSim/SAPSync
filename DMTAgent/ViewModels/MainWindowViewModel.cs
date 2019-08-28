@@ -23,7 +23,7 @@ namespace DMTAgent.ViewModels
         public MainWindowViewModel()
         {
             _showCompleteJobs = true;
-            SyncLogger.LogEntryCreated += OnLogEntryCreated;
+            // SyncLogger.LogEntryCreated += OnLogEntryCreated;
             StartSyncCommand = new RelayCommand(() => StartSync());
             ToggleDMTAgentCommand = new RelayCommand(() => ToggleDMTAgent());
         }
@@ -53,7 +53,7 @@ namespace DMTAgent.ViewModels
             .SelectMany(job => job.SubJobs)
             .Select(sjb => new SubJobViewModel(sjb));
 
-        public string CurrentLog => SyncLogger.CurrentLog.Join(Environment.NewLine);
+        // public string CurrentLog => SyncLogger.CurrentLog.Join(Environment.NewLine);
 
         public RelayCommand OpenLogWindowCommand { get; }
 
