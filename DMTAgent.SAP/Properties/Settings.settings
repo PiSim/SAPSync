@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SAPSync.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ErrorLogPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">L:\temp\Pietro\error.log</Value>
+    </Setting>
+    <Setting Name="GeneralLogPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">L:\temp\Pietro\general.log</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
