@@ -47,7 +47,7 @@ namespace DMTAgent.SyncElements.Evaluators
             return record;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _lotDictionary = sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(inspl => inspl.Number, inspl => inspl);
 

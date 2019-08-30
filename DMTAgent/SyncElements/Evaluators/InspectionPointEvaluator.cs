@@ -1,4 +1,5 @@
-﻿using DMTAgent.SyncElements.Validators;
+﻿using DataAccessCore;
+using DMTAgent.SyncElements.Validators;
 using SSMD;
 using SSMD.Queries;
 using System;
@@ -40,7 +41,7 @@ namespace DMTAgent.SyncElements.Evaluators
 
         public InspectionPoint GetInsertableRecord(InspectionPoint record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _inspectionLotDictionary = sSMDData.RunQuery(new InspectionLotsQuery()).ToDictionary(ispl => ispl.Number, ispl => ispl);
         }

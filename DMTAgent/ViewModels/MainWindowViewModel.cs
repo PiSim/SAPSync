@@ -13,19 +13,24 @@ namespace DMTAgent.ViewModels
 
         private string _serviceStatus;
         private List<SyncElementViewModel> _syncElements;
-        private SyncManager _syncManager;
+        private ISyncManager _syncManager;
         private bool _showCompleteJobs;
 
         #endregion Fields
 
         #region Constructors
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(ISyncManager syncManager)
         {
             _showCompleteJobs = true;
+            _syncManager = syncManager;
             // SyncLogger.LogEntryCreated += OnLogEntryCreated;
             StartSyncCommand = new RelayCommand(() => StartSync());
             ToggleDMTAgentCommand = new RelayCommand(() => ToggleDMTAgent());
+            SyncElements = GetSyncElements(_syncManager);
+
+            _syncManager.JobController.NewJobStarted += OnJobStarted;
+            _syncManager.JobController.JobCompleted += OnJobCompleted;
         }
 
         private void OnLogEntryCreated(object sender, EventArgs e)
@@ -46,7 +51,7 @@ namespace DMTAgent.ViewModels
         #region Properties
 
         public IEnumerable<SubJobViewModel> ActiveJobs
-            => SyncManager?
+            => _syncManager?
             .JobController?
             .GetJobs(ShowCompleteJobs)?
             .OrderByDescending(job => job.StartTime)
@@ -82,29 +87,13 @@ namespace DMTAgent.ViewModels
             }
         }
 
-        public SyncManager SyncManager
-        {
-            get => _syncManager;
-            set
-            {
-                _syncManager = value;
-                SyncElements = GetSyncElements(_syncManager);
-
-                if (_syncManager != null)
-                {
-                    _syncManager.JobController.NewJobStarted += OnJobStarted;
-                    _syncManager.JobController.JobCompleted += OnJobCompleted;
-                }
-            }
-        }
-
         public RelayCommand ToggleDMTAgentCommand { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public List<SyncElementViewModel> GetSyncElements(SyncManager syncManager) => syncManager.SyncElements.Select(sel => new SyncElementViewModel(sel)).ToList();
+        public List<SyncElementViewModel> GetSyncElements(ISyncManager syncManager) => syncManager.SyncElements.Select(sel => new SyncElementViewModel(sel)).ToList();
 
         protected virtual void OnJobCompleted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
 

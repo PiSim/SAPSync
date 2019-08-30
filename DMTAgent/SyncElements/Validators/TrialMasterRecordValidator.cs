@@ -27,7 +27,7 @@ namespace DMTAgent.SyncElements
             return existingRecord;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _orderDataIndex = sSMDData.RunQuery(new Query<OrderData, SSMDContext>()).ToDictionary(od => od.OrderNumber, od => od);
         }

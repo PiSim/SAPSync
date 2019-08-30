@@ -12,16 +12,25 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using DataAccessCore;
 
 namespace DMTAgent
 {
-    public class SyncElementFactory
+    public class SyncElementFactory : ISyncElementFactory
     {
+        public SyncElementFactory(IDataService<SSMDContext> dataService)
+        {
+            _dataService = dataService;
+        }
+
+        private readonly IDataService<SSMDContext> _dataService;
+
         #region Methods
 
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
             ISyncElement WorkCentersElement = new OperationAggregator(
+                _dataService,
                 "Centri di Lavoro")
                 .HasOperation(
                     new SyncData<WorkCenter>(
@@ -30,9 +39,11 @@ namespace DMTAgent
                             new WorkCenterEvaluator(new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))));
+                            }),
+                            _dataService)));
 
             ISyncElement MaterialFamiliesElement = new OperationAggregator(
+                _dataService,
                 "Gerarchia Prodotto",
                 new SyncElementConfiguration())
                 .HasOperation(new SyncData<MaterialFamilyLevel>(
@@ -42,7 +53,8 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .HasOperation(new SyncData<MaterialFamily>(
                     new ReadMaterialFamilies(),
                     new RecordWriter<MaterialFamily>(
@@ -50,9 +62,11 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))));
+                            }),
+                            _dataService)));
 
             ISyncElement ProjectsElement = new OperationAggregator(
+                _dataService,
                 "Progetti")
                 .HasOperation(new SyncData<Project>(
                     new ReadProjects(),
@@ -61,25 +75,30 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))));
+                            }),
+                            _dataService)));
 
             ISyncElement WBSRelationsElement = new OperationAggregator(
+                _dataService,
                 "Struttura progetti")
                 .HasOperation(new SyncData<WBSRelation>(
                     new ReadWBSRelations(),
                     new RecordWriter<WBSRelation>(
-                        new WBSRelationEvaluator())))
+                        new WBSRelationEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     ProjectsElement
                 });
 
             ISyncElement MaterialsElement = new OperationAggregator(
+                _dataService,
                 "Materiali")
                 .HasOperation(new SyncData<Material>(
                     new ReadMaterials(),
                     new RecordWriter<Material>(
-                        new MaterialEvaluator())))
+                        new MaterialEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     MaterialFamiliesElement,
@@ -87,32 +106,38 @@ namespace DMTAgent
                 });
 
             ISyncElement OrdersElement = new OperationAggregator(
+                _dataService,
                 "Ordini")
                 .HasOperation(new SyncData<Order>(
                     new ReadOrders(),
                     new RecordWriter<Order>(
-                        new OrderEvaluator())))
+                        new OrderEvaluator(),
+                            _dataService)))
                 .HasOperation(new SyncData<OrderData>(
                     new ReadOrderData(),
                     new RecordWriter<OrderData>(
-                        new OrderDataEvaluator())))
+                        new OrderDataEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     MaterialsElement
                 });
 
             ISyncElement RoutingOperationsElement = new OperationAggregator(
+                _dataService,
                 "Operazioni ordine")
                 .HasOperation(new SyncData<RoutingOperation>(
                     new ReadRoutingOperations(),
                     new RecordWriter<RoutingOperation>(
-                        new RoutingOperationEvaluator())))
+                        new RoutingOperationEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     WorkCentersElement
                 });
 
             ISyncElement ComponentsElement = new OperationAggregator(
+                _dataService,
                 "Componenti")
                 .HasOperation(new SyncData<Component>(
                     new ReadComponents(),
@@ -121,14 +146,17 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))));
+                            }),
+                            _dataService)));
 
             ISyncElement ConfirmationsElements = new OperationAggregator(
+                _dataService,
                 "Conferme ordine")
                 .HasOperation(new SyncData<OrderConfirmation>(
                     new ReadConfirmations(),
                     new RecordWriter<OrderConfirmation>(
-                        new ConfirmationEvaluator())))
+                        new ConfirmationEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     OrdersElement,
@@ -136,6 +164,7 @@ namespace DMTAgent
                 });
 
             ISyncElement OrderComponentsElement = new OperationAggregator(
+                _dataService,
                 "Componenti ordine")
                 .HasOperation(new SyncData<OrderComponent>(
                     new ReadOrderComponents(),
@@ -144,7 +173,8 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     OrdersElement,
@@ -152,6 +182,7 @@ namespace DMTAgent
                 });
 
             ISyncElement InspectionCharacteristicsElement = new OperationAggregator(
+                _dataService,
                 "Controlli")
                 .HasOperation(new SyncData<InspectionCharacteristic>(
                     new ReadInspectionCharacteristics(),
@@ -160,7 +191,8 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .HasOperation(new SyncData<InspectionLot>(
                     new InspLotGetList(),
                     new RecordWriter<InspectionLot>(
@@ -168,7 +200,8 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .HasOperation(new SyncData<InspectionSpecification>(
                     new ReadInspectionSpecifications(),
                     new RecordWriter<InspectionSpecification>(
@@ -176,11 +209,13 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .HasOperation(new SyncData<InspectionPoint>(
                     new ReadInspectionPoints(),
                     new RecordWriter<InspectionPoint>(
-                        new InspectionPointEvaluator())))
+                        new InspectionPointEvaluator(),
+                            _dataService)))
                 .DependsOn(
                     new ISyncElement[]
                     {
@@ -188,6 +223,7 @@ namespace DMTAgent
                     });
 
             ISyncElement CustomersElement = new OperationAggregator(
+                _dataService,
                 "Clienti")
                 .HasOperation(new SyncData<Customer>(
                     new ReadCustomers(),
@@ -197,9 +233,11 @@ namespace DMTAgent
                             {
                                 CheckRemovedRecords = false,
                                 IgnoreExistingRecords = true
-                            }))));
+                            }),
+                            _dataService)));
 
             ISyncElement MaterialCustomerElement = new OperationAggregator(
+                _dataService,
                 "Clienti per materiale")
                 .HasOperation(new SyncData<MaterialCustomer>(
                     new ReadMaterialCustomers(),
@@ -208,7 +246,8 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 IgnoreExistingRecords = true
-                            }))))
+                            }),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     MaterialsElement,
@@ -216,11 +255,13 @@ namespace DMTAgent
                 });
 
             ISyncElement GoodMovementsElement = new OperationAggregator(
+                _dataService,
                 "Movimenti Merce")
                 .HasOperation(new SyncData<GoodMovement>(
                     new ReadGoodMovements(),
                     new RecordWriter<GoodMovement>(
-                        new GoodMovementEvaluator())))
+                        new GoodMovementEvaluator(),
+                            _dataService)))
                 .DependsOn(new ISyncElement[]
                 {
                     MaterialsElement,
@@ -228,6 +269,7 @@ namespace DMTAgent
                 });
 
             ISyncElement TrialMasterListElement = new OperationAggregator(
+                _dataService,
                 "Foglio Master Prove")
                 .HasOperation(new SyncData<OrderData>(
                     new XmlReader<OrderData, TrialMasterDataDto>(
@@ -241,9 +283,11 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 CheckRemovedRecords = false
-                            }))))
+                            }),
+                            _dataService)))
                 .HasOperation(new SyncData<OrderData>(
-                    new SSMDReader<OrderData>(() => new LoadedOrderDataQuery()),
+                    new SSMDReader<OrderData>(_dataService,
+                    () => new LoadedOrderDataQuery()),
                     new XmlWriter<OrderData, TrialMasterDataDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("L:\\LABORATORIO\\StatoOdpProva.xlsx"),
@@ -260,6 +304,7 @@ namespace DMTAgent
                 });
 
             ISyncElement TrialLabDataElement = new OperationAggregator(
+                _dataService,
                 "Foglio note fasi di lavorazione")
                 .HasOperation(new SyncData<WorkPhaseLabData>(
                     new XmlReader<WorkPhaseLabData, WorkPhaseLabDataDto>(
@@ -273,10 +318,12 @@ namespace DMTAgent
                             new RecordEvaluatorConfiguration()
                             {
                                 CheckRemovedRecords = false
-                            }))))
-                .HasOperation(new CreateMissingTrialLabData())
+                            }),
+                            _dataService)))
+                .HasOperation(new CreateMissingTrialLabData(_dataService))
                 .HasOperation(new SyncData<WorkPhaseLabData>(
-                    new SSMDReader<WorkPhaseLabData>(() => new LoadedWorkPhaseLabDataQuery()),
+                    new SSMDReader<WorkPhaseLabData>(_dataService,
+                    () => new LoadedWorkPhaseLabDataQuery()),
                     new XmlWriter<WorkPhaseLabData, WorkPhaseLabDataDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
@@ -293,6 +340,7 @@ namespace DMTAgent
                 });
 
             ISyncElement TestReportElement = new OperationAggregator(
+                _dataService,
                 "Test Report")
                 .HasOperation(new SyncData<TestReport>(
                     new XmlReader<TestReport, TestReportDto>(
@@ -301,9 +349,11 @@ namespace DMTAgent
                             "Report",
                             4)),
                     new RecordWriter<TestReport>(
-                        new TestReportRecordEvaluator())))
+                        new TestReportRecordEvaluator(),
+                            _dataService)))
                 .HasOperation(new SyncData<TestReport>(
-                    new SSMDReader<TestReport>(() => new LoadedTestReportQuery()),
+                    new SSMDReader<TestReport>(_dataService,
+                    () => new LoadedTestReportQuery()),
                     new XmlWriter<TestReport, TestReportDto>(
                         new XmlInteractionConfiguration(
                             new System.IO.FileInfo("L:\\LABORATORIO\\ListaReport.xlsx"),
@@ -320,9 +370,11 @@ namespace DMTAgent
                 });
 
             ISyncElement TrialScrapListElement = new OperationAggregator(
+                _dataService,
                 "Foglio scarti di prova")
                 .HasOperation(new SyncData<IGrouping<Tuple<Order, string>, OrderConfirmation>>(
                     new SSMDReader<OrderConfirmation, IGrouping<Tuple<Order, string>, OrderConfirmation>>(
+                        _dataService,
                         qu => qu.GroupBy(con => new Tuple<Order, string>(con.Order, con.ScrapCause))
                             .ToList()
                             .AsQueryable()

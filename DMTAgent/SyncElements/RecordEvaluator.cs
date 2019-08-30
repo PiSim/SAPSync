@@ -22,7 +22,7 @@ namespace DMTAgent.SyncElements
 
         UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records);
 
-        void Initialize(SSMDData sSMDData);
+        void Initialize(IDataService<SSMDContext> sSMDData);
 
         #endregion Methods
     }
@@ -122,7 +122,7 @@ namespace DMTAgent.SyncElements
             return output;
         }
 
-        public virtual void Initialize(SSMDData sSMDData)
+        public virtual void Initialize(IDataService<SSMDContext> sSMDData)
         {
             _trackedRecordIndex = new Dictionary<TKey, T>();
             _recordIndex = sSMDData.RunQuery(GetIndexEntriesQuery()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
@@ -183,7 +183,7 @@ namespace DMTAgent.SyncElements
 
         protected virtual IRecordValidator<T> GetRecordValidator() => new RecordValidator<T>();
 
-        protected virtual void InitializeRecordValidator(SSMDData sSMDData)
+        protected virtual void InitializeRecordValidator(IDataService<SSMDContext> sSMDData)
         {
             RecordValidator.InitializeIndexes(sSMDData);
         }

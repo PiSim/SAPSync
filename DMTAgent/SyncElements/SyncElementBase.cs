@@ -12,12 +12,15 @@ namespace DMTAgent.SyncElements
     {
         #region Constructors
 
-        public SyncElementBase(string name = "", SyncElementConfiguration configuration = null)
+        private IDataService<SSMDContext> _dataService;
+
+        public SyncElementBase(IDataService<SSMDContext> dataService, string name = "", SyncElementConfiguration configuration = null)
         {
             Name = name;
             Configuration = configuration ?? new SyncElementConfiguration();
-            ReadElementData();
+            _dataService = dataService;
             Dependencies = new List<ISyncElement>();
+            ReadElementData();
         }
 
         #endregion Constructors
@@ -47,8 +50,6 @@ namespace DMTAgent.SyncElements
         public virtual string Name { get; }
 
         public DateTime? NextScheduledUpdate => GetNextScheduledUpdate();
-
-        protected SSMDData SSMDData => new SSMDData(new SSMDContextFactory());
 
         #endregion Properties
 
@@ -90,7 +91,7 @@ namespace DMTAgent.SyncElements
 
         protected virtual void ReadElementData()
         {
-            ElementData = SSMDData.RunQuery(new Query<SyncElementData, SSMDContext>()).FirstOrDefault(sed => sed.ElementType == this.Name);
+            ElementData = _dataService.RunQuery(new Query<SyncElementData, SSMDContext>()).FirstOrDefault(sed => sed.ElementType == this.Name);
             if (ElementData == null)
                 ElementData = new SyncElementData()
                 {
@@ -101,7 +102,7 @@ namespace DMTAgent.SyncElements
 
         protected virtual void SaveElementData()
         {
-            SSMDData.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
+            _dataService.Execute(new UpdateEntityCommand<SSMDContext>(ElementData));
         }
 
         #endregion Methods

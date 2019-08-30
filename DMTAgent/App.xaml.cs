@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using DataAccessCore;
 using DMTAgent.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,13 +21,9 @@ namespace DMTAgent
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App
+    public partial class App : Application
     {
         #region Fields
-
-        private SyncAgent _DMTAgent;
-        private SSMDData _ssData;
-        private SyncManager _syncManager;
 
         public IServiceProvider ServiceProvider { get; private set; }
         public IConfiguration Configuration { get; private set; }
@@ -48,14 +47,10 @@ namespace DMTAgent
             ConfigureServices(serviceCollection);
             ConfigureViewModels(serviceCollection);
             ConfigureViews(serviceCollection);
+            ServiceProvider = serviceCollection.BuildServiceProvider();
 
             InitializeDb();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).SyncManager = _syncManager;
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).DMTAgentStartRequested += OnDMTAgentStartRequested;
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).DMTAgentStopRequested += OnDMTAgentStopRequested;
-            
             MainWindow = ServiceProvider.GetRequiredService<Views.MainWindow>();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _DMTAgent.Status.ToString();
             MainWindow.Show();
         }
 
@@ -68,11 +63,26 @@ namespace DMTAgent
             services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
         }
 
+        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(MySqlDbContextOptionsBuilder optionsBuilder) =>
+            optionsBuilder.CommandTimeout(1800);
+
+
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging(cfg => cfg.AddNLog());
-            services.AddSingleton(typeof(SyncManager));
+
+            services.AddDbContext<SSMDContext>(
+                opt => opt.UseMySql(Configuration.GetConnectionString("SSMD"),
+                    opt2 => GetMySqlDbContextOptions(opt2)));
+
+            services.AddTransient(typeof(IDesignTimeDbContextFactory<SSMDContext>), typeof(SSMDContextFactory));
+            services.AddTransient(typeof(IDataService<SSMDContext>), typeof(SSMDData));
+
+            services.AddTransient(typeof(ISyncElementFactory), typeof(SyncElementFactory));
+
+            services.AddSingleton(typeof(ISyncManager), typeof(SyncManager));
             services.AddSingleton(typeof(SyncAgent));
+
             services.AddTransient(typeof(Views.MainWindow));
         }
         private void ConfigureViews(IServiceCollection services)
@@ -89,7 +99,7 @@ namespace DMTAgent
 
         protected override void OnExit(ExitEventArgs e)
         {
-            _syncManager.JobController.GetAwaiterForActiveOperations().Wait();
+            ServiceProvider.GetService<ISyncManager>().JobController.GetAwaiterForActiveOperations().Wait();
             base.OnExit(e);
         }
 
@@ -97,7 +107,7 @@ namespace DMTAgent
         {
             try
             {
-                _ssData = new SSMDData(new SSMDContextFactory());
+                // TODO -  Check DB exists
             }
             catch (Exception e)
             {
@@ -117,14 +127,12 @@ namespace DMTAgent
 
         private void StartDMTAgent()
         {
-            _DMTAgent.Start();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _DMTAgent.Status.ToString();
+            ServiceProvider.GetService<SyncAgent>().Start();
         }
 
         private void StopDMTAgent()
         {
-            _DMTAgent.Stop();
-            (MainWindow.DataContext as ViewModels.MainWindowViewModel).ServiceStatus = _DMTAgent.Status.ToString();
+            ServiceProvider.GetService<SyncAgent>().Stop();
         }
 
         #endregion Methods

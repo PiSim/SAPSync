@@ -13,14 +13,15 @@ namespace DMTAgent
 
         private readonly ILogger _logger;
 
-        public SyncManager(ILogger logger)
+        public SyncManager(ILogger<SyncManager> logger,
+            ISyncElementFactory elementFactory)
         {
             _logger = logger;
             JobController = new JobController();
             JobController.SyncErrorRaised += OnSyncErrorRaised;
             JobController.JobStarting += OnTaskStarting;
             JobController.JobCompleted += OnTaskCompleted;
-            SyncElements = (new SyncElementFactory()).BuildSyncElements();
+            SyncElements = elementFactory.BuildSyncElements();
         }
 
         #endregion Constructors
@@ -28,7 +29,7 @@ namespace DMTAgent
         #region Properties
 
         public IJobController JobController { get; }
-        public ICollection<ISyncElement> SyncElements { get; set; }
+        public IEnumerable<ISyncElement> SyncElements { get; }
 
         #endregion Properties
 

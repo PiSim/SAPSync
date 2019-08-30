@@ -10,10 +10,14 @@ namespace DMTAgent
 {
     public class SSMDReader<T> : IRecordReader<T> where T : class
     {
+        private readonly IDataService<SSMDContext> _dataService;
+
         #region Constructors
 
-        public SSMDReader(Func<Query<T, SSMDContext>> getQueryDelegate = null)
+        public SSMDReader(IDataService<SSMDContext> dataService,
+            Func<Query<T, SSMDContext>> getQueryDelegate = null)
         {
+            _dataService = dataService;
             ChildrenTasks = new List<Task>();
 
             if (getQueryDelegate != null)
@@ -53,9 +57,7 @@ namespace DMTAgent
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
         protected virtual Query<T, SSMDContext> GetQuery() => GetQueryFunc();
-
-        protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
-
+        
         protected virtual void RaisePacketCompleted(IEnumerable<T> records)
         {
             RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
@@ -70,7 +72,7 @@ namespace DMTAgent
             RaiseReadCompleted();
         }
 
-        protected virtual IQueryable<T> RunQuery() => GetSSMDData().RunQuery(GetQuery());
+        protected virtual IQueryable<T> RunQuery() => _dataService.RunQuery(GetQuery());
 
         protected virtual Task StartChildTask(Action action)
         {
@@ -85,11 +87,15 @@ namespace DMTAgent
 
     public class SSMDReader<TQueried, TOut> : IRecordReader<TOut> where TQueried : class
     {
+        private readonly IDataService<SSMDContext> _dataService;
+
         #region Constructors
 
-        public SSMDReader(Func<IQueryable<TQueried>, IQueryable<TOut>> translatorDelegate,
+        public SSMDReader(IDataService<SSMDContext> dataService,
+            Func<IQueryable<TQueried>, IQueryable<TOut>> translatorDelegate,
             Func<Query<TQueried, SSMDContext>> getQueryDelegate = null)
         {
+            _dataService = dataService;
             ChildrenTasks = new List<Task>();
             TranslatorFunc = translatorDelegate;
             GetQueryFunc = getQueryDelegate;
@@ -131,8 +137,6 @@ namespace DMTAgent
 
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
-        protected virtual SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
-
         protected virtual void RaisePacketCompleted(IEnumerable<TOut> records)
         {
             RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<TOut>(records));
@@ -140,7 +144,7 @@ namespace DMTAgent
 
         protected virtual void RaiseReadCompleted() => ReadCompleted?.Invoke(this, new EventArgs());
 
-        protected virtual IQueryable<TOut> RunQuery() => TranslatorFunc(GetSSMDData().RunQuery(GetQueryFunc()));
+        protected virtual IQueryable<TOut> RunQuery() => TranslatorFunc(_dataService.RunQuery(GetQueryFunc()));
 
         protected virtual Task StartChildTask(Action action)
         {

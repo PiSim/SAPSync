@@ -31,7 +31,7 @@ namespace DMTAgent.SyncElements.Validators
             return record;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _levelDictionary = sSMDData.RunQuery(new Query<MaterialFamilyLevel, SSMDContext>()).ToDictionary(mfl => new Tuple<int, string>(mfl.Level, mfl.Code));
         }

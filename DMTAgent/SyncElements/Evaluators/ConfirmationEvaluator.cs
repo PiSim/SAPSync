@@ -42,7 +42,7 @@ namespace DMTAgent.SyncElements
 
         public OrderConfirmation GetInsertableRecord(OrderConfirmation record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _orderDictionary = sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
             _workCenterDictionary = sSMDData.RunQuery(new Query<WorkCenter, SSMDContext>()).ToDictionary(wc => wc.ID);

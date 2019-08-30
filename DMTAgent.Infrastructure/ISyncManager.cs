@@ -8,6 +8,7 @@ namespace DMTAgent.Infrastructure
         #region Properties
 
         IJobController JobController { get; }
+        IEnumerable<ISyncElement> SyncElements { get; }
 
         #endregion Properties
 

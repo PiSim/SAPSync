@@ -54,7 +54,7 @@ namespace DMTAgent.SyncElements.Evaluators
             return record;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _projectIndex = sSMDData.RunQuery(new Query<Project, SSMDContext>()).ToDictionary(prj => prj.ID, prj => prj);
         }

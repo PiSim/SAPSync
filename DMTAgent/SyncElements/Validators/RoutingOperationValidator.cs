@@ -21,7 +21,7 @@ namespace DMTAgent.SyncElements
 
         public RoutingOperation GetInsertableRecord(RoutingOperation record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _workCenterIndex = sSMDData.RunQuery(new Query<WorkCenter, SSMDContext>()).ToDictionary(wkc => wkc.ID, wkc => wkc);
             _routingIndex = sSMDData.RunQuery(new Query<OrderData, SSMDContext>()).ToDictionary(ord => ord.RoutingNumber, ord => ord);

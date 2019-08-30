@@ -1,4 +1,5 @@
-﻿using DataAccessCore.Commands;
+﻿using DataAccessCore;
+using DataAccessCore.Commands;
 using DMTAgent.Infrastructure;
 using SSMD;
 using System;
@@ -11,9 +12,11 @@ namespace DMTAgent.SyncElements.SyncOperations
     public class RecordWriter<T> : IRecordWriter<T> where T : class
     {
         #region Constructors
-
-        public RecordWriter(IRecordEvaluator<T> recordEvaluator)
+        
+        public RecordWriter(IRecordEvaluator<T> recordEvaluator,
+            IDataService<SSMDContext> dataService)
         {
+            SSMDData = dataService;
             RecordEvaluator = recordEvaluator;
             Packages = new List<UpdatePackage<T>>();
 
@@ -44,6 +47,8 @@ namespace DMTAgent.SyncElements.SyncOperations
             Clear();
         }
 
+        protected virtual IDataService<SSMDContext> SSMDData { get; }
+
         public void Commit()
         {
             foreach (UpdatePackage<T> package in Packages.Where(pkg => pkg.IsCommitted == false))
@@ -63,7 +68,7 @@ namespace DMTAgent.SyncElements.SyncOperations
 
         public virtual void OpenWriter()
         {
-            RecordEvaluator.Initialize(GetSSMDData());
+            RecordEvaluator.Initialize(SSMDData);
             EnsureInitialized();
         }
 
@@ -107,7 +112,7 @@ namespace DMTAgent.SyncElements.SyncOperations
 
         protected virtual void DeleteRecords(IEnumerable<T> records)
         {
-            GetSSMDData().Execute(new DeleteEntitiesCommand<SSMDContext>(records));
+            SSMDData.Execute(new DeleteEntitiesCommand<SSMDContext>(records));
         }
 
         protected virtual void EnsureInitialized()
@@ -116,13 +121,11 @@ namespace DMTAgent.SyncElements.SyncOperations
                 throw new InvalidOperationException("Evaluator non inizializzato");
             RecordEvaluator.CheckInitialized();
         }
-
-        protected SSMDData GetSSMDData() => new SSMDData(new SSMDContextFactory());
-
+        
         protected virtual void InsertNewRecords(IEnumerable<T> records)
         {
             BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(records);
-            GetSSMDData().Execute(insertCommand);
+            SSMDData.Execute(insertCommand);
         }
 
         protected virtual void RaiseError(
@@ -153,7 +156,7 @@ namespace DMTAgent.SyncElements.SyncOperations
         protected virtual void UpdateExistingRecords(IEnumerable<T> records)
         {
             BatchUpdateEntitiesCommand<SSMDContext> updateCommand = new BatchUpdateEntitiesCommand<SSMDContext>(records);
-            GetSSMDData().Execute(updateCommand);
+            SSMDData.Execute(updateCommand);
         }
 
         #endregion Methods

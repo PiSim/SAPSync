@@ -1,4 +1,6 @@
-﻿using DMTAgent.Infrastructure;
+﻿using DataAccessCore;
+using DMTAgent.Infrastructure;
+using SSMD;
 using System;
 using System.Collections.Generic;
 
@@ -8,8 +10,9 @@ namespace DMTAgent.SyncElements
     {
         #region Constructors
 
-        public OperationAggregator(string name = "", SyncElementConfiguration configuration = null) : base(name, configuration)
+        public OperationAggregator(IDataService<SSMDContext> dataService , string name = "", SyncElementConfiguration configuration = null) : base(dataService, name, configuration)
         {
+
         }
 
         #endregion Constructors

@@ -56,7 +56,7 @@ namespace DMTAgent.SyncElements.Evaluators
             return outRecord;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _componentDictionary = sSMDData.RunQuery(new Query<Component, SSMDContext>()).ToDictionary(mat => mat.Name, mat => mat);
             _orderDictionary = sSMDData.RunQuery(new OrdersQuery()).ToDictionary(ord => ord.Number, ord => ord);

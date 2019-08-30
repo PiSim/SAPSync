@@ -19,7 +19,7 @@ namespace DMTAgent.SyncElements.Validators
 
         public WorkPhaseLabData GetInsertableRecord(WorkPhaseLabData record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _orderIndex = sSMDData.RunQuery(new Query<Order, SSMDContext>()).ToDictionary(rec => rec.Number, rec => rec);
         }

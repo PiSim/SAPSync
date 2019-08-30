@@ -1,4 +1,5 @@
-﻿using SSMD;
+﻿using DataAccessCore;
+using SSMD;
 using SSMD.Queries;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace DMTAgent.SyncElements.Validators
 
         public InspectionLot GetInsertableRecord(InspectionLot record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _orderDictionary = sSMDData.RunQuery(new OrdersQuery()).ToDictionary(order => order.Number, order => order);
         }

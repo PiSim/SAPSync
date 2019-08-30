@@ -1,4 +1,5 @@
-﻿using SSMD;
+﻿using DataAccessCore;
+using SSMD;
 
 namespace DMTAgent.SyncElements.Validators
 {
@@ -10,7 +11,7 @@ namespace DMTAgent.SyncElements.Validators
 
         T GetInsertableRecord(T record);
 
-        void InitializeIndexes(SSMDData sSMDData);
+        void InitializeIndexes(IDataService<SSMDContext> sSMDData);
 
         bool IsValid(T record);
 
@@ -25,9 +26,8 @@ namespace DMTAgent.SyncElements.Validators
 
         public T GetInsertableRecord(T record) => record;
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
-            return;
         }
 
         public bool IsValid(T record) => true;

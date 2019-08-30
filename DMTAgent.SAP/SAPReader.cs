@@ -56,6 +56,7 @@ namespace DMTAgent.SAP
             if (!destinationIsInitialized)
             {
                 string destinationConfigName = "PRD";
+
                 IDestinationConfiguration destinationConfig = null;
 
                 destinationConfig = new SAPDestinationConfig();

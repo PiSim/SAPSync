@@ -26,7 +26,7 @@ namespace DMTAgent.SyncElements.Validators
             return record;
         }
 
-        public void InitializeIndexes(SSMDData sSMDData)
+        public void InitializeIndexes(IDataService<SSMDContext> sSMDData)
         {
             _materialIndex = sSMDData.RunQuery(new Query<Material, SSMDContext>()).ToDictionary(mat => mat.Code, mat => mat);
             _customerIndex = sSMDData.RunQuery(new Query<Customer, SSMDContext>()).ToDictionary(cus => cus.ID, cus => cus);

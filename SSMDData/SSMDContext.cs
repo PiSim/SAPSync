@@ -7,13 +7,10 @@ namespace SSMD
 {
     public class SSMDContext : DbContext
     {
-        #region Constructors
-
-        public SSMDContext()
+        public SSMDContext(DbContextOptions<SSMDContext> options) : base(options)
         {
-        }
 
-        #endregion Constructors
+        }
 
         #region Properties
 
@@ -44,16 +41,6 @@ namespace SSMD
         #endregion Properties
 
         #region Methods
-
-        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(DbContextOptionsBuilder optionsBuilder) =>
-            new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .CommandTimeout(1800);
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseMySql(ConfigurationManager.ConnectionStrings["SSMD"].ConnectionString,
-                opt => GetMySqlDbContextOptions(optionsBuilder));
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
