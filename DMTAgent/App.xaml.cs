@@ -73,7 +73,8 @@ namespace DMTAgent
 
             services.AddDbContext<SSMDContext>(
                 opt => opt.UseMySql(Configuration.GetConnectionString("SSMD"),
-                    opt2 => GetMySqlDbContextOptions(opt2)));
+                    opt2 => GetMySqlDbContextOptions(opt2)),
+                contextLifetime:ServiceLifetime.Transient);
 
             services.AddTransient(typeof(IDesignTimeDbContextFactory<SSMDContext>), typeof(SSMDContextFactory));
             services.AddTransient(typeof(IDataService<SSMDContext>), typeof(SSMDData));
