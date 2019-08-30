@@ -9,18 +9,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSMD", "SSMDData\SSMD.cspro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{52CB0AC9-34A8-40E7-B1A4-A6193CA24FBA}"
 	ProjectSection(SolutionItems) = preProject
-		packages\DataAccessCore.dll = packages\DataAccessCore.dll
+		DataAccessCore.dll = DataAccessCore.dll
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMTAgent.Infrastructure", "DMTAgent.Infrastructure\DMTAgent.Infrastructure.csproj", "{4CD02DBF-10F0-449A-8BE1-996935934F80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DMTAgentCore", "DMTAgentCore\DMTAgentCore.csproj", "{1A3713AA-3BE2-4376-BA17-D9B4F7660BC1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMTAgent", "DMTAgent\DMTAgent.csproj", "{B45D110A-09FA-4AC1-843C-62F69D1996D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMTAgent.XML", "DMTAgent.XML\DMTAgent.XML.csproj", "{E409079C-7F91-493E-B819-EC11CD5D1398}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DMTAgent.XMLCore", "DMTAgent.XMLCore\DMTAgent.XMLCore.csproj", "{A2F55538-8372-4864-B594-20E989D15031}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +36,6 @@ Global
 		{4CD02DBF-10F0-449A-8BE1-996935934F80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CD02DBF-10F0-449A-8BE1-996935934F80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CD02DBF-10F0-449A-8BE1-996935934F80}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A3713AA-3BE2-4376-BA17-D9B4F7660BC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A3713AA-3BE2-4376-BA17-D9B4F7660BC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A3713AA-3BE2-4376-BA17-D9B4F7660BC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A3713AA-3BE2-4376-BA17-D9B4F7660BC1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B45D110A-09FA-4AC1-843C-62F69D1996D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B45D110A-09FA-4AC1-843C-62F69D1996D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B45D110A-09FA-4AC1-843C-62F69D1996D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -52,10 +44,6 @@ Global
 		{E409079C-7F91-493E-B819-EC11CD5D1398}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E409079C-7F91-493E-B819-EC11CD5D1398}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E409079C-7F91-493E-B819-EC11CD5D1398}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2F55538-8372-4864-B594-20E989D15031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2F55538-8372-4864-B594-20E989D15031}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2F55538-8372-4864-B594-20E989D15031}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2F55538-8372-4864-B594-20E989D15031}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
