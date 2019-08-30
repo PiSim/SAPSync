@@ -13,13 +13,17 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using DataAccessCore;
+using Microsoft.Extensions.Logging;
 
 namespace DMTAgent
 {
     public class SyncElementFactory : ISyncElementFactory
     {
-        public SyncElementFactory(IDataService<SSMDContext> dataService)
+        private readonly ILogger<SyncElementFactory> _logger;
+        public SyncElementFactory(IDataService<SSMDContext> dataService,
+            ILogger<SyncElementFactory> logger)
         {
+            _logger = logger;
             _dataService = dataService;
         }
 
@@ -29,6 +33,8 @@ namespace DMTAgent
 
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
+            _logger.LogInformation("Costruzione lista elementi");
+
             ISyncElement WorkCentersElement = new OperationAggregator(
                 _dataService,
                 "Centri di Lavoro")

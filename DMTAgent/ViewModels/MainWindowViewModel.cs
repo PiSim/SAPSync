@@ -1,9 +1,11 @@
 ﻿using DMTAgent.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static DMTAgent.LogListener;
 
 namespace DMTAgent.ViewModels
 {
@@ -15,13 +17,30 @@ namespace DMTAgent.ViewModels
         private List<SyncElementViewModel> _syncElements;
         private ISyncManager _syncManager;
         private bool _showCompleteJobs;
+        private LinkedList<string> _log;
+
+        public int MaxLogLines { get; } = 1000;
 
         #endregion Fields
 
         #region Constructors
 
-        public MainWindowViewModel(ISyncManager syncManager)
+        public string Log => string.Concat(_log.Select(line => line + '\n'));
+
+        protected virtual void OnLogCreated(object sender, LogCreatedEventArgs e)
         {
+            if (_log.Count > MaxLogLines)
+                _log.RemoveLast();
+
+            _log.AddFirst(e.LogEventInfo.FormattedMessage);
+            RaisePropertyChanged("Log");
+        }
+
+        public MainWindowViewModel(ISyncManager syncManager,
+            LogListener listener)
+        {
+            _log = new LinkedList<string>();
+            listener.LogCreated += OnLogCreated;
             _showCompleteJobs = true;
             _syncManager = syncManager;
             // SyncLogger.LogEntryCreated += OnLogEntryCreated;

@@ -156,7 +156,7 @@
               Grid.Column="1">
             <GroupBox Header="Log">
                 <TextBox IsReadOnly="True"
-                         Text="{Binding CurrentLog, 
+                         Text="{Binding Log, 
                                         Mode=OneWay}" />
             </GroupBox>
         </Grid>

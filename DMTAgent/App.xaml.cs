@@ -13,7 +13,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Config;
 using NLog.Extensions.Logging;
+using NLog.Targets;
 using SSMD;
 
 namespace DMTAgent
@@ -44,6 +47,7 @@ namespace DMTAgent
 
             var serviceCollection = new ServiceCollection();
             ConfigureSettings(serviceCollection);
+            ConfigureLogging(serviceCollection);
             ConfigureServices(serviceCollection);
             ConfigureViewModels(serviceCollection);
             ConfigureViews(serviceCollection);
@@ -67,10 +71,23 @@ namespace DMTAgent
             optionsBuilder.CommandTimeout(1800);
 
 
+        private void ConfigureLogging(IServiceCollection services)
+        {
+            var config = new LoggingConfiguration();
+            var target = new LogListener();
+            config.AddTarget("LogListener", target);
+            config.AddRuleForAllLevels(target);
+            LogManager.Configuration = config; 
+            services.AddLogging(cfg => cfg.AddNLog());
+            services.AddSingleton<LogListener>(target);
+        }
+
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(cfg => cfg.AddNLog());
-
+            //services.AddSingleton(new LoggerFactory()
+            //    .AddNLog());
+            
+            
             services.AddDbContext<SSMDContext>(
                 opt => opt.UseMySql(Configuration.GetConnectionString("SSMD"),
                     opt2 => GetMySqlDbContextOptions(opt2)),
