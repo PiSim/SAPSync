@@ -3,70 +3,60 @@ using System;
 
 namespace DMTAgent.SAP
 {
+    // SP - Attempt to make reader stateless, initialization check completely delegated to Destination manager
+
     public class SAPReader
     {
         #region Fields
 
-        private string _destinationName = "PRD";
-
-        private bool destinationIsInitialized = false;
+        private readonly string _destinationName = "PRD";
 
         #endregion Fields
-
-        #region Constructors
-
-        public SAPReader()
-        {
-        }
-
-        #endregion Constructors
-
+        
         #region Methods
 
         public RfcDestination GetRfcDestination()
         {
-            InitSAP();
-            RfcDestination rfcDestination = RfcDestinationManager.GetDestination(_destinationName);
-            TestConnection(rfcDestination);
-            return rfcDestination;
+            try
+            {
+                RfcDestination rfcDestination = RfcDestinationManager.GetDestination(_destinationName);
+                TestConnection(rfcDestination);
+                return rfcDestination;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("DestinationConfig non inizializzata.", e);
+            }
         }
 
         public void InitSAP()
         {
-            if (!destinationIsInitialized)
+            try
             {
+                IDestinationConfiguration destinationConfig = null;
+
+                destinationConfig = new SAPDestinationConfig();
+                destinationConfig.GetParameters(_destinationName);
+
+                bool destinationFound = false;
+
                 try
                 {
-                    destinationIsInitialized = true;
-                    string destinationConfigName = "PRD";
-
-                    IDestinationConfiguration destinationConfig = null;
-
-                    destinationConfig = new SAPDestinationConfig();
-                    destinationConfig.GetParameters(destinationConfigName);
-
-                    bool destinationFound = false;
-
-                    try
-                    {
-                        destinationFound = (RfcDestinationManager.GetDestination(destinationConfigName) != null);
-                    }
-                    catch
-                    {
-                        destinationFound = false;
-                    }
-
-                    if (!destinationFound)
-                    {
-                        RfcDestinationManager.RegisterDestinationConfiguration(destinationConfig);
-                    }
+                    destinationFound = (RfcDestinationManager.GetDestination(_destinationName) != null);
                 }
-                catch (Exception e)
+                catch
                 {
-                    destinationIsInitialized = false;
-                    throw new Exception("Errore di inizializzazione RfcDestination", e);
+                    destinationFound = false;
                 }
 
+                if (!destinationFound)
+                {
+                    RfcDestinationManager.RegisterDestinationConfiguration(destinationConfig);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Errore di inizializzazione RfcDestination", e);
             }
         }
 

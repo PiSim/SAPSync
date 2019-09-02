@@ -1,5 +1,6 @@
 ﻿using DataAccessCore;
 using DMTAgent.Infrastructure;
+using DMTAgent.SAP;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -47,6 +48,8 @@ namespace DMTAgent
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
             Configuration = builder.Build();
+
+            (new SAPReader()).InitSAP();
 
             var serviceCollection = new ServiceCollection();
             ConfigureSettings(serviceCollection);
