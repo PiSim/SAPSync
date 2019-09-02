@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using DataAccessCore;
+﻿using DataAccessCore;
 using DMTAgent.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
-using NLog.Targets;
 using SSMD;
+using System;
+using System.IO;
+using System.Windows;
 
 namespace DMTAgent
 {
@@ -26,15 +20,24 @@ namespace DMTAgent
     /// </summary>
     public partial class App : Application
     {
-        #region Fields
+        #region Properties
 
-        public IServiceProvider ServiceProvider { get; private set; }
         public IConfiguration Configuration { get; private set; }
+        public IServiceProvider ServiceProvider { get; private set; }
 
-        #endregion Fields
+        #endregion Properties
 
-        #region Constructors
-        
+        #region Methods
+
+        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(MySqlDbContextOptionsBuilder optionsBuilder) =>
+            optionsBuilder.CommandTimeout(1800);
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            ServiceProvider.GetService<ISyncManager>().JobController.GetAwaiterForActiveOperations().Wait();
+            base.OnExit(e);
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -58,26 +61,14 @@ namespace DMTAgent
             MainWindow.Show();
         }
 
-        #endregion Constructors
-
-        #region Methods
-
-        private void ConfigureSettings(IServiceCollection services)
-        {
-            services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
-        }
-
-        protected virtual MySqlDbContextOptionsBuilder GetMySqlDbContextOptions(MySqlDbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.CommandTimeout(1800);
-
-
         private void ConfigureLogging(IServiceCollection services)
         {
             var config = new LoggingConfiguration();
             var target = new LogListener();
             config.AddTarget("LogListener", target);
-            config.AddRuleForAllLevels(target);
-            LogManager.Configuration = config; 
+            config.AddRuleForOneLevel(NLog.LogLevel.Error, target);
+            config.AddRuleForOneLevel(NLog.LogLevel.Info, target);
+            LogManager.Configuration = config;
             services.AddLogging(cfg => cfg.AddNLog());
             services.AddSingleton<LogListener>(target);
         }
@@ -86,12 +77,11 @@ namespace DMTAgent
         {
             //services.AddSingleton(new LoggerFactory()
             //    .AddNLog());
-            
-            
+
             services.AddDbContext<SSMDContext>(
                 opt => opt.UseMySql(Configuration.GetConnectionString("SSMD"),
                     opt2 => GetMySqlDbContextOptions(opt2)),
-                contextLifetime:ServiceLifetime.Transient);
+                contextLifetime: ServiceLifetime.Transient);
 
             services.AddTransient(typeof(IDesignTimeDbContextFactory<SSMDContext>), typeof(SSMDContextFactory));
             services.AddTransient(typeof(IDataService<SSMDContext>), typeof(SSMDData));
@@ -99,13 +89,14 @@ namespace DMTAgent
             services.AddTransient(typeof(ISyncElementFactory), typeof(SyncElementFactory));
 
             services.AddSingleton(typeof(ISyncManager), typeof(SyncManager));
-            services.AddSingleton(typeof(SyncAgent));
+            services.AddSingleton(typeof(ISyncAgent), typeof(SyncAgent));
 
             services.AddTransient(typeof(Views.MainWindow));
         }
-        private void ConfigureViews(IServiceCollection services)
+
+        private void ConfigureSettings(IServiceCollection services)
         {
-            services.AddTransient(typeof(Views.MainWindow));
+            services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
         }
 
         private void ConfigureViewModels(IServiceCollection services)
@@ -115,10 +106,9 @@ namespace DMTAgent
                 typeof(ViewModels.MainWindowViewModel));
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        private void ConfigureViews(IServiceCollection services)
         {
-            ServiceProvider.GetService<ISyncManager>().JobController.GetAwaiterForActiveOperations().Wait();
-            base.OnExit(e);
+            services.AddTransient(typeof(Views.MainWindow));
         }
 
         private void InitializeDb()
@@ -131,16 +121,6 @@ namespace DMTAgent
             {
                 throw new Exception("Inizializzazione Database Fallita: " + e.Message, e);
             }
-        }
-
-        private void OnDMTAgentStartRequested(object sender, EventArgs e)
-        {
-            StartDMTAgent();
-        }
-
-        private void OnDMTAgentStopRequested(object sender, EventArgs e)
-        {
-            StopDMTAgent();
         }
 
         private void StartDMTAgent()

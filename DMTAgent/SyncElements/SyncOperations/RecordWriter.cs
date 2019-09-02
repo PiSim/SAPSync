@@ -12,7 +12,7 @@ namespace DMTAgent.SyncElements.SyncOperations
     public class RecordWriter<T> : IRecordWriter<T> where T : class
     {
         #region Constructors
-        
+
         public RecordWriter(IRecordEvaluator<T> recordEvaluator,
             IDataService<SSMDContext> dataService)
         {
@@ -38,6 +38,8 @@ namespace DMTAgent.SyncElements.SyncOperations
         protected Task LoadTask { get; set; }
         protected ICollection<UpdatePackage<T>> Packages { get; }
 
+        protected virtual IDataService<SSMDContext> SSMDData { get; }
+
         #endregion Properties
 
         #region Methods
@@ -46,8 +48,6 @@ namespace DMTAgent.SyncElements.SyncOperations
         {
             Clear();
         }
-
-        protected virtual IDataService<SSMDContext> SSMDData { get; }
 
         public void Commit()
         {
@@ -121,7 +121,7 @@ namespace DMTAgent.SyncElements.SyncOperations
                 throw new InvalidOperationException("Evaluator non inizializzato");
             RecordEvaluator.CheckInitialized();
         }
-        
+
         protected virtual void InsertNewRecords(IEnumerable<T> records)
         {
             BatchInsertEntitiesCommand<SSMDContext> insertCommand = new BatchInsertEntitiesCommand<SSMDContext>(records);

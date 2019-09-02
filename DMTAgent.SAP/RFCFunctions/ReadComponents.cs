@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace DMTAgent.SAP
-{ 
+{
     public class ReadComponents : ReadTableBase<Component>
     {
         #region Constructors

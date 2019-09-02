@@ -1,25 +1,33 @@
-﻿using DMTAgent.SyncElements;
+﻿using DataAccessCore;
+using DMTAgent.Infrastructure;
+using DMTAgent.SAP;
+using DMTAgent.SyncElements;
 using DMTAgent.SyncElements.Evaluators;
 using DMTAgent.SyncElements.ExcelWorkbooks;
 using DMTAgent.SyncElements.SAPTables;
 using DMTAgent.SyncElements.SyncOperations;
-using DMTAgent.Infrastructure;
-using DMTAgent.SAP;
 using DMTAgent.XML;
+using Microsoft.Extensions.Logging;
 using SSMD;
 using SSMD.Queries;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using DataAccessCore;
-using Microsoft.Extensions.Logging;
 
 namespace DMTAgent
 {
     public class SyncElementFactory : ISyncElementFactory
     {
+        #region Fields
+
+        private readonly IDataService<SSMDContext> _dataService;
         private readonly ILogger<SyncElementFactory> _logger;
+
+        #endregion Fields
+
+        #region Constructors
+
         public SyncElementFactory(IDataService<SSMDContext> dataService,
             ILogger<SyncElementFactory> logger)
         {
@@ -27,7 +35,7 @@ namespace DMTAgent
             _dataService = dataService;
         }
 
-        private readonly IDataService<SSMDContext> _dataService;
+        #endregion Constructors
 
         #region Methods
 

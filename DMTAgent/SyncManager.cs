@@ -1,5 +1,4 @@
-﻿
-using DMTAgent.Infrastructure;
+﻿using DMTAgent.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,9 +8,13 @@ namespace DMTAgent
 {
     public class SyncManager : ISyncManager
     {
-        #region Constructors
+        #region Fields
 
         private readonly ILogger _logger;
+
+        #endregion Fields
+
+        #region Constructors
 
         public SyncManager(ILogger<SyncManager> logger,
             ISyncElementFactory elementFactory)
@@ -25,7 +28,7 @@ namespace DMTAgent
         }
 
         #endregion Constructors
-        
+
         #region Properties
 
         public IJobController JobController { get; }

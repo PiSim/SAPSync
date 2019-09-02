@@ -1,10 +1,8 @@
 ﻿using System.Reflection;
-using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-// Le informazioni generali relative a un assembly sono controllate dal seguente 
+// Le informazioni generali relative a un assembly sono controllate dal seguente
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
 [assembly: AssemblyTitle("DMTAgent")]
@@ -30,7 +28,6 @@ using System.Windows;
 
 //[assembly: NeutralResourcesLanguage("en-US", UltimateResourceFallbackLocation.Satellite)]
 
-
 [assembly: ThemeInfo(
     ResourceDictionaryLocation.None, //dove si trovano i dizionari delle risorse specifiche del tema
                                      //(da usare se nella pagina non viene trovata una risorsa,
@@ -39,7 +36,6 @@ using System.Windows;
                                               //(da usare se nella pagina non viene trovata una risorsa,
                                               // nell'applicazione o nei dizionari delle risorse specifiche del tema)
 )]
-
 
 // Le informazioni sulla versione di un assembly sono costituite dai seguenti quattro valori:
 //

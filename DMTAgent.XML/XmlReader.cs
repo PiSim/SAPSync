@@ -1,5 +1,5 @@
-﻿using OfficeOpenXml;
-using DMTAgent.Infrastructure;
+﻿using DMTAgent.Infrastructure;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 
 namespace DMTAgent.XML
-{ 
+{
     public class XmlReader<T, TDto> : XmlInteraction<T, TDto>, IRecordReader<T> where T : class, new() where TDto : class, IXmlDto<T>, new()
     {
         #region Constructors

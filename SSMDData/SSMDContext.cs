@@ -1,16 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
-using System.Configuration;
 
 namespace SSMD
 {
     public class SSMDContext : DbContext
     {
+        #region Constructors
+
         public SSMDContext(DbContextOptions<SSMDContext> options) : base(options)
         {
-
         }
+
+        #endregion Constructors
 
         #region Properties
 

@@ -1,5 +1,5 @@
-﻿using SAP.Middleware.Connector;
-using DMTAgent.Infrastructure;
+﻿using DMTAgent.Infrastructure;
+using SAP.Middleware.Connector;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -54,22 +54,31 @@ namespace DMTAgent.SAP
 
         public void Invoke(RfcDestination rfcDestination)
         {
-            ConfigureBatchingOptions();
-
-            if (_fields == null)
-                throw new ArgumentNullException("Fields");
-
-            IEnumerable<IRfcFunction> executionStack = GetExecutionStack(rfcDestination);
-            List<T> results = new List<T>();
-
-            foreach (IRfcFunction rfcFunction in executionStack)
+            try
             {
-                rfcFunction.Invoke(rfcDestination);
-                IRfcTable output = rfcFunction.GetTable("DATA");
-                RaisePacketCompleted(ConvertRfcTable(output));
-            }
+                ConfigureBatchingOptions();
 
-            RaiseReadCompleted();
+                if (_fields == null)
+                    throw new ArgumentNullException("Fields");
+
+                IEnumerable<IRfcFunction> executionStack = GetExecutionStack(rfcDestination);
+                List<T> results = new List<T>();
+
+                foreach (IRfcFunction rfcFunction in executionStack)
+                {
+                    rfcFunction.Invoke(rfcDestination);
+                    IRfcTable output = rfcFunction.GetTable("DATA");
+                    RaisePacketCompleted(ConvertRfcTable(output));
+                }
+
+                RaiseReadCompleted();
+            }
+            catch (Exception e)
+            {
+                RaiseError(
+                    e,
+                    "Errore di lettura da SAP: " + e.Message);
+            }
         }
 
         public async Task InvokeAsync(RfcDestination rfcDestination) => await StartChildTask(() => Invoke(rfcDestination));
@@ -141,6 +150,23 @@ namespace DMTAgent.SAP
 
         protected virtual void ConfigureBatchingOptions()
         {
+        }
+
+        protected virtual void RaiseError(
+           Exception e = null,
+           string errorMessage = null,
+           SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
+        {
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                Exception = e,
+                Severity = errorSeverity,
+                ErrorMessage = errorMessage,
+                TimeStamp = DateTime.Now,
+                TypeOfElement = GetType()
+            };
+
+            ErrorRaised?.Invoke(this, args);
         }
 
         protected virtual void RaisePacketCompleted(IEnumerable<T> records)

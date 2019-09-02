@@ -1,5 +1,5 @@
-﻿using SAP.Middleware.Connector;
-using DMTAgent.Infrastructure;
+﻿using DMTAgent.Infrastructure;
+using SAP.Middleware.Connector;
 using SSMD;
 using System;
 using System.Collections.Generic;
@@ -54,6 +54,23 @@ namespace DMTAgent.SAP
             _rfcFunction.SetValue("max_rows", 99999999);
         }
 
+        protected virtual void RaiseError(
+           Exception e = null,
+           string errorMessage = null,
+           SyncErrorEventArgs.ErrorSeverity errorSeverity = SyncErrorEventArgs.ErrorSeverity.Minor)
+        {
+            SyncErrorEventArgs args = new SyncErrorEventArgs()
+            {
+                Exception = e,
+                Severity = errorSeverity,
+                ErrorMessage = errorMessage,
+                TimeStamp = DateTime.Now,
+                TypeOfElement = GetType()
+            };
+
+            ErrorRaised?.Invoke(this, args);
+        }
+
         protected virtual void RaisePacketCompleted(IEnumerable<InspectionLot> records)
         {
             RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<InspectionLot>(records));
@@ -63,9 +80,18 @@ namespace DMTAgent.SAP
 
         protected void ReadRecords()
         {
-            IEnumerable<InspectionLot> records = ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
-            RaisePacketCompleted(records);
-            RaiseReadCompleted();
+            try
+            {
+                IEnumerable<InspectionLot> records = ConvertInspectionLotTable(Invoke(new SAPReader().GetRfcDestination()));
+                RaisePacketCompleted(records);
+                RaiseReadCompleted();
+            }
+            catch (Exception e)
+            {
+                RaiseError(
+                    e,
+                    "Errore di lettura da SAP: " + e.Message);
+            }
         }
 
         protected virtual Task StartChildTask(Action action)

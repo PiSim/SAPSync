@@ -9,16 +9,21 @@ namespace DMTAgent.SyncElements.ExcelWorkbooks
 {
     public class CreateMissingTrialLabData : SyncOperationBase
     {
-        #region Properties
-
-        public override string Name => "Creazione Note Prova mancanti";
-
-        #endregion Properties
+        #region Constructors
 
         public CreateMissingTrialLabData(IDataService<SSMDContext> dataService) : base()
         {
             SSMDData = dataService;
         }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public override string Name => "Creazione Note Prova mancanti";
+        private IDataService<SSMDContext> SSMDData { get; }
+
+        #endregion Properties
 
         #region Methods
 
@@ -39,8 +44,6 @@ namespace DMTAgent.SyncElements.ExcelWorkbooks
 
             SSMDData.Execute(new InsertEntitiesCommand<SSMDContext>(newTrials));
         }
-
-        private IDataService<SSMDContext> SSMDData {get;}
 
         #endregion Methods
     }

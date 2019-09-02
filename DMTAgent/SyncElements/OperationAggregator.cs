@@ -10,9 +10,8 @@ namespace DMTAgent.SyncElements
     {
         #region Constructors
 
-        public OperationAggregator(IDataService<SSMDContext> dataService , string name = "", SyncElementConfiguration configuration = null) : base(dataService, name, configuration)
+        public OperationAggregator(IDataService<SSMDContext> dataService, string name = "", SyncElementConfiguration configuration = null) : base(dataService, name, configuration)
         {
-
         }
 
         #endregion Constructors

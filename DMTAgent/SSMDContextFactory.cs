@@ -8,12 +8,20 @@ namespace DMTAgent
     // without reinstantiating everything
     public class SSMDContextFactory : IDesignTimeDbContextFactory<SSMDContext>
     {
+        #region Fields
+
         private readonly IServiceProvider _serviceProvider;
+
+        #endregion Fields
+
+        #region Constructors
 
         public SSMDContextFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
+
+        #endregion Constructors
 
         #region Methods
 

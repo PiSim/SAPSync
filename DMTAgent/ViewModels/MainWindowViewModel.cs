@@ -1,6 +1,4 @@
 ﻿using DMTAgent.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,59 +11,39 @@ namespace DMTAgent.ViewModels
     {
         #region Fields
 
-        private string _serviceStatus;
+        private LinkedList<string> _log;
+        private bool _showCompleteJobs;
+        private ISyncAgent _syncAgent;
         private List<SyncElementViewModel> _syncElements;
         private ISyncManager _syncManager;
-        private bool _showCompleteJobs;
-        private LinkedList<string> _log;
-
-        public int MaxLogLines { get; } = 1000;
 
         #endregion Fields
 
         #region Constructors
 
-        public string Log => string.Concat(_log.Select(line => line + '\n'));
-
-        protected virtual void OnLogCreated(object sender, LogCreatedEventArgs e)
-        {
-            if (_log.Count > MaxLogLines)
-                _log.RemoveLast();
-
-            _log.AddFirst(e.LogEventInfo.FormattedMessage);
-            RaisePropertyChanged("Log");
-        }
-
+        // SP Added dependency on ISyncAgent, removed start/stoprequested events in favor of direct calls to the interface methods
         public MainWindowViewModel(ISyncManager syncManager,
-            LogListener listener)
+            LogListener listener,
+            ISyncAgent syncAgent)
         {
+            _syncAgent = syncAgent;
+            _syncManager = syncManager;
+
             _log = new LinkedList<string>();
             listener.LogCreated += OnLogCreated;
+
             _showCompleteJobs = true;
-            _syncManager = syncManager;
-            // SyncLogger.LogEntryCreated += OnLogEntryCreated;
             StartSyncCommand = new RelayCommand(() => StartSync());
             ToggleDMTAgentCommand = new RelayCommand(() => ToggleDMTAgent());
+
             SyncElements = GetSyncElements(_syncManager);
 
+            _syncAgent.StatusChanged += OnAgentStatusChanged;
             _syncManager.JobController.NewJobStarted += OnJobStarted;
             _syncManager.JobController.JobCompleted += OnJobCompleted;
         }
 
-        private void OnLogEntryCreated(object sender, EventArgs e)
-        {
-            RaisePropertyChanged("CurrentLog");
-        }
-
         #endregion Constructors
-
-        #region Events
-
-        public event EventHandler DMTAgentStartRequested;
-
-        public event EventHandler DMTAgentStopRequested;
-
-        #endregion Events
 
         #region Properties
 
@@ -77,12 +55,10 @@ namespace DMTAgent.ViewModels
             .SelectMany(job => job.SubJobs)
             .Select(sjb => new SubJobViewModel(sjb));
 
-        // public string CurrentLog => SyncLogger.CurrentLog.Join(Environment.NewLine);
-
+        public string AgentStatus => _syncAgent.Status.ToString();
+        public string Log => string.Concat(_log.Select(line => line + '\n'));
+        public int MaxLogLines { get; } = 1000;
         public RelayCommand OpenLogWindowCommand { get; }
-
-        public string ServiceStatus
-        { get => _serviceStatus; set { _serviceStatus = value; RaisePropertyChanged("ServiceStatus"); } }
 
         public bool ShowCompleteJobs
         {
@@ -114,9 +90,22 @@ namespace DMTAgent.ViewModels
 
         public List<SyncElementViewModel> GetSyncElements(ISyncManager syncManager) => syncManager.SyncElements.Select(sel => new SyncElementViewModel(sel)).ToList();
 
+        protected virtual void OnAgentStatusChanged(object sender, EventArgs e) => RaisePropertyChanged("AgentStatus");
+
         protected virtual void OnJobCompleted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
 
         protected virtual void OnJobStarted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
+
+        protected virtual void OnLogCreated(object sender, LogCreatedEventArgs e)
+        {
+            if (_log.Count > MaxLogLines)
+                _log.RemoveLast();
+
+            _log.AddFirst(e.LogEventInfo.FormattedMessage);
+            RaisePropertyChanged("Log");
+        }
+
+        private void OnLogEntryCreated(object sender, EventArgs e) => RaisePropertyChanged("CurrentLog");
 
         private void StartSync()
         {
@@ -125,10 +114,10 @@ namespace DMTAgent.ViewModels
 
         private void ToggleDMTAgent()
         {
-            if (ServiceStatus == "Running")
-                DMTAgentStopRequested?.Invoke(this, new EventArgs());
-            else if (ServiceStatus == "Stopped")
-                DMTAgentStartRequested?.Invoke(this, new EventArgs());
+            if (AgentStatus == "Running")
+                _syncAgent.Stop();
+            else if (AgentStatus == "Stopped")
+                _syncAgent.Start();
         }
 
         #endregion Methods

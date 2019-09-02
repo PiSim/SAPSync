@@ -1,5 +1,5 @@
-﻿using System;
-using DMTAgent.Infrastructure;
+﻿using DMTAgent.Infrastructure;
+using System;
 
 namespace DMTAgent.ViewModels
 {
