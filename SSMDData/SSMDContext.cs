@@ -1,16 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
-using System.Configuration;
 
 namespace SSMD
 {
     public class SSMDContext : DbContext
     {
+        #region Constructors
+
         public SSMDContext(DbContextOptions<SSMDContext> options) : base(options)
         {
-
         }
+
+        #endregion Constructors
 
         #region Properties
 
@@ -54,6 +55,9 @@ namespace SSMD
             modelBuilder.Entity<InspectionCharacteristic>()
                 .HasIndex(insc => insc.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<GoodMovement>()
+                .HasKey(gom => new Tuple<long, int>(gom.DocumentNumber, gom.ItemNumber));
 
             modelBuilder.Entity<InspectionPoint>()
                 .HasKey(insp => new Tuple<long, int, int, int>(insp.InspectionLotNumber, insp.NodeNumber, insp.CharNumber, insp.SampleNumber));

@@ -3,43 +3,55 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace DMTAgent
 {
-    public class SyncAgent
+    public class SyncAgent : ISyncAgent
     {
+        #region Fields
+
         private readonly ILogger _logger;
-        public enum AgentStatus
-        {
-            Running,
-            Stopped,
-            Idle
-        }
+
+        #endregion Fields
+
+        #region Constructors
 
         public SyncAgent(ISyncManager syncManager,
-            ILogger logger)
+            ILogger<SyncAgent> logger)
         {
             _logger = logger;
             SyncManager = syncManager;
             SyncManager.JobController.JobCompleted += OnSyncCompleted;
         }
 
+        #endregion Constructors
 
-        public event EventHandler ServiceStarted;
+        #region Events
 
-        public event EventHandler ServiceStopped;
+        public event EventHandler StatusChanged;
 
+        #endregion Events
+
+        #region Properties
 
         public Timer CurrentTimer { get; set; }
         public AgentStatus Status { get; set; } = AgentStatus.Stopped;
         public ISyncManager SyncManager { get; private set; }
         public TimeSpan UpdateTimeSlack { get; protected set; } = new TimeSpan(0, 15, 0);
 
+        #endregion Properties
+
+        #region Methods
+
         public void Start()
         {
             OnStart();
+        }
+
+        public virtual void Stop()
+        {
+            OnStop();
         }
 
         protected virtual DateTime CalculateTimeForNextUpdate(IEnumerable<DateTime?> updateSchedule)
@@ -54,35 +66,26 @@ namespace DMTAgent
             }
         }
 
-        public virtual void Stop()
+        protected virtual void ChangeStatus(AgentStatus newStatus)
         {
-            OnStop();
+            Status = newStatus;
+            RaiseStatusChanged();
         }
 
         protected virtual void OnStart()
         {
-            Status = AgentStatus.Running;
             ScheduleNextUpdate();
-            RaiseServiceStarted();
+            ChangeStatus(AgentStatus.Running);
         }
 
         protected virtual void OnStop()
         {
-            Status = AgentStatus.Stopped;
             CurrentTimer.Dispose();
             CurrentTimer = null;
-            RaiseServiceStopped();
+            ChangeStatus(AgentStatus.Stopped);
         }
 
-        protected virtual void RaiseServiceStarted()
-        {
-            ServiceStarted?.Invoke(this, new EventArgs());
-        }
-
-        protected virtual void RaiseServiceStopped()
-        {
-            ServiceStopped?.Invoke(this, new EventArgs());
-        }
+        protected virtual void RaiseStatusChanged() => StatusChanged?.Invoke(this, new EventArgs());
 
         protected void ScheduleNextUpdate()
         {
@@ -107,5 +110,6 @@ namespace DMTAgent
             SyncManager.SyncOutdatedElements();
         }
 
+        #endregion Methods
     }
 }

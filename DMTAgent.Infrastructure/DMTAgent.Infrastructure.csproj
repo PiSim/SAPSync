@@ -54,6 +54,7 @@
     <Compile Include="IRecordReader.cs" />
     <Compile Include="IRecordWriter.cs" />
     <Compile Include="ISubJob.cs" />
+    <Compile Include="ISyncAgent.cs" />
     <Compile Include="ISyncElement.cs" />
     <Compile Include="ISyncElementFactory.cs" />
     <Compile Include="ISyncManager.cs" />

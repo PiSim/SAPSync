@@ -28,15 +28,15 @@ namespace DMTAgent
 
         #region Methods
 
-        public virtual void CloseJob()
-        {
-            Complete();
-        }
-
         public void CheckStatus()
         {
             if (Status == JobStatus.OnQueue && Dependencies.All(dep => dep.Status == JobStatus.Completed))
                 ChangeStatus(JobStatus.Ready);
+        }
+
+        public virtual void CloseJob()
+        {
+            Complete();
         }
 
         public override void Start()

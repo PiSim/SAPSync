@@ -1,10 +1,9 @@
-﻿using DMTAgent.Infrastructure;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DMTAgent.Infrastructure
-{ 
+{
     public interface IJobController
     {
         #region Events

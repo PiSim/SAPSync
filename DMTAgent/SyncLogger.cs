@@ -1,30 +1,58 @@
 ﻿using DMTAgent.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 
 namespace DMTAgent
 {
     public class SyncLogger : ILogger
     {
-        #region Properties
+        #region Fields
 
-        public  LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
-        public  event EventHandler LogEntryCreated;
         private readonly AppSettings _settings;
 
-        #endregion Properties
+        #endregion Fields
+
+        #region Constructors
 
         public SyncLogger(IOptions<AppSettings> settings)
         {
             _settings = settings.Value;
         }
 
+        #endregion Constructors
+
+        #region Events
+
+        public event EventHandler LogEntryCreated;
+
+        #endregion Events
+
+        #region Properties
+
+        public LinkedList<string> CurrentLog { get; } = new LinkedList<string>();
+
+        #endregion Properties
+
         #region Methods
+
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            throw new NotImplementedException();
+        }
 
         public void LogElementCompleted(ISyncElement element)
         {
@@ -34,8 +62,6 @@ namespace DMTAgent
                     GetTimeStamp() + "Elemento completato: " + element.Name
                 });
         }
-
-        public void RaiseLogEntryCreated() => LogEntryCreated?.Invoke(null, new EventArgs());
 
         public void LogElementStarting(ISyncElement element)
         {
@@ -56,7 +82,6 @@ namespace DMTAgent
             };
 
             CreateLogEntry(logLines, new FileInfo(_settings.ErrorLogPath));
-            
         }
 
         public void LogTaskCompleted(IJob task)
@@ -87,6 +112,8 @@ namespace DMTAgent
             CreateLogEntry(text, new FileInfo(_settings.GeneralLogPath));
         }
 
+        public void RaiseLogEntryCreated() => LogEntryCreated?.Invoke(null, new EventArgs());
+
         private void CreateLogEntry(IEnumerable<string> lines, FileInfo target)
         {
             try
@@ -104,21 +131,6 @@ namespace DMTAgent
         }
 
         private string GetTimeStamp() => DateTime.Now.ToString("yyyyMMddhhmmss_");
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion Methods
     }

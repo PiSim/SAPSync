@@ -2,7 +2,7 @@
 using System.Reflection;
 
 namespace DMTAgent.XML
-{ 
+{
     public interface IXmlDto<T> where T : class
     {
         #region Methods

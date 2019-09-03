@@ -10,9 +10,13 @@ namespace DMTAgent.SyncElements
 {
     public abstract class SyncElementBase : ISyncElement
     {
-        #region Constructors
+        #region Fields
 
         private IDataService<SSMDContext> _dataService;
+
+        #endregion Fields
+
+        #region Constructors
 
         public SyncElementBase(IDataService<SSMDContext> dataService, string name = "", SyncElementConfiguration configuration = null)
         {

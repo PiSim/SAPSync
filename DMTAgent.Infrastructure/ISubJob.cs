@@ -22,7 +22,9 @@ namespace DMTAgent.Infrastructure
 
         Task CurrentTask { get; }
         ICollection<ISubJob> Dependencies { get; }
+        DateTime EndTime { get; }
         IDictionary<Type, object> Resources { get; }
+        DateTime StartTime { get; }
         JobStatus Status { get; }
         ISyncElement TargetElement { get; }
 
@@ -35,9 +37,6 @@ namespace DMTAgent.Infrastructure
         void CloseJob();
 
         void Start();
-
-        DateTime StartTime { get; }
-        DateTime EndTime { get; }
 
         void StartAsync();
 

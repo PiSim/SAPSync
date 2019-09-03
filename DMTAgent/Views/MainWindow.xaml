@@ -36,7 +36,7 @@
                 <TextBlock Text="Stato servizio:"
                        Grid.Column="0"
                        VerticalAlignment="Center" />
-                <TextBlock Text="{Binding ServiceStatus}"
+                <TextBlock Text="{Binding AgentStatus}"
                        Grid.Column="1"
                        VerticalAlignment="Center" />
                 <Button Content="Sincronizza selezionati"
@@ -57,12 +57,12 @@
                         <Style TargetType="Button">
                             <Style.Triggers>
 
-                                <DataTrigger Binding="{Binding ServiceStatus}"
+                                <DataTrigger Binding="{Binding AgentStatus}"
                              Value="Running">
                                     <Setter Property="Content"
                             Value="Ferma" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding ServiceStatus}"
+                                <DataTrigger Binding="{Binding AgentStatus}"
                              Value="Stopped">
                                     <Setter Property="Content"
                             Value="Avvia" />
@@ -133,7 +133,6 @@
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -156,7 +155,7 @@
               Grid.Column="1">
             <GroupBox Header="Log">
                 <TextBox IsReadOnly="True"
-                         Text="{Binding CurrentLog, 
+                         Text="{Binding Log,
                                         Mode=OneWay}" />
             </GroupBox>
         </Grid>

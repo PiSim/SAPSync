@@ -10,7 +10,11 @@ namespace DMTAgent
 {
     public class SSMDReader<T> : IRecordReader<T> where T : class
     {
+        #region Fields
+
         private readonly IDataService<SSMDContext> _dataService;
+
+        #endregion Fields
 
         #region Constructors
 
@@ -57,7 +61,7 @@ namespace DMTAgent
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
 
         protected virtual Query<T, SSMDContext> GetQuery() => GetQueryFunc();
-        
+
         protected virtual void RaisePacketCompleted(IEnumerable<T> records)
         {
             RecordPacketCompleted?.Invoke(this, new RecordPacketCompletedEventArgs<T>(records));
@@ -87,7 +91,11 @@ namespace DMTAgent
 
     public class SSMDReader<TQueried, TOut> : IRecordReader<TOut> where TQueried : class
     {
+        #region Fields
+
         private readonly IDataService<SSMDContext> _dataService;
+
+        #endregion Fields
 
         #region Constructors
 

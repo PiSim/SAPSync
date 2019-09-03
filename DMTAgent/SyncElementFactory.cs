@@ -1,34 +1,48 @@
-﻿using DMTAgent.SyncElements;
+﻿using DataAccessCore;
+using DMTAgent.Infrastructure;
+using DMTAgent.SAP;
+using DMTAgent.SyncElements;
 using DMTAgent.SyncElements.Evaluators;
 using DMTAgent.SyncElements.ExcelWorkbooks;
 using DMTAgent.SyncElements.SAPTables;
 using DMTAgent.SyncElements.SyncOperations;
-using DMTAgent.Infrastructure;
-using DMTAgent.SAP;
 using DMTAgent.XML;
+using Microsoft.Extensions.Logging;
 using SSMD;
 using SSMD.Queries;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using DataAccessCore;
 
 namespace DMTAgent
 {
     public class SyncElementFactory : ISyncElementFactory
     {
-        public SyncElementFactory(IDataService<SSMDContext> dataService)
+        #region Fields
+
+        private readonly IDataService<SSMDContext> _dataService;
+        private readonly ILogger<SyncElementFactory> _logger;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public SyncElementFactory(IDataService<SSMDContext> dataService,
+            ILogger<SyncElementFactory> logger)
         {
+            _logger = logger;
             _dataService = dataService;
         }
 
-        private readonly IDataService<SSMDContext> _dataService;
+        #endregion Constructors
 
         #region Methods
 
         public virtual ICollection<ISyncElement> BuildSyncElements()
         {
+            _logger.LogInformation("Costruzione lista elementi");
+
             ISyncElement WorkCentersElement = new OperationAggregator(
                 _dataService,
                 "Centri di Lavoro")
@@ -231,7 +245,6 @@ namespace DMTAgent
                         new CustomerEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-                                CheckRemovedRecords = false,
                                 IgnoreExistingRecords = true
                             }),
                             _dataService)));
@@ -279,11 +292,7 @@ namespace DMTAgent
                             4,
                             new System.IO.DirectoryInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\BackupReport\\StatoOdpProva"))),
                     new RecordWriter<OrderData>(
-                        new TrialMasterEvaluator(
-                            new RecordEvaluatorConfiguration()
-                            {
-                                CheckRemovedRecords = false
-                            }),
+                        new TrialMasterEvaluator(),
                             _dataService)))
                 .HasOperation(new SyncData<OrderData>(
                     new SSMDReader<OrderData>(_dataService,
@@ -314,11 +323,7 @@ namespace DMTAgent
                             4,
                             new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))),
                     new RecordWriter<WorkPhaseLabData>(
-                        new WorkPhaseLabDataEvaluator(
-                            new RecordEvaluatorConfiguration()
-                            {
-                                CheckRemovedRecords = false
-                            }),
+                        new WorkPhaseLabDataEvaluator(),
                             _dataService)))
                 .HasOperation(new CreateMissingTrialLabData(_dataService))
                 .HasOperation(new SyncData<WorkPhaseLabData>(
