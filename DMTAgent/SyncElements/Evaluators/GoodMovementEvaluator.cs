@@ -16,7 +16,7 @@ namespace DMTAgent.SyncElements.Evaluators
 
         #region Methods
 
-        protected override Tuple<long, int> GetIndexKey(GoodMovement record) => record.GetPrimaryKey();
+        protected override Tuple<long, int> GetIndexKey(GoodMovement record) => record.GetIndexKey();
 
         protected override IRecordValidator<GoodMovement> GetRecordValidator() => new GoodMovementValidator();
 

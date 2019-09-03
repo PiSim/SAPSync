@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DMTAgent.SyncElements
 {
-    public interface IRecordEvaluator<T>
+    public interface IRecordEvaluator<T> where T : class
     {
         #region Properties
 
@@ -33,7 +33,8 @@ namespace DMTAgent.SyncElements
 
         protected IDictionary<TKey, T> _recordIndex;
 
-        protected IDictionary<TKey, T> _trackedRecordIndex;
+        // Replaced dictionary with hashset. Dict functionality wasn't necessary and could potentially cause buggy behavior
+        protected HashSet<TKey> _trackedKeysIndex;
 
         #endregion Fields
 
@@ -63,9 +64,7 @@ namespace DMTAgent.SyncElements
         public RecordEvaluatorConfiguration Configuration { get; }
 
         public IDictionary<TKey, T> RecordIndex => _recordIndex;
-
-        public IDictionary<TKey, T> TrackedRecordIndex => _trackedRecordIndex;
-
+        
         protected IRecordValidator<T> RecordValidator { get; set; }
 
         #endregion Properties
@@ -78,18 +77,9 @@ namespace DMTAgent.SyncElements
         {
             RecordValidator = null;
             _recordIndex = null;
-            _trackedRecordIndex = null;
+            _trackedKeysIndex = null;
         }
-
-        public virtual T GetIndexedEntry(TKey key)
-        {
-            if (RecordIndex.ContainsKey(key))
-                return RecordIndex[key];
-            else if (TrackedRecordIndex.ContainsKey(key))
-                return TrackedRecordIndex[key];
-            else return null;
-        }
-
+        
         public virtual UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records)
         {
             IEnumerable<SyncItem<T>> evaluatedRecords = EvaluateRecords(records);
@@ -124,20 +114,21 @@ namespace DMTAgent.SyncElements
 
         public virtual void Initialize(IDataService<SSMDContext> sSMDData)
         {
-            _trackedRecordIndex = new Dictionary<TKey, T>();
+            _trackedKeysIndex = new HashSet<TKey>();
             _recordIndex = sSMDData.RunQuery(GetIndexEntriesQuery()).ToDictionary(rec => GetIndexKey(rec), rec => rec);
             RecordValidator = GetRecordValidator();
             InitializeRecordValidator(sSMDData);
         }
 
-        protected virtual void AddToTrackedRecordIndex(T record) => _trackedRecordIndex.Add(GetIndexKey(record), record);
+        protected virtual void AddToTrackedRecordIndex(T record) => _trackedKeysIndex.Add(GetIndexKey(record));
 
         protected virtual IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
         {
             List<SyncItem<T>> retrievedItems = records.Select(rec => new SyncItem<T>(rec)).ToList();
-
+            
             foreach (SyncItem<T> record in retrievedItems)
                 record.Action = GetRecordDesignation(record.Item);
+
 
             if (Configuration.CheckRemovedRecords)
             {
@@ -190,7 +181,7 @@ namespace DMTAgent.SyncElements
 
         protected virtual bool IsExistingRecord(T record) => RecordIndex.ContainsKey(GetIndexKey(record));
 
-        protected virtual bool IsTracked(T record) => TrackedRecordIndex.ContainsKey(GetIndexKey(record));
+        protected virtual bool IsTracked(T record) => _trackedKeysIndex.Contains(GetIndexKey(record));
 
         protected virtual bool MustIgnoreRecord(T record) => false;
 
@@ -232,7 +223,7 @@ namespace DMTAgent.SyncElements
     {
         #region Properties
 
-        public bool CheckRemovedRecords { get; set; } = true;
+        public bool CheckRemovedRecords { get; set; } = false;
 
         public bool IgnoreExistingRecords { get; set; } = false;
 

@@ -56,6 +56,9 @@ namespace SSMD
                 .HasIndex(insc => insc.Name)
                 .IsUnique();
 
+            modelBuilder.Entity<GoodMovement>()
+                .HasKey(gom => new Tuple<long, int>(gom.DocumentNumber, gom.ItemNumber));
+
             modelBuilder.Entity<InspectionPoint>()
                 .HasKey(insp => new Tuple<long, int, int, int>(insp.InspectionLotNumber, insp.NodeNumber, insp.CharNumber, insp.SampleNumber));
 

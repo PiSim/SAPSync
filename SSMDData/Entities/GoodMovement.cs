@@ -13,9 +13,6 @@ namespace SSMD
 
         public long DocumentNumber { get; set; }
 
-        [Key]
-        public int ID { get; set; }
-
         public int ItemNumber { get; set; }
         public Order Order { get; set; }
         public int OrderNumber { get; set; }
@@ -27,7 +24,7 @@ namespace SSMD
 
         #region Methods
 
-        public Tuple<long, int> GetPrimaryKey() => new Tuple<long, int>(DocumentNumber, ItemNumber);
+        public Tuple<long, int> GetIndexKey() => new Tuple<long, int>(DocumentNumber, ItemNumber);
 
         #endregion Methods
     }

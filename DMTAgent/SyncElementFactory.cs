@@ -245,7 +245,6 @@ namespace DMTAgent
                         new CustomerEvaluator(
                             new RecordEvaluatorConfiguration()
                             {
-                                CheckRemovedRecords = false,
                                 IgnoreExistingRecords = true
                             }),
                             _dataService)));
@@ -293,11 +292,7 @@ namespace DMTAgent
                             4,
                             new System.IO.DirectoryInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\BackupReport\\StatoOdpProva"))),
                     new RecordWriter<OrderData>(
-                        new TrialMasterEvaluator(
-                            new RecordEvaluatorConfiguration()
-                            {
-                                CheckRemovedRecords = false
-                            }),
+                        new TrialMasterEvaluator(),
                             _dataService)))
                 .HasOperation(new SyncData<OrderData>(
                     new SSMDReader<OrderData>(_dataService,
@@ -328,11 +323,7 @@ namespace DMTAgent
                             4,
                             new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))),
                     new RecordWriter<WorkPhaseLabData>(
-                        new WorkPhaseLabDataEvaluator(
-                            new RecordEvaluatorConfiguration()
-                            {
-                                CheckRemovedRecords = false
-                            }),
+                        new WorkPhaseLabDataEvaluator(),
                             _dataService)))
                 .HasOperation(new CreateMissingTrialLabData(_dataService))
                 .HasOperation(new SyncData<WorkPhaseLabData>(

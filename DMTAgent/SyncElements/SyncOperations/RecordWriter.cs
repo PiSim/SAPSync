@@ -80,6 +80,11 @@ namespace DMTAgent.SyncElements.SyncOperations
 
         public void WriteRecords(IEnumerable<T> records)
         {
+            // Nothing to do if enumerable is empty
+            if (records.Count() == 0)
+                return;
+
+
             // Ensure initialization has been completed before attempting to write
             LoadTask.Wait();
 
