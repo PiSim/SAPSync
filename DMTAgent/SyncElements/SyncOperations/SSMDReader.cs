@@ -141,7 +141,13 @@ namespace DMTAgent
         {
         }
 
-        public virtual IEnumerable<TOut> ReadRecords() => RunQuery().ToList();
+
+        protected virtual void ReadRecords()
+        {
+            IEnumerable<TOut> results = RunQuery().ToList();
+            RaisePacketCompleted(results);
+            RaiseReadCompleted();
+        }
 
         public virtual async void StartReadAsync() => await Task.Run(() => ReadRecords());
 

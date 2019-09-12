@@ -64,7 +64,7 @@ namespace DMTAgent.SyncElements
         public RecordEvaluatorConfiguration Configuration { get; }
 
         public IDictionary<TKey, T> RecordIndex => _recordIndex;
-        
+
         protected IRecordValidator<T> RecordValidator { get; set; }
 
         #endregion Properties
@@ -79,7 +79,7 @@ namespace DMTAgent.SyncElements
             _recordIndex = null;
             _trackedKeysIndex = null;
         }
-        
+
         public virtual UpdatePackage<T> GetUpdatePackage(IEnumerable<T> records)
         {
             IEnumerable<SyncItem<T>> evaluatedRecords = EvaluateRecords(records);
@@ -125,21 +125,22 @@ namespace DMTAgent.SyncElements
         protected virtual IEnumerable<SyncItem<T>> EvaluateRecords(IEnumerable<T> records)
         {
             List<SyncItem<T>> retrievedItems = records.Select(rec => new SyncItem<T>(rec)).ToList();
-            
+
             foreach (SyncItem<T> record in retrievedItems)
                 record.Action = GetRecordDesignation(record.Item);
 
 
-            if (Configuration.CheckRemovedRecords)
-            {
-                HashSet<TKey> existingKeysIndex = new HashSet<TKey>(retrievedItems.Select(rec => GetIndexKey(rec.Item)).Distinct());
-                foreach (T record in _recordIndex.Values)
-                    if (!existingKeysIndex.Contains(GetIndexKey(record)))
-                    {
-                        SyncItem<T> itemToRemove = new SyncItem<T>(record) { Action = SyncAction.Delete };
-                        retrievedItems.Add(itemToRemove);
-                    }
-            }
+            // SP - Functionality will be reimplemented, remove this block once done
+            //if (Configuration.CheckRemovedRecords)
+            //{
+            //    HashSet<TKey> existingKeysIndex = new HashSet<TKey>(retrievedItems.Select(rec => GetIndexKey(rec.Item)).Distinct());
+            //    foreach (T record in _recordIndex.Values)
+            //        if (!existingKeysIndex.Contains(GetIndexKey(record)))
+            //        {
+            //            SyncItem<T> itemToRemove = new SyncItem<T>(record) { Action = SyncAction.Delete };
+            //            retrievedItems.Add(itemToRemove);
+            //        }
+            //}
 
             return retrievedItems;
         }
@@ -223,7 +224,9 @@ namespace DMTAgent.SyncElements
     {
         #region Properties
 
-        public bool CheckRemovedRecords { get; set; } = false;
+        // SP - Removed this setting as it's no longer functional and will be implemented
+        //      Could potentially remove RecordEvaluatorConfiguration altogether since it's so underutilized.
+        // public bool CheckRemovedRecords { get; set; } = false;
 
         public bool IgnoreExistingRecords { get; set; } = false;
 

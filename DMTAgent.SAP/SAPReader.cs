@@ -12,7 +12,7 @@ namespace DMTAgent.SAP
         private readonly string _destinationName = "PRD";
 
         #endregion Fields
-        
+
         #region Methods
 
         public RfcDestination GetRfcDestination()

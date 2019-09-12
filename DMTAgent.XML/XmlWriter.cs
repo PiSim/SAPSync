@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DMTAgent.XML
 {
@@ -106,6 +107,8 @@ namespace DMTAgent.XML
             IEnumerable<TDto> exportDtos = GetDtosFromEntities(Records);
             WriteToOrigin(exportDtos);
         }
+
+        public virtual async Task CommitAsync() => await StartChildTask(() => Commit());
 
         public void OpenWriter()
         {

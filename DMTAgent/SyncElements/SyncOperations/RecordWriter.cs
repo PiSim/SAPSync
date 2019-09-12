@@ -49,6 +49,7 @@ namespace DMTAgent.SyncElements.SyncOperations
             Clear();
         }
 
+        public virtual async Task CommitAsync() => await StartChildTask(() => Commit());
         public void Commit()
         {
             foreach (UpdatePackage<T> package in Packages.Where(pkg => pkg.IsCommitted == false))

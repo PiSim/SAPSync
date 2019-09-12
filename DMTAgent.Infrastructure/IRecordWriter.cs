@@ -24,6 +24,8 @@ namespace DMTAgent.Infrastructure
 
         void Commit();
 
+        Task CommitAsync();
+
         void OpenWriter();
 
         void OpenWriterAsync();

@@ -56,6 +56,7 @@ namespace DMTAgent.SyncElements.SyncOperations
         {
             RecordReader.CloseReader();
             await Task.Run(() => Task.WaitAll(RecordWriter.ChildrenTasks.ToArray()));
+            await RecordWriter.CommitAsync();
             CloseJob();
         }
 
