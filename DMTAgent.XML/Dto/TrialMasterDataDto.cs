@@ -138,6 +138,8 @@ namespace DMTAgent.XML
             MaterialCode = entity.Material?.Code;
             TestReportNumber = entity.Order.TestReports?.FirstOrDefault()?.Number;
 
+            OrderType = entity.Order.OrderType;
+
             var embossingThicknessControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPES"));
             var embossingWeightControlPoints = entity.Order.InspectionLots?.SelectMany(inl => inl.InspectionPoints).Where(inp => Regex.IsMatch(inp.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
 

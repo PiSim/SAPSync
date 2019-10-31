@@ -101,7 +101,7 @@
         </Grid>
         <GroupBox Grid.Column="1"
               Grid.Row="1"
-              Grid.RowSpan="2">
+              Grid.RowSpan="3">
             <GroupBox.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -151,13 +151,5 @@
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
-        <Grid Grid.Row="3"
-              Grid.Column="1">
-            <GroupBox Header="Log">
-                <TextBox IsReadOnly="True"
-                         Text="{Binding Log,
-                                        Mode=OneWay}" />
-            </GroupBox>
-        </Grid>
     </Grid>
 </Window>

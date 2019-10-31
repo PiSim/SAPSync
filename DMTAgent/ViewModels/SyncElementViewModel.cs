@@ -14,8 +14,14 @@ namespace DMTAgent.ViewModels
 
         #endregion Constructors
 
-        #region Properties
+        public void RaiseChange()
+        {
+            RaisePropertyChanged("LastUpdate");
+            RaisePropertyChanged("NextScheduledUpdate");
+        }
 
+        #region Properties
+        
         public bool IsSelected { get; set; }
         public bool IsUpdateForbidden { get; set; }
         public DateTime? LastUpdate => SyncElement.LastUpdate;

@@ -48,9 +48,12 @@ namespace DMTAgent
             }
         }
 
+        private readonly JobStatus[] _runnableStatuses = { JobStatus.Aborted, JobStatus.Completed, JobStatus.Failed, JobStatus.Idle };
+
+
         public void SyncOutdatedElements()
         {
-            StartSync(SyncElements.Where(sel => sel.NextScheduledUpdate < DateTime.Now).ToList());
+            StartSync(SyncElements.Where(sel => sel.NextScheduledUpdate < DateTime.Now && sel.CurrentJob == null).ToList());
         }
 
         protected virtual void OnSyncErrorRaised(object sender, SyncErrorEventArgs e)

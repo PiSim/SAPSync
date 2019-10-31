@@ -56,7 +56,7 @@ namespace DMTAgent.ViewModels
             .Select(sjb => new SubJobViewModel(sjb));
 
         public string AgentStatus => _syncAgent.Status.ToString();
-        public string Log => string.Concat(_log.Select(line => line + '\n'));
+        public string Log => string.Concat(_log.ToList().Select(line => line + '\n'));
         public int MaxLogLines { get; } = 1000;
         public RelayCommand OpenLogWindowCommand { get; }
 
@@ -92,7 +92,12 @@ namespace DMTAgent.ViewModels
 
         protected virtual void OnAgentStatusChanged(object sender, EventArgs e) => RaisePropertyChanged("AgentStatus");
 
-        protected virtual void OnJobCompleted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
+        protected virtual void OnJobCompleted(object sender, EventArgs e)
+        {
+            RaisePropertyChanged("ActiveJobs");
+            foreach (SyncElementViewModel el in SyncElements)
+                el.RaiseChange();
+        }
 
         protected virtual void OnJobStarted(object sender, EventArgs e) => RaisePropertyChanged("ActiveJobs");
 

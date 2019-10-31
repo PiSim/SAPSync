@@ -137,18 +137,18 @@ namespace DMTAgent
                     MaterialsElement
                 });
 
-            ISyncElement RoutingOperationsElement = new OperationAggregator(
-                _dataService,
-                "Operazioni ordine")
-                .HasOperation(new SyncData<RoutingOperation>(
-                    new ReadRoutingOperations(),
-                    new RecordWriter<RoutingOperation>(
-                        new RoutingOperationEvaluator(),
-                            _dataService)))
-                .DependsOn(new ISyncElement[]
-                {
-                    WorkCentersElement
-                });
+            //ISyncElement RoutingOperationsElement = new OperationAggregator(
+            //    _dataService,
+            //    "Operazioni ordine")
+            //    .HasOperation(new SyncData<RoutingOperation>(
+            //        new ReadRoutingOperations(),
+            //        new RecordWriter<RoutingOperation>(
+            //            new RoutingOperationEvaluator(),
+            //                _dataService)))
+            //    .DependsOn(new ISyncElement[]
+            //    {
+            //        WorkCentersElement
+            //    });
 
             ISyncElement ComponentsElement = new OperationAggregator(
                 _dataService,
@@ -267,19 +267,19 @@ namespace DMTAgent
                     CustomersElement
                 });
 
-            ISyncElement GoodMovementsElement = new OperationAggregator(
-                _dataService,
-                "Movimenti Merce")
-                .HasOperation(new SyncData<GoodMovement>(
-                    new ReadGoodMovements(),
-                    new RecordWriter<GoodMovement>(
-                        new GoodMovementEvaluator(),
-                            _dataService)))
-                .DependsOn(new ISyncElement[]
-                {
-                    MaterialsElement,
-                    OrdersElement
-                });
+            //ISyncElement GoodMovementsElement = new OperationAggregator(
+            //    _dataService,
+            //    "Movimenti Merce")
+            //    .HasOperation(new SyncData<GoodMovement>(
+            //        new ReadGoodMovements(),
+            //        new RecordWriter<GoodMovement>(
+            //            new GoodMovementEvaluator(),
+            //                _dataService)))
+            //    .DependsOn(new ISyncElement[]
+            //    {
+            //        MaterialsElement,
+            //        OrdersElement
+            //    });
 
             ISyncElement TrialMasterListElement = new OperationAggregator(
                 _dataService,
@@ -312,37 +312,37 @@ namespace DMTAgent
                     OrderComponentsElement
                 });
 
-            ISyncElement TrialLabDataElement = new OperationAggregator(
-                _dataService,
-                "Foglio note fasi di lavorazione")
-                .HasOperation(new SyncData<WorkPhaseLabData>(
-                    new XmlReader<WorkPhaseLabData, WorkPhaseLabDataDto>(
-                        new XmlInteractionConfiguration(
-                            new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
-                            "SCHEMA",
-                            4,
-                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))),
-                    new RecordWriter<WorkPhaseLabData>(
-                        new WorkPhaseLabDataEvaluator(),
-                            _dataService)))
-                .HasOperation(new CreateMissingTrialLabData(_dataService))
-                .HasOperation(new SyncData<WorkPhaseLabData>(
-                    new SSMDReader<WorkPhaseLabData>(_dataService,
-                    () => new LoadedWorkPhaseLabDataQuery()),
-                    new XmlWriter<WorkPhaseLabData, WorkPhaseLabDataDto>(
-                        new XmlInteractionConfiguration(
-                            new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
-                            "SCHEMA",
-                            4,
-                            new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))
-                        {
-                            ImportedColumnFill = Color.Yellow
-                        })))
-                .DependsOn(new ISyncElement[]
-                {
-                    OrdersElement,
-                    TrialMasterListElement
-                });
+            //ISyncElement TrialLabDataElement = new OperationAggregator(
+            //    _dataService,
+            //    "Foglio note fasi di lavorazione")
+            //    .HasOperation(new SyncData<WorkPhaseLabData>(
+            //        new XmlReader<WorkPhaseLabData, WorkPhaseLabDataDto>(
+            //            new XmlInteractionConfiguration(
+            //                new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
+            //                "SCHEMA",
+            //                4,
+            //                new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))),
+            //        new RecordWriter<WorkPhaseLabData>(
+            //            new WorkPhaseLabDataEvaluator(),
+            //                _dataService)))
+            //    .HasOperation(new CreateMissingTrialLabData(_dataService))
+            //    .HasOperation(new SyncData<WorkPhaseLabData>(
+            //        new SSMDReader<WorkPhaseLabData>(_dataService,
+            //        () => new LoadedWorkPhaseLabDataQuery()),
+            //        new XmlWriter<WorkPhaseLabData, WorkPhaseLabDataDto>(
+            //            new XmlInteractionConfiguration(
+            //                new System.IO.FileInfo("\\\\vulcaflex.locale\\datid\\Laboratorio\\LABORATORIO\\ODPProva.xlsx"),
+            //                "SCHEMA",
+            //                4,
+            //                new System.IO.DirectoryInfo("L:\\LABORATORIO\\BackupReport\\ODPProva"))
+            //            {
+            //                ImportedColumnFill = Color.Yellow
+            //            })))
+            //    .DependsOn(new ISyncElement[]
+            //    {
+            //        OrdersElement,
+            //        TrialMasterListElement
+            //    });
 
             ISyncElement TestReportElement = new OperationAggregator(
                 _dataService,
@@ -411,13 +411,10 @@ namespace DMTAgent
                     MaterialsElement,
                     OrdersElement,
                     ComponentsElement,
-                    RoutingOperationsElement,
                     OrderComponentsElement,
                     ConfirmationsElements,
-                    GoodMovementsElement,
                     InspectionCharacteristicsElement,
                     TrialMasterListElement,
-                    TrialLabDataElement,
                     TestReportElement,
                     TrialScrapListElement
                 };

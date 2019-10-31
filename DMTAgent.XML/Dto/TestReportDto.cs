@@ -350,12 +350,12 @@ namespace DMTAgent.XML
             MaterialCode = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.Code;
             OrderType = testReport.Order?.OrderType;
             PlannedOrderQuantity = testReport.Order?.OrderData?.FirstOrDefault()?.PlannedQuantity;
-            ColorName = testReport.Order?.OrderData?.FirstOrDefault().Material?.ColorComponent?.Description?.Replace("SKIN", "");
-            Structure = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialFamily?.L1?.Code;
-            TrialScope = testReport.Order?.WorkPhaseLabData?.FirstOrDefault().TrialScope;
-            PCA = testReport.Order?.OrderData?.FirstOrDefault().Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
-            Customer = testReport.Order?.OrderData?.FirstOrDefault().Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
-            ControlPlan = testReport.Order?.OrderData?.FirstOrDefault().Material?.ControlPlan;
+            ColorName = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.ColorComponent?.Description?.Replace("SKIN", "");
+            Structure = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.MaterialFamily?.L1?.Code;
+            TrialScope = testReport.Order?.WorkPhaseLabData?.FirstOrDefault()?.TrialScope;
+            PCA = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.Project?.WBSRelations?.FirstOrDefault()?.Up?.WBSRelations?.FirstOrDefault()?.Up?.Code;
+            Customer = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.MaterialCustomer?.FirstOrDefault()?.Customer?.Name;
+            ControlPlan = testReport.Order?.OrderData?.FirstOrDefault()?.Material?.ControlPlan;
 
             IEnumerable<InspectionPoint> thicknessPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOSPE"));
             IEnumerable<InspectionPoint> weightPoints = testReport.Order?.InspectionLots?.SelectMany(inl => inl.InspectionPoints)?.Where(inl => Regex.IsMatch(inl.InspectionSpecification?.InspectionCharacteristic?.Name, "^GOPES"));
@@ -367,6 +367,9 @@ namespace DMTAgent.XML
         protected Color GetColor(ExcelColor col)
         {
             string argb = col.Rgb;
+            if (argb.Length < 8)
+                return Color.Empty;
+
             return Color.FromArgb(
                 Convert.ToInt32(argb.Substring(0, 2), 16),
                 Convert.ToInt32(argb.Substring(2, 2), 16),

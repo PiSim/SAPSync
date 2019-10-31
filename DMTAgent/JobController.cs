@@ -40,9 +40,10 @@ namespace DMTAgent
         #region Methods
 
         public Task GetAwaiterForActiveOperations() => Task.WhenAll(
-            GetJobs()
+            Jobs
                 .SelectMany(sts => sts.SubJobs)
                 .Select(sjb => sjb.CurrentTask)
+                .Where(cta => cta != null)
                 .ToList());
 
         public ICollection<IJob> GetJobs(bool includeCompleted = false)
